@@ -38,8 +38,8 @@ public class NetworkCalc {
     int randCurrent = 40;
     //Random generator
     Random r = new Random();
+    
     /*
-     * Weight
      * g
      */
     HashMap<LIFNeuron, Float> weight;
@@ -108,7 +108,7 @@ public class NetworkCalc {
         }
         
         /*
-         * apply synaptical current
+         * apply synaptic current
          */
 
 
