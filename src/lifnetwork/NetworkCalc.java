@@ -6,6 +6,7 @@ package lifnetwork;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  *
@@ -32,6 +33,11 @@ public class NetworkCalc {
     int neuronTotalNumber = 1000;
     int gluTotalNumber = 800;
     int gabaTotalNumber = 200;
+    //for random current
+    int randFactor = 40;//percentage
+    int randCurrent = 40;
+    //Random generator
+    Random r = new Random();
     /*
      * Weight
      * g
@@ -51,8 +57,8 @@ public class NetworkCalc {
             NeuronType type = NeuronType.GABA;
             int r = 560;
             int c = 36;
-            int refractoryPeriod = 100;
-            int tau = 25;
+            int refractoryPeriod = 100 * 1000;
+            int tau = 25 * 1000;
 
             LIFNeuron gabaNeuron = new LIFNeuron(type, r, c, refractoryPeriod, tau);
 
@@ -64,8 +70,8 @@ public class NetworkCalc {
             NeuronType type = NeuronType.GLU;
             int r = 790;
             int c = 36;
-            int refractoryPeriod = 100;
-            int tau = 4;
+            int refractoryPeriod = 100 * 1000;
+            int tau = 4 * 1000;
 
             LIFNeuron gluNeuron = new LIFNeuron(type, r, c, refractoryPeriod, tau);
 
@@ -75,9 +81,12 @@ public class NetworkCalc {
 
         for (int currentTime = 0; currentTime < progressTime; currentTime += dT) {
             /*
-             * calc current here
+             * injection
              */
-            
+            /*
+             * calc current here
+             * in matlab:[CurrentIn,pspT]=CurrentCal2(Weight,NeuronsV,ReversePotential,g,neuronNum,dT,FiringMap,tau,Injection,gabaNum,gluNum, pspT, riseT);
+             */
             /*
              * calc LIF state
              */
@@ -89,5 +98,26 @@ public class NetworkCalc {
              */
         }
 
+    }
+
+    private void currentCalc(ArrayList<LIFNeuron> neurons) {
+        // refresh the new connectivity strength
+        for (int i = 0; i < neurons.size(); i++) {
+            neurons.get(i).updateTimeState(dT);
+
+        }
+        
+        /*
+         * apply synaptical current
+         */
+
+
+        /*
+         * Random current
+         */ {
+            for (int i = 0; i < neuronTotalNumber * randFactor / 100; i++) {
+                neurons.get(r.nextInt(neuronTotalNumber)).addCurrent(randCurrent);
+            }
+        }
     }
 }
