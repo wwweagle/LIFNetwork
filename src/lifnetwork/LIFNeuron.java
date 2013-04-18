@@ -17,6 +17,7 @@ public class LIFNeuron {
     final private int refractoryPeriod;
     final private int tau;
     final private int riseTime = 2000;
+    final private int synaticDelay=2000;
     //state dependent
     private float prV;
     private float currentIn = 0;
@@ -66,4 +67,6 @@ public class LIFNeuron {
                 ? 0
                 : (float) Math.pow(Math.E, (double) (riseTime - postAPTime) / tau);
     }
+    
+//    public
 }

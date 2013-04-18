@@ -102,9 +102,8 @@ public class NetworkCalc {
 
     private void currentCalc(ArrayList<LIFNeuron> neurons) {
         // refresh the new connectivity strength
-        for (int i = 0; i < neurons.size(); i++) {
-            neurons.get(i).updateTimeState(dT);
-
+        for (LIFNeuron aNeuron:neurons) {
+            aNeuron.updateTimeState(dT);
         }
         
         /*
