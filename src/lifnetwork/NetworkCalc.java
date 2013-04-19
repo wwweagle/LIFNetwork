@@ -38,18 +38,16 @@ public class NetworkCalc {
     int randCurrent = 40;
     //Random generator
     Random r = new Random();
-    
     /*
      * g
      */
     HashMap<LIFNeuron, Float> weight;
 //    HashMap<> g
 
-    private void cycle() {
+    private void initNeurons() {
         /*
          * init cells
          */
-
         ArrayList<LIFNeuron> neurons = new ArrayList<>(1024); //GABA first, then Glu
         //calc cell number, glu number, gaba number;
         for (int i = 0; i < gabaTotalNumber; i++) {
@@ -77,7 +75,12 @@ public class NetworkCalc {
 
             neurons.add(gluNeuron);
         }
+    }
 
+    private void cycle() {
+        /*
+         * progress through time
+         */
 
         for (int currentTime = 0; currentTime < progressTime; currentTime += dT) {
             /*
@@ -100,12 +103,12 @@ public class NetworkCalc {
 
     }
 
-    private void currentCalc(ArrayList<LIFNeuron> neurons) {
+    private void currentCalc(ArrayList<LIFNeuron> neurons, int currentTime) {
         // refresh the new connectivity strength
-        for (LIFNeuron aNeuron:neurons) {
-            aNeuron.updateTimeState(dT);
+        for (LIFNeuron aNeuron : neurons) {
+            aNeuron.updateTime_State(currentTime);
         }
-        
+
         /*
          * apply synaptic current
          */
