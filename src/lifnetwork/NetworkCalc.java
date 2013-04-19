@@ -5,7 +5,6 @@
 package lifnetwork;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -22,7 +21,7 @@ public class NetworkCalc {
     int gluNum;
     int gabaReverseP = -50;
     int gluReverseP = 0;
-    int reversePotential = -65;
+    int restPotential = -65;
     float gFactor = 0.30f;
     int threshold = -50;
     int dT = 100;// micro seconds (us)
@@ -30,6 +29,7 @@ public class NetworkCalc {
     float gaba_gaba_g = 5 * gFactor;//conductence of connectivity from gaba cell to gaba cell in same column
     float glu_gaba_g = 2 * gFactor;//conductence of connectivity from glu cell to gaba cell in same column
     float glu_glu_g = 0.5f * gFactor;//conductence of connectivity from glu cell to glu cell in same column
+    
     int neuronTotalNumber = 1000;
     int gluTotalNumber = 800;
     int gabaTotalNumber = 200;
@@ -38,27 +38,25 @@ public class NetworkCalc {
     int randCurrent = 40;
     //Random generator
     Random r = new Random();
-    /*
-     * g
-     */
-    HashMap<LIFNeuron, Float> weight;
-//    HashMap<> g
+    ArrayList<LIFNeuron> neurons = new ArrayList<>(1024); //GABA first, then Glu
+    
 
     private void initNeurons() {
         /*
          * init cells
          */
-        ArrayList<LIFNeuron> neurons = new ArrayList<>(1024); //GABA first, then Glu
+
         //calc cell number, glu number, gaba number;
         for (int i = 0; i < gabaTotalNumber; i++) {
             //init a new gaba neuron
             NeuronType type = NeuronType.GABA;
-            int r = 560;
-            int c = 36;
+            int rm = 560;
+            int cm = 36;
             int refractoryPeriod = 100 * 1000;
             int tau = 25 * 1000;
+            int reversePotential=gabaReverseP;
 
-            LIFNeuron gabaNeuron = new LIFNeuron(type, r, c, refractoryPeriod, tau);
+            LIFNeuron gabaNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential, restPotential);
 
             neurons.add(gabaNeuron);
         }
@@ -66,15 +64,20 @@ public class NetworkCalc {
         for (int i = 0; i < gluTotalNumber; i++) {
             //init a new gaba neuron
             NeuronType type = NeuronType.GLU;
-            int r = 790;
-            int c = 36;
+            int rm = 790;
+            int cm = 36;
             int refractoryPeriod = 100 * 1000;
             int tau = 4 * 1000;
+            int reversePotential=gluReverseP;
 
-            LIFNeuron gluNeuron = new LIFNeuron(type, r, c, refractoryPeriod, tau);
+            LIFNeuron gluNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential, restPotential);
 
             neurons.add(gluNeuron);
         }
+    }
+    
+    private void initSynapses(){
+        
     }
 
     private void cycle() {
@@ -88,11 +91,12 @@ public class NetworkCalc {
              */
             /*
              * calc current here
-             * in matlab:[CurrentIn,pspT]=CurrentCal2(Weight,NeuronsV,ReversePotential,g,neuronNum,dT,FiringMap,tau,Injection,gabaNum,gluNum, pspT, riseT);
              */
+            currentCalc(currentTime);
             /*
              * calc LIF state
              */
+
             /*
              * calc and record history
              */
@@ -103,16 +107,20 @@ public class NetworkCalc {
 
     }
 
-    private void currentCalc(ArrayList<LIFNeuron> neurons, int currentTime) {
-        // refresh the new connectivity strength
+    private void currentCalc(int currentTime) {
+        /*
+         * refresh the new connectivity strength
+         */
         for (LIFNeuron aNeuron : neurons) {
-            aNeuron.updateTime_State(currentTime);
+            aNeuron.updateSynapticDynamics(currentTime);
         }
 
         /*
          * apply synaptic current
          */
-
+        for (LIFNeuron aNeuron : neurons) {
+            aNeuron.updateCurrentInput();
+        }
 
         /*
          * Random current

@@ -19,6 +19,7 @@ public class LIFNeuron {
     final private int tau;
     final private int refractoryPeriod;
     final private int reversePotential;
+    final private int restPotential;
     //state dependent
     private float V;
     private float currentIn = 0;
@@ -26,7 +27,7 @@ public class LIFNeuron {
     private float refractoryTime;
     private float synaticDynamics = 0;
     private ArrayList<synapticEvent> eventList;
-    private ArrayList<LIFNeuron> preSynapticList;
+    private ArrayList<IncomingSynapse> incomingList;
 
     /**
      *
@@ -37,16 +38,21 @@ public class LIFNeuron {
      * @param refractoryPeriod
      * @param tau
      */
-    public LIFNeuron(NeuronType type, int r, int c, int tau, int refractoryPeriod, int reversePotential) {
+  
+    public LIFNeuron(NeuronType type, int r, int c, int tau, int refractoryPeriod, int reversePotential, int restPotential) {
         this.type = type;
         this.r = r;
         this.c = c;
         this.tau = tau;
         this.refractoryPeriod = refractoryPeriod;
         this.reversePotential = reversePotential;
+        this.restPotential = restPotential;
     }
 
-
+  
+    public void addInput(IncomingSynapse incoming) {
+        this.incomingList.add(incoming);
+    }
 
     public void addCurrent(float i) {
         this.currentIn += i;
@@ -57,19 +63,19 @@ public class LIFNeuron {
     }
 
     public void updateCurrentInput() {
-        currentIn=0;
-        for (LIFNeuron pre : preSynapticList) {
-            if (pre.getSynapticDynamics()>0) {
+        currentIn = 0;
+        for (IncomingSynapse incoming : incomingList) {
+            if (incoming.getSynapticDynamics() > 0) {
                 /*
                  * accumulate current inputs;
                  */
                 //Current(post)=Current(post)+(s(pre))*(ReversePotential(pre)-NeuronsV(post))*g(pre,post)*Weight(pre,post);
-                currentIn+=pre.getSynapticDynamics()*(pre.getReversePotential()-this.V);
+                currentIn += incoming.getSynapticDynamics() * (incoming.getReversePotential() - this.V) * incoming.getG() * incoming.getWeight();
             }
         }
     }
-    
-    public int getReversePotential(){
+
+    public int getReversePotential() {
         return this.reversePotential;
     }
 
@@ -80,10 +86,8 @@ public class LIFNeuron {
     public float getV() {
         return V;
     }
-    
-    
 
-    public void updateTime_State(int currentTime) {
+    public void updateSynapticDynamics(int currentTime) {
         for (synapticEvent aEvent : eventList) {
             float eventDynamics = aEvent.getEventDynamics(currentTime);
             if (eventDynamics < 0) {
