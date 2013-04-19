@@ -14,12 +14,13 @@ public class LIFNeuron {
     //
 
     final private NeuronType type;
-    final private int r;
-    final private int c;
+    final private int rm;
+    final private int cm;
     final private int tau;
     final private int refractoryPeriod;
     final private int reversePotential;
-    final private int restPotential;
+    final private int restPotential = -65;
+    final private int threshold = -50;
     //state dependent
     private float V;
     private float currentIn = 0;
@@ -38,18 +39,15 @@ public class LIFNeuron {
      * @param refractoryPeriod
      * @param tau
      */
-  
-    public LIFNeuron(NeuronType type, int r, int c, int tau, int refractoryPeriod, int reversePotential, int restPotential) {
+    public LIFNeuron(NeuronType type, int r, int c, int tau, int refractoryPeriod, int reversePotential) {
         this.type = type;
-        this.r = r;
-        this.c = c;
+        this.rm = r;
+        this.cm = c;
         this.tau = tau;
         this.refractoryPeriod = refractoryPeriod;
         this.reversePotential = reversePotential;
-        this.restPotential = restPotential;
     }
 
-  
     public void addInput(IncomingSynapse incoming) {
         this.incomingList.add(incoming);
     }
@@ -118,6 +116,18 @@ public class LIFNeuron {
                     ? (float) Math.pow(Math.E, (double) (synaticDelay + riseTime - postAPTime) / tau)
                     : -1;
             return eventDynamics;
+        }
+    }
+
+    public void updateVoltage(int dT) {
+        this.V += (float) dT * (currentIn - (this.V - restPotential) / rm)
+                / this.cm * 1000 * 1000;//rm*1000,dT*1000
+        firing = (this.V > this.threshold) && (refractoryTime <= 0);
+        this.V = firing ? restPotential : this.V;
+        if (firing) {
+            refractoryTime = refractoryPeriod;
+        } else {
+            refractoryTime -= refractoryTime > 0 ? dT : 0;
         }
     }
 }

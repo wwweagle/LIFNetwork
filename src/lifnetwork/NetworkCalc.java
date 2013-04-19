@@ -21,15 +21,12 @@ public class NetworkCalc {
     int gluNum;
     int gabaReverseP = -50;
     int gluReverseP = 0;
-    int restPotential = -65;
     float gFactor = 0.30f;
-    int threshold = -50;
     int dT = 100;// micro seconds (us)
     float gaba_glu_g = 5 * gFactor;//conductence of connectivity from gaba cell to glu cell in same column in microS
     float gaba_gaba_g = 5 * gFactor;//conductence of connectivity from gaba cell to gaba cell in same column
     float glu_gaba_g = 2 * gFactor;//conductence of connectivity from glu cell to gaba cell in same column
     float glu_glu_g = 0.5f * gFactor;//conductence of connectivity from glu cell to glu cell in same column
-    
     int neuronTotalNumber = 1000;
     int gluTotalNumber = 800;
     int gabaTotalNumber = 200;
@@ -38,8 +35,7 @@ public class NetworkCalc {
     int randCurrent = 40;
     //Random generator
     Random r = new Random();
-    ArrayList<LIFNeuron> neurons = new ArrayList<>(1024); //GABA first, then Glu
-    
+    ArrayList<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
 
     private void initNeurons() {
         /*
@@ -54,11 +50,11 @@ public class NetworkCalc {
             int cm = 36;
             int refractoryPeriod = 100 * 1000;
             int tau = 25 * 1000;
-            int reversePotential=gabaReverseP;
+            int reversePotential = gabaReverseP;
 
-            LIFNeuron gabaNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential, restPotential);
+            LIFNeuron gabaNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential);
 
-            neurons.add(gabaNeuron);
+            neuronList.add(gabaNeuron);
         }
 
         for (int i = 0; i < gluTotalNumber; i++) {
@@ -68,15 +64,15 @@ public class NetworkCalc {
             int cm = 36;
             int refractoryPeriod = 100 * 1000;
             int tau = 4 * 1000;
-            int reversePotential=gluReverseP;
+            int reversePotential = gluReverseP;
 
-            LIFNeuron gluNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential, restPotential);
+            LIFNeuron gluNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential);
 
-            neurons.add(gluNeuron);
+            neuronList.add(gluNeuron);
         }
     }
-    
-    private void initSynapses(){
+
+    private void initSynapses() {
         
     }
 
@@ -96,10 +92,11 @@ public class NetworkCalc {
             /*
              * calc LIF state
              */
-
+            voltageCalc(dT);
             /*
              * calc and record history
              */
+            
             /*
              * status report
              */
@@ -111,14 +108,14 @@ public class NetworkCalc {
         /*
          * refresh the new connectivity strength
          */
-        for (LIFNeuron aNeuron : neurons) {
+        for (LIFNeuron aNeuron : neuronList) {
             aNeuron.updateSynapticDynamics(currentTime);
         }
 
         /*
          * apply synaptic current
          */
-        for (LIFNeuron aNeuron : neurons) {
+        for (LIFNeuron aNeuron : neuronList) {
             aNeuron.updateCurrentInput();
         }
 
@@ -126,8 +123,14 @@ public class NetworkCalc {
          * Random current
          */ {
             for (int i = 0; i < neuronTotalNumber * randFactor / 100; i++) {
-                neurons.get(r.nextInt(neuronTotalNumber)).addCurrent(randCurrent);
+                neuronList.get(r.nextInt(neuronTotalNumber)).addCurrent(randCurrent);
             }
+        }
+    }
+
+    private void voltageCalc(int dT) {
+        for (LIFNeuron neuron : neuronList) {
+            neuron.updateVoltage(dT);
         }
     }
 }
