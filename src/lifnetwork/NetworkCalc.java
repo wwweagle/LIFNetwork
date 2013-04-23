@@ -4,8 +4,15 @@
  */
 package lifnetwork;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import savedParameters.NetworkParameters;
 
 /**
  *
@@ -23,13 +30,6 @@ public class NetworkCalc {
     int gluReverseP = 0;
     float gFactor = 0.30f;
     int dT = 100;// micro seconds (us)
-    float gaba_glu_g = 5 * gFactor;//conductence of connectivity from gaba cell to glu cell in same column in microS
-    float gaba_gaba_g = 5 * gFactor;//conductence of connectivity from gaba cell to gaba cell in same column
-    float glu_gaba_g = 2 * gFactor;//conductence of connectivity from glu cell to gaba cell in same column
-    float glu_glu_g = 0.5f * gFactor;//conductence of connectivity from glu cell to glu cell in same column
-    int neuronTotalNumber = 1000;
-    int gluTotalNumber = 800;
-    int gabaTotalNumber = 200;
     //for random current
     int randFactor = 40;//percentage
     int randCurrent = 40;
@@ -39,41 +39,89 @@ public class NetworkCalc {
 
     private void initNeurons() {
         /*
-         * init cells
+         * read data from file
          */
 
-        //calc cell number, glu number, gaba number;
-        for (int i = 0; i < gabaTotalNumber; i++) {
-            //init a new gaba neuron
-            NeuronType type = NeuronType.GABA;
-            int rm = 560;
-            int cm = 36;
-            int refractoryPeriod = 100 * 1000;
-            int tau = 25 * 1000;
-            int reversePotential = gabaReverseP;
+        NetworkParameters save = null;
+        try (ObjectInputStream in = new ObjectInputStream(
+                new FileInputStream("conn_Net_C_1.0_W_1.0.ser"))) {
+            save = (NetworkParameters) in.readObject();
+            System.out.println("deserialize succeed");
+            System.out.println(save.getNeuronIsGlu().size());
+            System.out.println(save.getSynapticWeights().size());
 
-            LIFNeuron gabaNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential);
-
-            neuronList.add(gabaNeuron);
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("deserialize failed");
         }
 
-        for (int i = 0; i < gluTotalNumber; i++) {
-            //init a new gaba neuron
-            NeuronType type = NeuronType.GLU;
-            int rm = 790;
-            int cm = 36;
-            int refractoryPeriod = 100 * 1000;
-            int tau = 4 * 1000;
-            int reversePotential = gluReverseP;
 
-            LIFNeuron gluNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential);
+        /*
+         * init cells
+         */
+        ArrayList<Boolean> neuronIsGlu = save.getNeuronIsGlu();
 
-            neuronList.add(gluNeuron);
+        for (int i = 0; i < neuronIsGlu.size(); i++) {
+            if (neuronIsGlu.get(i)) {
+                //init a new glu neuron
+                NeuronType type = NeuronType.GLU;
+                int rm = 790;
+                int cm = 36;
+                int refractoryPeriod = 100 * 1000;
+                int tau = 4 * 1000;
+                int reversePotential = gluReverseP;
+                LIFNeuron gluNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential);
+
+                neuronList.add(gluNeuron);
+            } else {
+                //init a new gaba neuron
+                NeuronType type = NeuronType.GABA;
+                int rm = 560;
+                int cm = 36;
+                int refractoryPeriod = 100 * 1000;
+                int tau = 25 * 1000;
+                int reversePotential = gabaReverseP;
+
+                LIFNeuron gabaNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential);
+
+                neuronList.add(gabaNeuron);
+            }
+        }
+        /*
+         * init synapses
+         */
+        HashMap<Integer, Float> synapticWeights = save.getSynapticWeights();
+        Set<Map.Entry<Integer, Float>> synapses = synapticWeights.entrySet();
+        for (Map.Entry<Integer, Float> synapse : synapses) {
+            int pre = synapse.getKey() >>> 12;
+            int post = synapse.getKey() & 4095;
+            IncomingSynapse incoming = new IncomingSynapse(
+                    synapse.getValue(),
+                    neuronList.get(pre),
+                    getG(neuronIsGlu.get(pre), neuronIsGlu.get(post)));
+            neuronList.get(post).addInput(incoming);
         }
     }
 
-    private void initSynapses() {
-        
+    private float getG(boolean preIsGlu, boolean postIsGlu) {
+//        float gaba_glu_g = 5 * gFactor;//conductence of connectivity from gaba cell to glu cell in same column in microS
+//        float gaba_gaba_g = 5 * gFactor;//conductence of connectivity from gaba cell to gaba cell in same column
+//        float glu_gaba_g = 2 * gFactor;//conductence of connectivity from glu cell to gaba cell in same column
+//        float glu_glu_g = 0.5f * gFactor;//conductence of connectivity from glu cell to glu cell in same column
+        int key = (preIsGlu ? 0 : 2) + (postIsGlu ? 0 : 1);
+        switch (key) {
+            case 0:
+                return 0.5f * gFactor;
+            case 1:
+                return 2 * gFactor;
+            case 2:
+                return 5 * gFactor;
+            case 3:
+                return 5 * gFactor;
+            default:
+                System.out.println("Unknown synapse combination during calculaing g");
+                return 1;
+        }
+
     }
 
     private void cycle() {
@@ -96,7 +144,7 @@ public class NetworkCalc {
             /*
              * calc and record history
              */
-            
+
             /*
              * status report
              */
@@ -121,11 +169,11 @@ public class NetworkCalc {
 
         /*
          * Random current
-         */ {
-            for (int i = 0; i < neuronTotalNumber * randFactor / 100; i++) {
-                neuronList.get(r.nextInt(neuronTotalNumber)).addCurrent(randCurrent);
-            }
-        }
+         */
+//            for (int i = 0; i < neuronTotalNumber * randFactor / 100; i++) {
+//                neuronList.get(r.nextInt(neuronTotalNumber)).addCurrent(randCurrent);
+//            }
+
     }
 
     private void voltageCalc(int dT) {
