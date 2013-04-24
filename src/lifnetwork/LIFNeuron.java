@@ -46,6 +46,10 @@ public class LIFNeuron {
         this.tau = tau;
         this.refractoryPeriod = refractoryPeriod;
         this.reversePotential = reversePotential;
+
+        this.eventList = new ArrayList<>();
+        this.incomingList = new ArrayList<>();
+        this.V = restPotential;
     }
 
     public void addInput(IncomingSynapse incoming) {
@@ -119,15 +123,19 @@ public class LIFNeuron {
         }
     }
 
-    public void updateVoltage(int dT) {
-        this.V += (float) dT * (currentIn - (this.V - restPotential) / rm)
-                / this.cm * 1000 * 1000;//rm*1000,dT*1000
+    public boolean updateVoltageAndFire(int dT) {
+        this.V += (float) dT * (currentIn - (this.V - restPotential) / (rm / 1000f))
+                / this.cm / 1000f;//rm*1000,dT*1000
         firing = (this.V > this.threshold) && (refractoryTime <= 0);
         this.V = firing ? restPotential : this.V;
+//        System.out.println(currentIn+","+V);
         if (firing) {
             refractoryTime = refractoryPeriod;
+//            System.out.println("Fire!");
+            return true;
         } else {
             refractoryTime -= refractoryTime > 0 ? dT : 0;
+            return false;
         }
     }
 }

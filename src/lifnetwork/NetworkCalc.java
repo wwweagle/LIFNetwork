@@ -21,7 +21,7 @@ import savedParameters.NetworkParameters;
 public class NetworkCalc {
 
     int typeOfSim = 0; //Type of connection set, 0 for pseudo-random, 1 for self-organizing
-    int progressTime = 10 * 1000 * 1000; //simulation time in micro seconds (us)
+    int progressTime = 10*1000 * 1000; //simulation time in micro seconds (us)
     int refractFactor = 100;
     int neuronNum;
     int gabaNum;
@@ -31,20 +31,20 @@ public class NetworkCalc {
     float gFactor = 0.30f;
     int dT = 100;// micro seconds (us)
     //for random current
-    int randFactor = 40;//percentage
+    int randFactor = 35;//percentage
     int randCurrent = 40;
     //Random generator
     Random r = new Random();
     ArrayList<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
 
-    private void initNeurons() {
+    private void readParameters() {
         /*
          * read data from file
          */
 
         NetworkParameters save = null;
         try (ObjectInputStream in = new ObjectInputStream(
-                new FileInputStream("conn_Net_C_1.0_W_1.0.ser"))) {
+                new FileInputStream("conn_Ctl_C_1.0_W_1.0.ser"))) {
             save = (NetworkParameters) in.readObject();
             System.out.println("deserialize succeed");
             System.out.println(save.getNeuronIsGlu().size());
@@ -53,7 +53,10 @@ public class NetworkCalc {
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("deserialize failed");
         }
-
+        if (save == null) {
+            System.out.println("Null save file");
+            return;
+        }
 
         /*
          * init cells
@@ -100,6 +103,7 @@ public class NetworkCalc {
                     getG(neuronIsGlu.get(pre), neuronIsGlu.get(post)));
             neuronList.get(post).addInput(incoming);
         }
+
     }
 
     private float getG(boolean preIsGlu, boolean postIsGlu) {
@@ -124,12 +128,15 @@ public class NetworkCalc {
 
     }
 
-    private void cycle() {
+    public void cycle() {
+        readParameters();
         /*
          * progress through time
          */
+        ArrayList<int[]> fireList = new ArrayList<>(1000);
 
         for (int currentTime = 0; currentTime < progressTime; currentTime += dT) {
+//            System.out.println("\ncurrentTime " + currentTime);
             /*
              * injection
              */
@@ -140,7 +147,12 @@ public class NetworkCalc {
             /*
              * calc LIF state
              */
-            voltageCalc(dT);
+            ArrayList<Integer> fired = voltageCalc(dT);
+            for (Integer cell : fired) {
+                int time = currentTime;
+                int[] record = {time, cell};
+                fireList.add(record);
+            }
             /*
              * calc and record history
              */
@@ -148,7 +160,11 @@ public class NetworkCalc {
             /*
              * status report
              */
+            statusReport(currentTime);
         }
+
+        System.out.println(fireList.size());
+        Commons.writeList("fireHistory.csv", fireList);
 
     }
 
@@ -170,15 +186,26 @@ public class NetworkCalc {
         /*
          * Random current
          */
-//            for (int i = 0; i < neuronTotalNumber * randFactor / 100; i++) {
-//                neuronList.get(r.nextInt(neuronTotalNumber)).addCurrent(randCurrent);
-//            }
+        for (int i = 0; i < neuronList.size() * randFactor / 100; i++) {
+            neuronList.get(r.nextInt(neuronList.size())).addCurrent(randCurrent);
+        }
 
     }
 
-    private void voltageCalc(int dT) {
-        for (LIFNeuron neuron : neuronList) {
-            neuron.updateVoltage(dT);
+    private ArrayList<Integer> voltageCalc(int dT) {
+        ArrayList<Integer> fireList = new ArrayList<>();
+        for (int i = 0; i < neuronList.size(); i++) {
+            if (neuronList.get(i).updateVoltageAndFire(dT)) {
+//                System.out.print(i+",");
+                fireList.add(i);
+            };
+        }
+        return fireList;
+    }
+
+    private void statusReport(int currentTime) {
+        if (currentTime % (progressTime / 100) == 0) {
+            System.out.println(currentTime * 100 / progressTime + "%");
         }
     }
 }
