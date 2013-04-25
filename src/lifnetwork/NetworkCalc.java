@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -21,7 +22,7 @@ import savedParameters.NetworkParameters;
 public class NetworkCalc {
 
     int typeOfSim = 0; //Type of connection set, 0 for pseudo-random, 1 for self-organizing
-    int progressTime = 10*1000 * 1000; //simulation time in micro seconds (us)
+    int progressTime = 10 * 1000 * 1000; //simulation time in micro seconds (us)
     int refractFactor = 100;
     int neuronNum;
     int gabaNum;
@@ -31,7 +32,7 @@ public class NetworkCalc {
     float gFactor = 0.30f;
     int dT = 100;// micro seconds (us)
     //for random current
-    int randFactor = 35;//percentage
+    int randFactor = 40;//percentage
     int randCurrent = 40;
     //Random generator
     Random r = new Random();
@@ -44,7 +45,7 @@ public class NetworkCalc {
 
         NetworkParameters save = null;
         try (ObjectInputStream in = new ObjectInputStream(
-                new FileInputStream("conn_Ctl_C_1.0_W_1.0.ser"))) {
+                new FileInputStream("conn_Net_C_1.0_W_1.0.ser"))) {
             save = (NetworkParameters) in.readObject();
             System.out.println("deserialize succeed");
             System.out.println(save.getNeuronIsGlu().size());
@@ -103,6 +104,31 @@ public class NetworkCalc {
                     getG(neuronIsGlu.get(pre), neuronIsGlu.get(post)));
             neuronList.get(post).addInput(incoming);
         }
+        /*
+         * temp test statics
+         */
+        int[] in = new int[1000];
+        int[] out = new int[1000];
+
+        for (Map.Entry<Integer, Float> synapse : synapses) {
+            int pre = synapse.getKey() >>> 12;
+            int post = synapse.getKey() & 4095;
+            in[post]++;
+            out[pre]++;
+        }
+        int[] statics = new int[50];
+        for (int i = 0; i < in.length; i++) {
+            statics[in[i]]++;
+        }
+        System.out.println("in");
+        System.out.println(Arrays.toString(statics));
+        statics = new int[50];
+        for (int i = 0; i < out.length; i++) {
+            statics[out[i]]++;
+        }
+        System.out.println("out");
+        System.out.println(Arrays.toString(statics));
+
 
     }
 
@@ -134,6 +160,9 @@ public class NetworkCalc {
          * progress through time
          */
         ArrayList<int[]> fireList = new ArrayList<>(1000);
+        ArrayList<Float> vSample = new ArrayList<>(10000);
+        ArrayList<Float> iSample = new ArrayList<>(10000);
+        ArrayList<Float> sSample = new ArrayList<>(10000);
 
         for (int currentTime = 0; currentTime < progressTime; currentTime += dT) {
 //            System.out.println("\ncurrentTime " + currentTime);
@@ -147,7 +176,7 @@ public class NetworkCalc {
             /*
              * calc LIF state
              */
-            ArrayList<Integer> fired = voltageCalc(dT);
+            ArrayList<Integer> fired = voltageCalc(dT, currentTime);
             for (Integer cell : fired) {
                 int time = currentTime;
                 int[] record = {time, cell};
@@ -156,6 +185,9 @@ public class NetworkCalc {
             /*
              * calc and record history
              */
+            vSample.add(neuronList.get(63).getV());
+            iSample.add(neuronList.get(63).getCurrentIn());
+            sSample.add(neuronList.get(63).getSynapticDynamics());
 
             /*
              * status report
@@ -164,8 +196,10 @@ public class NetworkCalc {
         }
 
         System.out.println(fireList.size());
+        Commons.writeList("vHistory.csv", vSample);
+        Commons.writeList("iHistory.csv", iSample);
+        Commons.writeList("sHistory.csv", sSample);
         Commons.writeList("fireHistory.csv", fireList);
-
     }
 
     private void currentCalc(int currentTime) {
@@ -186,19 +220,24 @@ public class NetworkCalc {
         /*
          * Random current
          */
-        for (int i = 0; i < neuronList.size() * randFactor / 100; i++) {
-            neuronList.get(r.nextInt(neuronList.size())).addCurrent(randCurrent);
+        int toApply = neuronList.size() * randFactor / 100;
+        for (int notApplied = 1000; toApply > 0; notApplied--) {
+            if (r.nextDouble() < ((double) toApply / notApplied)) {
+                toApply--;
+                neuronList.get(notApplied-1).addCurrent(randCurrent);
+            } else {
+            }
         }
 
     }
 
-    private ArrayList<Integer> voltageCalc(int dT) {
+    private ArrayList<Integer> voltageCalc(int dT, int currentTime) {
         ArrayList<Integer> fireList = new ArrayList<>();
         for (int i = 0; i < neuronList.size(); i++) {
-            if (neuronList.get(i).updateVoltageAndFire(dT)) {
+            if (neuronList.get(i).updateVoltageAndFire(dT, currentTime)) {
 //                System.out.print(i+",");
                 fireList.add(i);
-            };
+            }
         }
         return fireList;
     }

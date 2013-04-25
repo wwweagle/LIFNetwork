@@ -89,15 +89,31 @@ public class LIFNeuron {
         return V;
     }
 
+    public float getCurrentIn() {
+        return currentIn;
+    }
+
     public void updateSynapticDynamics(int currentTime) {
-        for (synapticEvent aEvent : eventList) {
-            float eventDynamics = aEvent.getEventDynamics(currentTime);
+        if (eventList.isEmpty()) {
+            return;
+        }
+        float max = 0;
+        boolean[] toRemove = new boolean[eventList.size()];
+        for (int i = 0; i < eventList.size(); i++) {
+            float eventDynamics = eventList.get(i).getEventDynamics(currentTime);
             if (eventDynamics < 0) {
-                eventList.remove(aEvent);
-            } else if (eventDynamics > synaticDynamics) {
-                synaticDynamics = eventDynamics;
+                toRemove[i] = true;
+            } else if (eventDynamics > max) {
+                max = eventDynamics;
             }
         }
+        synaticDynamics = max;
+        for (int i = 0; i < toRemove.length; i++) {
+            if (toRemove[i]) {
+                eventList.remove(i);
+            }
+        }
+
     }
 
     private final class synapticEvent {
@@ -112,18 +128,25 @@ public class LIFNeuron {
 
         public float getEventDynamics(int currentTime) {
             int postAPTime = currentTime - eventTime;
-            float eventDynamics = (postAPTime <= synaticDelay)
-                    ? 0
-                    : (postAPTime <= synaticDelay + riseTime)
-                    ? (float) (postAPTime - synaticDelay) / riseTime
-                    : (postAPTime <= 100 * 1000)
-                    ? (float) Math.pow(Math.E, (double) (synaticDelay + riseTime - postAPTime) / tau)
-                    : -1;
-            return eventDynamics;
+//            float eventDynamics = (postAPTime <= synaticDelay)
+//                    ? 0
+//                    : (postAPTime <= synaticDelay + riseTime)
+//                    ? (float) (postAPTime - synaticDelay) / riseTime
+//                    : (postAPTime <= 100 * 1000)
+//                    ? (float) Math.pow(Math.E, (double) (synaticDelay + riseTime - postAPTime) / tau)
+//                    : -1;
+            if (postAPTime <= synaticDelay) {
+                return 0;
+            } else if ((postAPTime <= synaticDelay + riseTime)) {
+                return (float) (postAPTime - synaticDelay) / riseTime;
+            } else {
+                float value = (float) Math.pow(Math.E, (double) (synaticDelay + riseTime - postAPTime) / tau);
+                return value > 0.001 ? value : -1;
+            }
         }
     }
 
-    public boolean updateVoltageAndFire(int dT) {
+    public boolean updateVoltageAndFire(int dT, int currentTime) {
         this.V += (float) dT * (currentIn - (this.V - restPotential) / (rm / 1000f))
                 / this.cm / 1000f;//rm*1000,dT*1000
         firing = (this.V > this.threshold) && (refractoryTime <= 0);
@@ -131,6 +154,7 @@ public class LIFNeuron {
 //        System.out.println(currentIn+","+V);
         if (firing) {
             refractoryTime = refractoryPeriod;
+            this.eventList.add(new synapticEvent(currentTime));
 //            System.out.println("Fire!");
             return true;
         } else {

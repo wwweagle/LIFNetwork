@@ -7,7 +7,7 @@ package lifnetwork;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -28,13 +28,31 @@ public class Commons {
         }
     }
 
-    static public void writeList(String pathToFile, ArrayList<int[]> list) {
+    static public <T> void writeList(String pathToFile, List<T> list) {
+        if (list.isEmpty()) {
+            return;
+        }
+
         try (BufferedWriter w = new BufferedWriter(new FileWriter(pathToFile))) {
-            for (int i = 0; i < list.size(); i++) {
-                w.write(list.get(i)[0]+","+list.get(i)[1]+"\n");
+            if (list.get(1) instanceof int[]) {
+                for (int i = 0; i < list.size(); i++) {
+                    int[] array = (int[]) list.get(i);
+                    for (int j = 0; j < array.length - 1; j++) {
+                        w.write(array[j] + ",");
+                    }
+                    w.write(array[array.length - 1] + "\n");
+                }
+            } else if (list.get(1) instanceof Float) {
+                for (int i = 0; i < list.size(); i++) {
+                    float value = (Float) list.get(i);
+                    w.write(value + "\n");
+                }
             }
             w.flush();
         } catch (IOException e) {
+            System.out.println("write csv Error:");
+            System.out.println(e.toString());
         }
     }
+
 }
