@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -104,31 +103,6 @@ public class NetworkCalc {
                     getG(neuronIsGlu.get(pre), neuronIsGlu.get(post)));
             neuronList.get(post).addInput(incoming);
         }
-        /*
-         * temp test statics
-         */
-        int[] in = new int[1000];
-        int[] out = new int[1000];
-
-        for (Map.Entry<Integer, Float> synapse : synapses) {
-            int pre = synapse.getKey() >>> 12;
-            int post = synapse.getKey() & 4095;
-            in[post]++;
-            out[pre]++;
-        }
-        int[] statics = new int[50];
-        for (int i = 0; i < in.length; i++) {
-            statics[in[i]]++;
-        }
-        System.out.println("in");
-        System.out.println(Arrays.toString(statics));
-        statics = new int[50];
-        for (int i = 0; i < out.length; i++) {
-            statics[out[i]]++;
-        }
-        System.out.println("out");
-        System.out.println(Arrays.toString(statics));
-
 
     }
 
