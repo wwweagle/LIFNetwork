@@ -8,12 +8,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
+import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 import savedParameters.NetworkParameters;
@@ -148,18 +150,20 @@ public class NetworkCalc {
             /*
              * calc current here
              */
-//            currentCalc(currentTime);
-            fjpool.invoke(new CurrentCalc(neuronList, 0, neuronList.size() - 1, currentTime));
-//            addRandomCurrent();
+            fjpool.invoke(new CurrentCalcFork(0, neuronList.size() - 1, currentTime));
 
             /*
              * calc LIF state
              */
-            ArrayList<Integer> fired = voltageCalc(dT, currentTime);
-            for (Integer cell : fired) {
-                int time = currentTime;
-                int[] record = {time, cell};
-                fireList.add(record);
+            List<Integer> fired = Collections.synchronizedList(new ArrayList<Integer>());
+
+//            voltageCalc(dT, currentTime);
+            fjpool.invoke(new VoltageCalcFork(fired, 0, neuronList.size() - 1, dT, currentTime));
+            synchronized (fired) {
+                for (Integer cell : fired) {
+                    int[] record = {currentTime, cell};
+                    fireList.add(record);
+                }
             }
             /*
              * calc and record history
@@ -181,44 +185,6 @@ public class NetworkCalc {
         Commons.writeList("fireHistory.csv", fireList);
     }
 
-    private void currentCalc(int currentTime) {
-        /*
-         * refresh the new connectivity strength
-         */
-        for (LIFNeuron aNeuron : neuronList) {
-            aNeuron.updateSynapticDynamics(currentTime);
-        }
-
-        /*
-         * apply synaptic current
-         */
-        for (LIFNeuron aNeuron : neuronList) {
-            aNeuron.updateCurrentInput();
-        }
-
-        /*
-         * Random current
-         */
-        int toApply = neuronList.size() * randFactor / 100;
-        for (int notApplied = 1000; toApply > 0; notApplied--) {
-            if (r.nextDouble() < ((double) toApply / notApplied)) {
-                toApply--;
-                neuronList.get(notApplied - 1).addCurrent(randCurrent);
-            }
-        }
-
-    }
-
-    private void addRandomCurrent() {
-        int toApply = neuronList.size() * randFactor / 100;
-        for (int notApplied = 1000; toApply > 0; notApplied--) {
-            if (r.nextDouble() < ((double) toApply / notApplied)) {
-                toApply--;
-                neuronList.get(notApplied - 1).addCurrent(randCurrent);
-            }
-        }
-    }
-
     private ArrayList<Integer> voltageCalc(int dT, int currentTime) {
         ArrayList<Integer> fireList = new ArrayList<>();
         for (int i = 0; i < neuronList.size(); i++) {
@@ -236,15 +202,16 @@ public class NetworkCalc {
         }
     }
 
-    final private class CurrentCalc extends RecursiveAction {
+    final private class CurrentCalcFork extends RecursiveAction {
 
-        final private List<LIFNeuron> neuronList;
+//        final private List<LIFNeuron> neuronList;
         final private int start;
         final private int end;
         final private int currentTime;
 
-        public CurrentCalc(List<LIFNeuron> neuronList, int start, int end, int currentTime) {
-            this.neuronList = neuronList;
+//        public CurrentCalcFork(List<LIFNeuron> neuronList, int start, int end, int currentTime) {
+//            this.neuronList = neuronList;
+        public CurrentCalcFork(int start, int end, int currentTime) {
             this.start = start;
             this.end = end;
             this.currentTime = currentTime;
@@ -278,8 +245,45 @@ public class NetworkCalc {
                 return;
             }
             int middle = (end - start) / 2 + start;
-            invokeAll(new CurrentCalc(neuronList, start, middle, currentTime),
-                    new CurrentCalc(neuronList, middle + 1, end, currentTime));
+            invokeAll(new CurrentCalcFork(start, middle, currentTime),
+                    new CurrentCalcFork(middle + 1, end, currentTime));
+
+        }
+    }
+
+    final private class VoltageCalcFork extends RecursiveAction {
+
+        final private List fired;
+        final private int start;
+        final private int end;
+        final private int dT;
+        final private int currentTime;
+
+        public VoltageCalcFork(List fired, int start, int end, int dT, int currentTime) {
+            this.start = start;
+            this.end = end;
+            this.fired = fired;
+            this.dT = dT;
+            this.currentTime = currentTime;
+        }
+
+        private void voltageCalc(int index, int dT, int currentTime) {
+            if (neuronList.get(index).updateVoltageAndFire(dT, currentTime)) {
+                synchronized (fired) {
+                    fired.add(index);
+                }
+            }
+        }
+
+        @Override
+        protected void compute() {
+            if (end == start) {
+                voltageCalc(start, dT, currentTime);
+                return;
+            }
+            int middle = (end - start) / 2 + start;
+            invokeAll(new VoltageCalcFork(fired, start, middle, dT, currentTime),
+                    new VoltageCalcFork(fired, middle + 1, end, dT, currentTime));
 
         }
     }
