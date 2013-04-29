@@ -9,9 +9,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.ThreadLocalRandom;
 import savedParameters.NetworkParameters;
 
 /**
@@ -20,22 +24,20 @@ import savedParameters.NetworkParameters;
  */
 public class NetworkCalc {
 
-    int typeOfSim = 0; //Type of connection set, 0 for pseudo-random, 1 for self-organizing
-    int progressTime = 10 * 1000 * 1000; //simulation time in micro seconds (us)
-    int refractFactor = 100;
-    int neuronNum;
-    int gabaNum;
-    int gluNum;
-    int gabaReverseP = -50;
-    int gluReverseP = 0;
-    float gFactor = 0.30f;
-    int dT = 100;// micro seconds (us)
+    private int progressTime = 10 * 1000 * 1000; //simulation time in micro seconds (us)
+    private int refractTime = 100;
+    private int gabaReverseP = -50;
+    private int gluReverseP = 0;
+    private float gFactor = 0.30f;
+    private int dT = 100;// micro seconds (us)
     //for random current
-    int randFactor = 40;//percentage
-    int randCurrent = 40;
+    private int randFactor = 40;//percentage
+    private int randCurrent = 40;
     //Random generator
-    Random r = new Random();
-    ArrayList<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
+    private Random r = new Random();
+    private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
+    //Runtime mechanisms
+    ForkJoinPool fjpool = new ForkJoinPool();
 
     private void readParameters() {
         /*
@@ -44,11 +46,11 @@ public class NetworkCalc {
 
         NetworkParameters save = null;
         try (ObjectInputStream in = new ObjectInputStream(
-                new FileInputStream("conn_Net_C_1.0_W_1.0.ser"))) {
+                new FileInputStream("conn_Ctl_C_1.0_W_1.0.ser"))) {
             save = (NetworkParameters) in.readObject();
-            System.out.println("deserialize succeed");
-            System.out.println(save.getNeuronIsGlu().size());
-            System.out.println(save.getSynapticWeights().size());
+//            System.out.println("deserialize succeed");
+//            System.out.println(save.getNeuronIsGlu().size());
+//            System.out.println(save.getSynapticWeights().size());
 
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("deserialize failed");
@@ -69,7 +71,7 @@ public class NetworkCalc {
                 NeuronType type = NeuronType.GLU;
                 int rm = 790;
                 int cm = 36;
-                int refractoryPeriod = 100 * 1000;
+                int refractoryPeriod = refractTime * 1000;
                 int tau = 4 * 1000;
                 int reversePotential = gluReverseP;
                 LIFNeuron gluNeuron = new LIFNeuron(type, rm, cm, tau, refractoryPeriod, reversePotential);
@@ -80,7 +82,7 @@ public class NetworkCalc {
                 NeuronType type = NeuronType.GABA;
                 int rm = 560;
                 int cm = 36;
-                int refractoryPeriod = 100 * 1000;
+                int refractoryPeriod = refractTime * 1000;
                 int tau = 25 * 1000;
                 int reversePotential = gabaReverseP;
 
@@ -134,9 +136,9 @@ public class NetworkCalc {
          * progress through time
          */
         ArrayList<int[]> fireList = new ArrayList<>(1000);
-        ArrayList<Float> vSample = new ArrayList<>(10000);
-        ArrayList<Float> iSample = new ArrayList<>(10000);
-        ArrayList<Float> sSample = new ArrayList<>(10000);
+//        ArrayList<Float> vSample = new ArrayList<>(10000);
+//        ArrayList<Float> iSample = new ArrayList<>(10000);
+//        ArrayList<Float> sSample = new ArrayList<>(10000);
 
         for (int currentTime = 0; currentTime < progressTime; currentTime += dT) {
 //            System.out.println("\ncurrentTime " + currentTime);
@@ -146,7 +148,10 @@ public class NetworkCalc {
             /*
              * calc current here
              */
-            currentCalc(currentTime);
+//            currentCalc(currentTime);
+            fjpool.invoke(new CurrentCalc(neuronList, 0, neuronList.size() - 1, currentTime));
+//            addRandomCurrent();
+
             /*
              * calc LIF state
              */
@@ -159,9 +164,9 @@ public class NetworkCalc {
             /*
              * calc and record history
              */
-            vSample.add(neuronList.get(63).getV());
-            iSample.add(neuronList.get(63).getCurrentIn());
-            sSample.add(neuronList.get(63).getSynapticDynamics());
+//            vSample.add(neuronList.get(63).getV());
+//            iSample.add(neuronList.get(63).getCurrentIn());
+//            sSample.add(neuronList.get(63).getSynapticDynamics());
 
             /*
              * status report
@@ -170,9 +175,9 @@ public class NetworkCalc {
         }
 
         System.out.println(fireList.size());
-        Commons.writeList("vHistory.csv", vSample);
-        Commons.writeList("iHistory.csv", iSample);
-        Commons.writeList("sHistory.csv", sSample);
+//        Commons.writeList("vHistory.csv", vSample);
+//        Commons.writeList("iHistory.csv", iSample);
+//        Commons.writeList("sHistory.csv", sSample);
         Commons.writeList("fireHistory.csv", fireList);
     }
 
@@ -198,11 +203,20 @@ public class NetworkCalc {
         for (int notApplied = 1000; toApply > 0; notApplied--) {
             if (r.nextDouble() < ((double) toApply / notApplied)) {
                 toApply--;
-                neuronList.get(notApplied-1).addCurrent(randCurrent);
-            } else {
+                neuronList.get(notApplied - 1).addCurrent(randCurrent);
             }
         }
 
+    }
+
+    private void addRandomCurrent() {
+        int toApply = neuronList.size() * randFactor / 100;
+        for (int notApplied = 1000; toApply > 0; notApplied--) {
+            if (r.nextDouble() < ((double) toApply / notApplied)) {
+                toApply--;
+                neuronList.get(notApplied - 1).addCurrent(randCurrent);
+            }
+        }
     }
 
     private ArrayList<Integer> voltageCalc(int dT, int currentTime) {
@@ -219,6 +233,54 @@ public class NetworkCalc {
     private void statusReport(int currentTime) {
         if (currentTime % (progressTime / 100) == 0) {
             System.out.println(currentTime * 100 / progressTime + "%");
+        }
+    }
+
+    final private class CurrentCalc extends RecursiveAction {
+
+        final private List<LIFNeuron> neuronList;
+        final private int start;
+        final private int end;
+        final private int currentTime;
+
+        public CurrentCalc(List<LIFNeuron> neuronList, int start, int end, int currentTime) {
+            this.neuronList = neuronList;
+            this.start = start;
+            this.end = end;
+            this.currentTime = currentTime;
+        }
+
+        private void currentCalc(int index, int currentTime) {
+            /*
+             * refresh the new connectivity strength
+             */
+
+            neuronList.get(index).updateSynapticDynamics(currentTime);
+
+            /*
+             * apply synaptic current
+             */
+
+            neuronList.get(index).updateCurrentInput();
+            /*
+             * Random current
+             */
+
+            if (ThreadLocalRandom.current().nextInt(100) < randFactor) {
+                neuronList.get(index).addCurrent(randCurrent);
+            }
+        }
+
+        @Override
+        protected void compute() {
+            if (end == start) {
+                currentCalc(start, currentTime);
+                return;
+            }
+            int middle = (end - start) / 2 + start;
+            invokeAll(new CurrentCalc(neuronList, start, middle, currentTime),
+                    new CurrentCalc(neuronList, middle + 1, end, currentTime));
+
         }
     }
 }
