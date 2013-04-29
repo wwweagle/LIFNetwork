@@ -48,7 +48,7 @@ public class NetworkCalc {
 
         NetworkParameters save = null;
         try (ObjectInputStream in = new ObjectInputStream(
-                new FileInputStream("conn_Ctl_C_1.0_W_1.0.ser"))) {
+                new FileInputStream("conn_Net_C_1.0_W_1.0.ser"))) {
             save = (NetworkParameters) in.readObject();
 //            System.out.println("deserialize succeed");
 //            System.out.println(save.getNeuronIsGlu().size());
@@ -156,7 +156,6 @@ public class NetworkCalc {
              * calc LIF state
              */
             List<Integer> fired = Collections.synchronizedList(new ArrayList<Integer>());
-//            voltageCalc(dT, currentTime);
             fjpool.invoke(new VoltageCalcFork(fired, 0, neuronList.size() - 1, dT, currentTime));
             synchronized (fired) {
                 for (Integer cell : fired) {
@@ -182,17 +181,6 @@ public class NetworkCalc {
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
         Commons.writeList("fireHistory.csv", fireList);
-    }
-
-    private ArrayList<Integer> voltageCalc(int dT, int currentTime) {
-        ArrayList<Integer> fireList = new ArrayList<>();
-        for (int i = 0; i < neuronList.size(); i++) {
-            if (neuronList.get(i).updateVoltageAndFire(dT, currentTime)) {
-//                System.out.print(i+",");
-                fireList.add(i);
-            }
-        }
-        return fireList;
     }
 
     private void statusReport(int currentTime) {
