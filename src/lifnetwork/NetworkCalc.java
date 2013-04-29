@@ -143,20 +143,19 @@ public class NetworkCalc {
 //        ArrayList<Float> sSample = new ArrayList<>(10000);
 
         for (int currentTime = 0; currentTime < progressTime; currentTime += dT) {
-//            System.out.println("\ncurrentTime " + currentTime);
             /*
              * injection
              */
             /*
              * calc current here
              */
+            fjpool.invoke(new SynapticEventCalcFork(0, neuronList.size() - 1, currentTime));
             fjpool.invoke(new CurrentCalcFork(0, neuronList.size() - 1, currentTime));
 
             /*
              * calc LIF state
              */
             List<Integer> fired = Collections.synchronizedList(new ArrayList<Integer>());
-
 //            voltageCalc(dT, currentTime);
             fjpool.invoke(new VoltageCalcFork(fired, 0, neuronList.size() - 1, dT, currentTime));
             synchronized (fired) {
@@ -202,15 +201,41 @@ public class NetworkCalc {
         }
     }
 
-    final private class CurrentCalcFork extends RecursiveAction {
+    final private class SynapticEventCalcFork extends RecursiveAction {
 
-//        final private List<LIFNeuron> neuronList;
         final private int start;
         final private int end;
         final private int currentTime;
 
-//        public CurrentCalcFork(List<LIFNeuron> neuronList, int start, int end, int currentTime) {
-//            this.neuronList = neuronList;
+        public SynapticEventCalcFork(int start, int end, int currentTime) {
+            this.start = start;
+            this.end = end;
+            this.currentTime = currentTime;
+        }
+
+        private void SynEvtCalc(int index, int currentTime) {
+            neuronList.get(index).updateSynapticDynamics(currentTime);
+        }
+
+        @Override
+        protected void compute() {
+            if (end == start) {
+                SynEvtCalc(start, currentTime);
+                return;
+            }
+            int middle = (end - start) / 2 + start;
+            invokeAll(new SynapticEventCalcFork(start, middle, currentTime),
+                    new SynapticEventCalcFork(middle + 1, end, currentTime));
+
+        }
+    }
+
+    final private class CurrentCalcFork extends RecursiveAction {
+
+        final private int start;
+        final private int end;
+        final private int currentTime;
+
         public CurrentCalcFork(int start, int end, int currentTime) {
             this.start = start;
             this.end = end;
@@ -218,15 +243,6 @@ public class NetworkCalc {
         }
 
         private void currentCalc(int index, int currentTime) {
-            /*
-             * refresh the new connectivity strength
-             */
-
-            neuronList.get(index).updateSynapticDynamics(currentTime);
-
-            /*
-             * apply synaptic current
-             */
 
             neuronList.get(index).updateCurrentInput();
             /*
