@@ -12,11 +12,13 @@ final public class IncomingSynapse {
     final private float weight;
     final private LIFNeuron pre;
     final private float g;
+    final private int reversePotential;
 
     public IncomingSynapse(float weight, LIFNeuron pre, float g) {
         this.weight = weight;
         this.pre = pre;
         this.g = g;
+        this.reversePotential=pre.getReversePotential();
     }
 
 
@@ -29,7 +31,7 @@ final public class IncomingSynapse {
     }
     
     public int getReversePotential(){
-        return pre.getReversePotential();
+        return reversePotential;
     }
 
     public float getG() {
