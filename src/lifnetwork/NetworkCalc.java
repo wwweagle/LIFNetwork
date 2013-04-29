@@ -149,14 +149,14 @@ public class NetworkCalc {
             /*
              * calc current here
              */
-            fjpool.invoke(new SynapticEventCalcFork(0, neuronList.size() - 1, currentTime));
-            fjpool.invoke(new CurrentCalcFork(0, neuronList.size() - 1, currentTime));
+            fjpool.invoke(new SynapticEventCalcFork(0, neuronList.size(), currentTime));
+            fjpool.invoke(new CurrentCalcFork(0, neuronList.size()));
 
             /*
              * calc LIF state
              */
             List<Integer> fired = Collections.synchronizedList(new ArrayList<Integer>());
-            fjpool.invoke(new VoltageCalcFork(fired, 0, neuronList.size() - 1, dT, currentTime));
+            fjpool.invoke(new VoltageCalcFork(fired, 0, neuronList.size(), dT, currentTime));
             synchronized (fired) {
                 for (Integer cell : fired) {
                     int[] record = {currentTime, cell};
@@ -201,19 +201,21 @@ public class NetworkCalc {
             this.currentTime = currentTime;
         }
 
-        private void SynEvtCalc(int index, int currentTime) {
-            neuronList.get(index).updateSynapticDynamics(currentTime);
+        private void SynEvtCalc(int start, int end, int currentTime) {
+            for (int i = start; i < end; i++) {
+                neuronList.get(i).updateSynapticDynamics(currentTime);
+            }
         }
 
         @Override
         protected void compute() {
-            if (end == start) {
-                SynEvtCalc(start, currentTime);
+            if ((end - start) <= 250) {
+                SynEvtCalc(start, end, currentTime);
                 return;
             }
             int middle = (end - start) / 2 + start;
             invokeAll(new SynapticEventCalcFork(start, middle, currentTime),
-                    new SynapticEventCalcFork(middle + 1, end, currentTime));
+                    new SynapticEventCalcFork(middle, end, currentTime));
 
         }
     }
@@ -222,35 +224,34 @@ public class NetworkCalc {
 
         final private int start;
         final private int end;
-        final private int currentTime;
 
-        public CurrentCalcFork(int start, int end, int currentTime) {
+        public CurrentCalcFork(int start, int end) {
             this.start = start;
             this.end = end;
-            this.currentTime = currentTime;
         }
 
-        private void currentCalc(int index, int currentTime) {
+        private void currentCalc(int start, int end) {
+            for (int i = start; i < end; i++) {
+                neuronList.get(i).updateCurrentInput();
+                /*
+                 * Random current
+                 */
 
-            neuronList.get(index).updateCurrentInput();
-            /*
-             * Random current
-             */
-
-            if (ThreadLocalRandom.current().nextInt(100) < randFactor) {
-                neuronList.get(index).addCurrent(randCurrent);
+                if (ThreadLocalRandom.current().nextInt(100) < randFactor) {
+                    neuronList.get(i).addCurrent(randCurrent);
+                }
             }
         }
 
         @Override
         protected void compute() {
-            if (end == start) {
-                currentCalc(start, currentTime);
+            if ((end - start) <= 250) {
+                currentCalc(start, end);
                 return;
             }
             int middle = (end - start) / 2 + start;
-            invokeAll(new CurrentCalcFork(start, middle, currentTime),
-                    new CurrentCalcFork(middle + 1, end, currentTime));
+            invokeAll(new CurrentCalcFork(start, middle),
+                    new CurrentCalcFork(middle, end));
 
         }
     }
@@ -271,23 +272,25 @@ public class NetworkCalc {
             this.currentTime = currentTime;
         }
 
-        private void voltageCalc(int index, int dT, int currentTime) {
-            if (neuronList.get(index).updateVoltageAndFire(dT, currentTime)) {
-                synchronized (fired) {
-                    fired.add(index);
+        private void voltageCalc(int start, int end, int dT, int currentTime) {
+            for (int i = start; i < end; i++) {
+                if (neuronList.get(i).updateVoltageAndFire(dT, currentTime)) {
+                    synchronized (fired) {
+                        fired.add(i);
+                    }
                 }
             }
         }
 
         @Override
         protected void compute() {
-            if (end == start) {
-                voltageCalc(start, dT, currentTime);
+            if ((end - start) <= 250) {
+                voltageCalc(start, end, dT, currentTime);
                 return;
             }
             int middle = (end - start) / 2 + start;
             invokeAll(new VoltageCalcFork(fired, start, middle, dT, currentTime),
-                    new VoltageCalcFork(fired, middle + 1, end, dT, currentTime));
+                    new VoltageCalcFork(fired, middle, end, dT, currentTime));
 
         }
     }
