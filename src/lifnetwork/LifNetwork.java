@@ -14,8 +14,7 @@ public class LifNetwork {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
-        NetworkCalc calc=new NetworkCalc();
-        calc.cycle();
+        NetCalcUI ui=new NetCalcUI();
+        ui.setVisible(true);
     }
 }

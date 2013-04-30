@@ -40,6 +40,7 @@ public class NetworkCalc {
     private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
     //Runtime mechanisms
     ForkJoinPool fjpool = new ForkJoinPool();
+    RunState runState = RunState.BeforeRun;//0: not started 1:run 2:stop 100:finished
 
     private void readParameters() {
         /*
@@ -133,6 +134,9 @@ public class NetworkCalc {
     }
 
     public void cycle() {
+
+        runState = RunState.Running;
+
         readParameters();
         /*
          * progress through time
@@ -143,6 +147,10 @@ public class NetworkCalc {
 //        ArrayList<Float> sSample = new ArrayList<>(10000);
 
         for (int currentTime = 0; currentTime < progressTime; currentTime += dT) {
+
+            if (runState == RunState.Stop) {
+                return;
+            }
             /*
              * injection
              */
@@ -181,6 +189,14 @@ public class NetworkCalc {
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
         Commons.writeList("fireHistory.csv", fireList);
+    }
+
+    public void stopCycle() {
+        runState = RunState.Stop;
+    }
+
+    public boolean isRunning() {
+        return runState == RunState.Running;
     }
 
     private void statusReport(int currentTime) {
@@ -275,9 +291,7 @@ public class NetworkCalc {
         private void voltageCalc(int start, int end, int dT, int currentTime) {
             for (int i = start; i < end; i++) {
                 if (neuronList.get(i).updateVoltageAndFire(dT, currentTime)) {
-                    synchronized (fired) {
-                        fired.add(i);
-                    }
+                    fired.add(i);
                 }
             }
         }
@@ -293,5 +307,10 @@ public class NetworkCalc {
                     new VoltageCalcFork(fired, middle, end, dT, currentTime));
 
         }
+    }
+
+    private enum RunState {
+
+        BeforeRun, Running, Stop, Finished
     }
 }
