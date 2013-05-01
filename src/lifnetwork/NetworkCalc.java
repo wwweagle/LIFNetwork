@@ -25,7 +25,7 @@ import savedParameters.NetworkParameters;
  */
 public class NetworkCalc {
 
-    private final int progressTime; //simulation time in micro seconds (us)
+    private final int simulateTime; //simulation time in micro seconds (us)
     private final int refractTime = 100;
     private final int gabaReverseP;
     private final int gluReverseP = 0;
@@ -40,16 +40,16 @@ public class NetworkCalc {
     private ForkJoinPool fjpool = new ForkJoinPool();
     private RunState runState = RunState.BeforeRun;
     private final String pathToFile;
-    
+    private int currentTime;
+
     /**
-     * 
+     *
      * @param progressTime
      * @param gabaReverseP
-     * @param pathToFile 
+     * @param pathToFile
      */
-
     public NetworkCalc(int progressTime, int gabaReverseP, String pathToFile) {
-        this.progressTime = progressTime;
+        this.simulateTime = progressTime;
         this.gabaReverseP = gabaReverseP;
         this.pathToFile = pathToFile;
     }
@@ -159,7 +159,7 @@ public class NetworkCalc {
 //        ArrayList<Float> iSample = new ArrayList<>(10000);
 //        ArrayList<Float> sSample = new ArrayList<>(10000);
 
-        for (int currentTime = 0; currentTime < progressTime; currentTime += dT) {
+        for (currentTime = 0; currentTime < simulateTime;) {
 
             if (runState == RunState.Stop) {
                 return;
@@ -194,7 +194,10 @@ public class NetworkCalc {
             /*
              * status report
              */
-            statusReport(currentTime);
+//            statusReport(currentTime);
+
+            int newTime = currentTime + dT;
+            currentTime = newTime;
         }
 
         System.out.println(fireList.size());
@@ -202,6 +205,10 @@ public class NetworkCalc {
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
         Commons.writeList("fireHistory.csv", fireList);
+    }
+
+    public int getProgress() {
+        return currentTime * 100 / simulateTime;
     }
 
     public void stopCycle() {
@@ -213,8 +220,8 @@ public class NetworkCalc {
     }
 
     private void statusReport(int currentTime) {
-        if (currentTime % (progressTime / 10) == 0) {
-            System.out.println(currentTime * 100 / progressTime + "%");
+        if (currentTime % (simulateTime / 10) == 0) {
+            System.out.println(currentTime * 100 / simulateTime + "%");
         }
     }
 

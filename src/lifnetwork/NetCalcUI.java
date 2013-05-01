@@ -4,6 +4,8 @@
  */
 package lifnetwork;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.JFileChooser;
 import javax.swing.SwingWorker;
 
@@ -50,7 +52,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         btnStop = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        progBar = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("LIF Netork");
@@ -257,7 +259,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(progBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -272,7 +274,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(progBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -307,7 +309,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_txtGABARevPActionPerformed
 
     private void btnDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultActionPerformed
-        pathToFile="conn_Net_C_1.0_W_1.0.ser";
+        pathToFile = "conn_Net_C_1.0_W_1.0.ser";
         btnRun.setEnabled(true);
         btnStop.setEnabled(true);
     }//GEN-LAST:event_btnDefaultActionPerformed
@@ -322,11 +324,26 @@ public class NetCalcUI extends javax.swing.JFrame {
                 }
                 int timeNominal = Integer.parseInt(txtTime.getText());
                 timeNominal *= rdoSec.isSelected() ? 1000 * 1000 : 1000;
-                int GABARevP=Integer.parseInt(txtGABARevP.getText());
-                network = new NetworkCalc(timeNominal,GABARevP,pathToFile);
+                int GABARevP = Integer.parseInt(txtGABARevP.getText());
+                network = new NetworkCalc(timeNominal, GABARevP, pathToFile);
+                updateProgress.schedule(updateTask, 0, 1000);
                 network.cycle();
                 return null;
             }
+
+            @Override
+            protected void done() {
+                updateProgress.cancel();
+                progBar.setValue(100);
+            }
+            Timer updateProgress = new Timer();
+            TimerTask updateTask = new TimerTask() {
+                @Override
+                public void run() {
+                    int progress = network.getProgress();
+                    progBar.setValue(progress);
+                }
+            };
         };
 
         modelWorker.execute();
@@ -376,9 +393,9 @@ public class NetCalcUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JProgressBar progBar;
     private javax.swing.JRadioButton rdoMilliSec;
     private javax.swing.JRadioButton rdoSec;
     private javax.swing.ButtonGroup timeGrp;
