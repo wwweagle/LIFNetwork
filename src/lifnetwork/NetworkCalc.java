@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinTask.invokeAll;
@@ -26,30 +25,44 @@ import savedParameters.NetworkParameters;
  */
 public class NetworkCalc {
 
-    private int progressTime = 10 * 1000 * 1000; //simulation time in micro seconds (us)
-    private int refractTime = 100;
-    private int gabaReverseP = -50;
-    private int gluReverseP = 0;
-    private float gFactor = 0.30f;
-    private int dT = 100;// micro seconds (us)
+    private final int progressTime; //simulation time in micro seconds (us)
+    private final int refractTime = 100;
+    private final int gabaReverseP;
+    private final int gluReverseP = 0;
+    private final float gFactor = 0.30f;
+    private final int dT = 100;// micro seconds (us)
     //for random current
-    private int randFactor = 40;//percentage
-    private int randCurrent = 40;
+    private final int randFactor = 40;//percentage
+    private final int randCurrent = 40;
     //Random generator
-    private Random r = new Random();
     private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
     //Runtime mechanisms
-    ForkJoinPool fjpool = new ForkJoinPool();
-    RunState runState = RunState.BeforeRun;//0: not started 1:run 2:stop 100:finished
+    private ForkJoinPool fjpool = new ForkJoinPool();
+    private RunState runState = RunState.BeforeRun;
+    private final String pathToFile;
+    
+    /**
+     * 
+     * @param progressTime
+     * @param gabaReverseP
+     * @param pathToFile 
+     */
+
+    public NetworkCalc(int progressTime, int gabaReverseP, String pathToFile) {
+        this.progressTime = progressTime;
+        this.gabaReverseP = gabaReverseP;
+        this.pathToFile = pathToFile;
+    }
 
     private void readParameters() {
+
         /*
          * read data from file
          */
 
         NetworkParameters save = null;
         try (ObjectInputStream in = new ObjectInputStream(
-                new FileInputStream("conn_Net_C_1.0_W_1.0.ser"))) {
+                new FileInputStream(pathToFile))) {
             save = (NetworkParameters) in.readObject();
 //            System.out.println("deserialize succeed");
 //            System.out.println(save.getNeuronIsGlu().size());
@@ -200,7 +213,7 @@ public class NetworkCalc {
     }
 
     private void statusReport(int currentTime) {
-        if (currentTime % (progressTime / 100) == 0) {
+        if (currentTime % (progressTime / 10) == 0) {
             System.out.println(currentTime * 100 / progressTime + "%");
         }
     }
