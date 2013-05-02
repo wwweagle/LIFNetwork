@@ -69,6 +69,11 @@ public class NetCalcUI extends javax.swing.JFrame {
 
         btnOpenFolder.setText("Open Folder");
         btnOpenFolder.setPreferredSize(new java.awt.Dimension(100, 25));
+        btnOpenFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOpenFolderActionPerformed(evt);
+            }
+        });
 
         btnDefault.setText("Default");
         btnDefault.setPreferredSize(new java.awt.Dimension(100, 25));
@@ -305,7 +310,12 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnOpenFileActionPerformed
 
     private void txtGABARevPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtGABARevPActionPerformed
-        // TODO add your handling code here:
+        int returnVal = fileChooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            pathToFile = fileChooser.getSelectedFile().getAbsolutePath();
+        }
+        btnRun.setEnabled(true);
+        btnStop.setEnabled(true);
     }//GEN-LAST:event_txtGABARevPActionPerformed
 
     private void btnDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultActionPerformed
@@ -313,6 +323,15 @@ public class NetCalcUI extends javax.swing.JFrame {
         btnRun.setEnabled(true);
         btnStop.setEnabled(true);
     }//GEN-LAST:event_btnDefaultActionPerformed
+
+    private void btnOpenFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenFolderActionPerformed
+        int returnVal = fileChooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            pathToFile = fileChooser.getSelectedFile().getAbsolutePath();
+        }
+        btnRun.setEnabled(true);
+        btnStop.setEnabled(true);
+    }//GEN-LAST:event_btnOpenFolderActionPerformed
 
     private void runModel() {
         SwingWorker<Void, Void> modelWorker = new SwingWorker<Void, Void>() {
