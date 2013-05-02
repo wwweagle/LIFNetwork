@@ -30,7 +30,9 @@ public class Commons {
 
     static public <T> void writeList(String pathToFile, List<T> list) {
         if (list.isEmpty()) {
-            return;
+            try (FileWriter f=new FileWriter(pathToFile)) {
+                }catch (IOException e) {
+            };
         }
 
         try (BufferedWriter w = new BufferedWriter(new FileWriter(pathToFile))) {
@@ -54,5 +56,4 @@ public class Commons {
             System.out.println(e.toString());
         }
     }
-
 }

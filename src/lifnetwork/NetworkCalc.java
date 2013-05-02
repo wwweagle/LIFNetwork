@@ -60,6 +60,7 @@ public class NetworkCalc {
          * read data from file
          */
 
+
         NetworkParameters save = null;
         try (ObjectInputStream in = new ObjectInputStream(
                 new FileInputStream(pathToFile))) {
@@ -204,7 +205,7 @@ public class NetworkCalc {
 //        Commons.writeList("vHistory.csv", vSample);
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
-        Commons.writeList("fireHistory.csv", fireList);
+        Commons.writeList(pathToFile.replaceAll(".+[\\\\/]", "").replaceAll("\\.ser", "")+"_fireHistory.csv", fireList);
     }
 
     public int getProgress() {
@@ -217,12 +218,6 @@ public class NetworkCalc {
 
     public boolean isRunning() {
         return runState == RunState.Running;
-    }
-
-    private void statusReport(int currentTime) {
-        if (currentTime % (simulateTime / 10) == 0) {
-            System.out.println(currentTime * 100 / simulateTime + "%");
-        }
     }
 
     final private class SynapticEventCalcFork extends RecursiveAction {
