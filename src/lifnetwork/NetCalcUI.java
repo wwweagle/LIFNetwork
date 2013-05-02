@@ -367,9 +367,14 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_txtGABARevPActionPerformed
 
     private void btnDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultActionPerformed
-        fileList = new ArrayList<>();
-        fileList.add("conn_Net_C_1.0_W_1.0.ser");
-        enableBtnGrpRun();
+        File f = new File("conn_Net_C_1.0_W_1.0.ser");
+        if (f.exists()) {
+            fileList = new ArrayList<>();
+            fileList.add(f.getAbsolutePath());
+            enableBtnGrpRun();
+        }else{
+            log("File not exist!");
+        }
     }//GEN-LAST:event_btnDefaultActionPerformed
 
     private void btnOpenFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenFolderActionPerformed
