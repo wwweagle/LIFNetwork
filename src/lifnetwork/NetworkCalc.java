@@ -32,8 +32,8 @@ public class NetworkCalc {
     private final float gFactor = 0.30f;
     private final int dT = 100;// micro seconds (us)
     //for random current
-    private final int randFactor = 40;//percentage
-    private final int randCurrent = 40;
+    private final int randFactor;//percentage
+    private final int randCurrent;
     //Random generator
     private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
     //Runtime mechanisms
@@ -44,13 +44,17 @@ public class NetworkCalc {
 
     /**
      *
-     * @param progressTime
+     * @param simulateTime
      * @param gabaReverseP
+     * @param randProb proportion of neurons with random current
+     * @param randCurrent amplitude of random current
      * @param pathToFile
      */
-    public NetworkCalc(int progressTime, int gabaReverseP, String pathToFile) {
-        this.simulateTime = progressTime;
+    public NetworkCalc(int simulateTime, int gabaReverseP, int randProb, int randCurrent, String pathToFile) {
+        this.simulateTime = simulateTime;
         this.gabaReverseP = gabaReverseP;
+        this.randFactor = randProb;
+        this.randCurrent = randCurrent;
         this.pathToFile = pathToFile;
     }
 
@@ -147,7 +151,7 @@ public class NetworkCalc {
 
     }
 
-    public void cycle() {
+    public int cycle() {
 
         runState = RunState.Running;
 
@@ -163,7 +167,7 @@ public class NetworkCalc {
         for (currentTime = 0; currentTime < simulateTime;) {
 
             if (runState == RunState.Stop) {
-                return;
+                return fireList.size();
             }
             /*
              * injection
@@ -201,11 +205,11 @@ public class NetworkCalc {
             currentTime = newTime;
         }
 
-        System.out.println(fireList.size());
+        Commons.writeList(pathToFile.replaceAll(".+[\\\\/]", "").replaceAll("\\.ser", "") + "_fireHistory.csv", fireList);
 //        Commons.writeList("vHistory.csv", vSample);
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
-        Commons.writeList(pathToFile.replaceAll(".+[\\\\/]", "").replaceAll("\\.ser", "")+"_fireHistory.csv", fireList);
+        return fireList.size();
     }
 
     public int getProgress() {
