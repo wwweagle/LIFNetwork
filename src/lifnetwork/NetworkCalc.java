@@ -29,7 +29,7 @@ public class NetworkCalc {
     private final int refractTime = 100;
     private final int gabaReverseP;
     private final int gluReverseP = 0;
-    private final float gFactor = 0.30f;
+    private final float gFactor;
     private final int dT = 100;// micro seconds (us)
     //for random current
     private final int randFactor;//percentage
@@ -50,11 +50,12 @@ public class NetworkCalc {
      * @param randCurrent amplitude of random current
      * @param pathToFile
      */
-    public NetworkCalc(int simulateTime, int gabaReverseP, int randProb, int randCurrent, String pathToFile) {
+    public NetworkCalc(int simulateTime, int gabaReverseP, int randProb, int randCurrent, float gFactor, String pathToFile) {
         this.simulateTime = simulateTime;
         this.gabaReverseP = gabaReverseP;
         this.randFactor = randProb;
         this.randCurrent = randCurrent;
+        this.gFactor = gFactor;
         this.pathToFile = pathToFile;
     }
 
