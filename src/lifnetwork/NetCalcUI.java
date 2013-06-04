@@ -417,6 +417,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_txtTimeActionPerformed
 
     private void btnRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRunActionPerformed
+        txtLog.setText("");
         runModel();
     }//GEN-LAST:event_btnRunActionPerformed
 
@@ -495,7 +496,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                     fileList = saveList;
                     lblFileCount.setText("0/" + fileList.size());
                 }
-            }, 1000);
+            }, 2000);
         }
 
     }//GEN-LAST:event_btnStopActionPerformed

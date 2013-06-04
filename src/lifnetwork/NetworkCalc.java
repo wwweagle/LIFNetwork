@@ -195,7 +195,7 @@ public class NetworkCalc {
              */
 //            vSample.add(neuronList.get(63).getV());
 //            iSample.add(neuronList.get(63).getCurrentIn());
-//            sSample.add(neuronList.get(63).getSynapticDynamics());
+//            sSample.add(neuronList.get(217).getSynapticDynamics());
 
             /*
              * status report
