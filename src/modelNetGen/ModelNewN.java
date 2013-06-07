@@ -4,13 +4,6 @@
  */
 package modelNetGen;
 
-import iodegree.lib.CommonsLib;
-import iodegree.lib.D;
-import iodegree.lib.devpModel.Com;
-import iodegree.lib.devpModel.ModelDB;
-import iodegree.lib.devpModel.ModelType;
-import iodegree.lib.devpModel.RndCell;
-import iodegree.lib.devpModel.RunState;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,14 +18,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
+import static java.util.concurrent.ForkJoinTask.invokeAll;
+import java.util.concurrent.Future;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextArea;
 import javax.swing.Timer;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -42,7 +41,7 @@ import savedParameters.NetworkParameters;
  *
  * @author Libra
  */
-public class ModelNewN implements Runnable {
+public class ModelNewN {
 
     private ArrayList<RndCell> cellList;
     private RandomGenerator r;
@@ -61,7 +60,7 @@ public class ModelNewN implements Runnable {
     final private float GABA_IO_COE;
     private int dim;
     private String lastUpdate = "";
-    private RunState runState; //0, stopped; 1, running; 2, pendding stop; 100, finished
+    private RunState runState;
     private boolean lessThan300;
     private ModelType TYPE;
     private JTextArea txtProg;
@@ -467,9 +466,9 @@ public class ModelNewN implements Runnable {
         float r_W_GNei = (float) conned_W_GNei / (conned_W_GNei + noConn_W_GNei);
         float r_Wo_ANei = (float) conned_Wo_ANei / (conned_Wo_ANei + noConn_Wo_ANei);
         float r_W_ANei = (float) conned_W_ANei / (conned_W_ANei + noConn_W_ANei);
-        D.tpi((fwdGlu ? "Glu" : "GABA") + "->" + (revGlu ? "Glu" : "GABA"));
+        System.out.println((fwdGlu ? "Glu" : "GABA") + "->" + (revGlu ? "Glu" : "GABA"));
 //        D.tp("r_Wo_GNei,r_W_GNei, r_Wo_ANei,r_W_ANei");
-        D.tp(r_Wo_GNei + "\t" + r_W_GNei + "\t" + r_Wo_ANei + "\t" + r_W_ANei);
+        System.out.println(r_Wo_GNei + "\t" + r_W_GNei + "\t" + r_Wo_ANei + "\t" + r_W_ANei);
     }
 
     public int[] probeIO(int time, boolean glu, boolean input) {
@@ -720,7 +719,7 @@ public class ModelNewN implements Runnable {
                 new FileOutputStream("conn_" + type + suffix + ".ser"))) {
             o.writeObject(save);
         } catch (IOException e) {
-            D.tp("ser io error");
+            System.out.println("ser io error");
         }
     }
 
@@ -762,52 +761,23 @@ public class ModelNewN implements Runnable {
             Com.sAdd(gabaInMap, gabaIn.get(i));
             Com.sAdd(gabaOutMap, gabaOut.get(i));
         }
-        D.tp("Glu In=====================================");
-        for (int i = 0; i < gluInMap.size(); i++) {
-            D.tp(i, gluInMap.get(i));
-        }
-        D.tp("Glu Out=====================================");
-        for (int i = 0; i < gluOutMap.size(); i++) {
-            D.tp(i, gluInMap.get(i));
-        }
-        D.tp("GABA In=====================================");
-        for (int i = 0; i < gabaInMap.size(); i++) {
-            D.tp(i, gluInMap.get(i));
-        }
-        D.tp("GABA Out=====================================");
-        for (int i = 0; i < gabaOutMap.size(); i++) {
-            D.tp(i, gluInMap.get(i));
-        }
+//        System.out.println("Glu In=====================================");
+//        for (int i = 0; i < gluInMap.size(); i++) {
+//            D.tp(i, gluInMap.get(i));
+//        }
+//        D.tp("Glu Out=====================================");
+//        for (int i = 0; i < gluOutMap.size(); i++) {
+//            D.tp(i, gluInMap.get(i));
+//        }
+//        D.tp("GABA In=====================================");
+//        for (int i = 0; i < gabaInMap.size(); i++) {
+//            D.tp(i, gluInMap.get(i));
+//        }
+//        D.tp("GABA Out=====================================");
+//        for (int i = 0; i < gabaOutMap.size(); i++) {
+//            D.tp(i, gluInMap.get(i));
+//        }
 
-    }
-
-    @Override
-    public void run() {
-        int step = cellList.size() >>> 5;
-        do {
-            waitSema(waiting);
-            reinit();
-            if (runState == RunState.Quiting) {
-                break;
-            }
-            connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
-//            int connCount = 0;
-            ForkJoinPool fjp = new ForkJoinPool();
-            cycleCount = new AtomicInteger();
-            cycleCount.set(0);
-            for (int div = 5; div < 9; div++) {
-
-                filled = new HashSet<>();
-                directUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + ", DIV" + div + " started");
-                while (runState != RunState.Stoping && !fullfilled(div, connProbScale)) {
-                    fjp.invoke(new newConnClass(step, div));
-                }
-                D.tp(cycleCount.get());
-            }
-            sumUp();
-        } while (true);
-        runState = RunState.Finished;
-        directUpdate("Model exit.");
     }
 
     private void sumUp() {
@@ -824,132 +794,136 @@ public class ModelNewN implements Runnable {
         directUpdate(sumGlu + " glu connections, " + sumGABA + " GABA connections.");
 
 
-        D.tp("===========================================");
-        D.tp(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + " Finished");
-        D.tp("===========================================");
+        System.out.println("===========================================");
+        System.out.println(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + " Finished");
+        System.out.println("===========================================");
         Toolkit.getDefaultToolkit().beep();
         if (writeFile) {
             writeSave(weightScale);
         }
     }
 
-    class newConnClass extends RecursiveAction {
+    public void genModelNetwork() {
 
-        int need;
-        int div;
+        /////////////////////////////////////////////////
+        class newConnClass extends RecursiveAction {
 
-        newConnClass(int need, int div) {
-            this.need = need;
-            this.div = div;
-        }
+            int need;
+            int div;
 
-        @Override
-        protected void compute() {
-            boolean found = false;
-            if (need == 1) {
-                while (runState != RunState.Stoping && !found) {
-//                    int maxCellId = cellList.size();
-//                    int id1 = r.nextInt(maxCellId);
-//                    int id2 = r.nextInt(maxCellId);
-//                    if (id1 == id2 || connected.contains(Com.getKey(id1, id2))) {
-//                        continue;
-//                    }
-
-                    int rnd = r.nextInt(monitorPairSet.length);
-                    int id1 = monitorPairSet[rnd][0];
-                    int id2 = monitorPairSet[rnd][1];
-                    if (connected.contains(Com.getSetKey(id1, id2))) {
-                        continue;
-                    } else {
-                        cycleCount.getAndIncrement();
-                    }
-                    found = newConnection(div, id1, id2);
-                }
-            } else {
-                invokeAll(new newConnClass(need - 1, div), new newConnClass(1, div));
+            newConnClass(int need, int div) {
+                this.need = need;
+                this.div = div;
             }
-        }
 
-        boolean newConnection(int div, int id1, int id2) {//from 1 to 2
+            @Override
+            protected void compute() {
+                boolean found = false;
+                if (need == 1) {
+                    while (runState != RunState.Stoping && !found) {
+                        int rnd = r.nextInt(monitorPairSet.length);
+                        int id1 = monitorPairSet[rnd][0];
+                        int id2 = monitorPairSet[rnd][1];
+                        if (connected.contains(Com.getSetKey(id1, id2))) {
+                            continue;
+                        } else {
+                            cycleCount.getAndIncrement();
+                        }
+                        found = newConnection(div, id1, id2);
+                    }
+                } else {
+                    invokeAll(new newConnClass(need - 1, div), new newConnClass(1, div));
+                }
+            }
 
-            int mapKey = Com.getMapKey(id1, id2, cellList, lessThan300);
+            boolean newConnection(int div, int id1, int id2) {//from 1 to 2
 
-            if (filled.contains(mapKey) || (!obsConnProfile.get(div - 5).containsKey(mapKey)) || !cellList.get(id1).near(cellList.get(id2), lessThan300)) {
+                int mapKey = Com.getMapKey(id1, id2, cellList, lessThan300);
+
+                if (filled.contains(mapKey) || (!obsConnProfile.get(div - 5).containsKey(mapKey)) || !cellList.get(id1).near(cellList.get(id2), lessThan300)) {
+                    return false;
+                }
+                float p = obsConnProfile.get(div - 5).get(mapKey) / ITERATE_FACTOR;
+                /*
+                 * Activity dependent connection
+                 */
+                if (TYPE == ModelType.NetworkBiDir) {
+                    int gluIO = gluIn.get(id1) + gluIn.get(id2) + gluOut.get(id1) + gluOut.get(id2);
+                    int gabaIO = gabaIn.get(id1) + gabaIn.get(id2) + gabaOut.get(id1) + gabaOut.get(id2);
+                    float gluIOFactor = gluIO * GLU_IO_COE;
+                    float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
+                    float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
+                    p *= (IOFactor + 1f);
+                } else if (TYPE == ModelType.Network) {
+                    int gluIO = gluOut.get(id1) + gluOut.get(id2);
+                    int gabaIO = gabaOut.get(id1) + gabaOut.get(id2);
+                    float gluIOFactor = gluIO * GLU_IO_COE;
+                    float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
+                    float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
+                    p *= (IOFactor + 1f);
+                } else if (TYPE == ModelType.Ctrl) {
+                    p *= 10;
+                }
+                /*
+                 * Active or not
+                 */
+                if (p > r.nextFloat()) {
+                    if (cellList.get(id1).isGlu()) {
+                        gluOut.incrementAndGet(id1);
+                        gluIn.incrementAndGet(id2);
+                    } else {
+                        gabaOut.incrementAndGet(id1);
+                        gabaIn.incrementAndGet(id2);
+                    }
+
+                    connected.add(Com.getSetKey(id1, id2));
+
+                    return true;
+                }
                 return false;
             }
-            float p = obsConnProfile.get(div - 5).get(mapKey) / ITERATE_FACTOR;
-            /*
-             * Activity dependent connection
-             */
-            if (TYPE == ModelType.NetworkBiDir) {
-                int gluIO = gluIn.get(id1) + gluIn.get(id2) + gluOut.get(id1) + gluOut.get(id2);
-                int gabaIO = gabaIn.get(id1) + gabaIn.get(id2) + gabaOut.get(id1) + gabaOut.get(id2);
-
-//                int gluIO = Com.sGet(gluIn, id1) + Com.sGet(gluIn, id2) + Com.sGet(gluOut, id1) + Com.sGet(gluOut, id2);
-//                int gabaIO = Com.sGet(gabaIn, id1) + Com.sGet(gabaIn, id2) + Com.sGet(gabaOut, id1) + Com.sGet(gabaOut, id2);
-                float gluIOFactor = gluIO * GLU_IO_COE;
-                float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
-                float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
-                p *= (IOFactor + 1f);
-            } else if (TYPE == ModelType.Network) {
-                int gluIO = gluOut.get(id1) + gluOut.get(id2);
-                int gabaIO = gabaOut.get(id1) + gabaOut.get(id2);
-                float gluIOFactor = gluIO * GLU_IO_COE;
-                float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
-                float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
-                p *= (IOFactor + 1f);
-            } else if (TYPE == ModelType.Ctrl) {
-                p *= 10;
-            }
-            /*
-             * Active or not
-             */
-            if (p > r.nextFloat()) {
-                if (cellList.get(id1).isGlu()) {
-//                    Com.sAdd(gluOut, id1);
-//                    Com.sAdd(gluIn, id2);
-                    gluOut.incrementAndGet(id1);
-                    gluIn.incrementAndGet(id2);
-                } else {
-//                    Com.sAdd(gabaOut, id1);
-//                    Com.sAdd(gabaIn, id2);
-                    gabaOut.incrementAndGet(id1);
-                    gabaIn.incrementAndGet(id2);
-                }
-
-                connected.add(Com.getSetKey(id1, id2));
-
-                return true;
-            }
-            return false;
         }
-    }
+        /////////////////////////////////////////////////
+        class GenConn implements Callable<Integer> {
 
-    public void runNew() {
-        int step = cellList.size() >>> 5;
-        do {
-            waitSema(waiting);
-            reinit();
-            if (runState == RunState.Quiting) {
-                break;
+            final private int step;
+            final private ForkJoinPool fjp;
+
+            public GenConn() {
+                step = cellList.size() >>> 5;
+                connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+                fjp = new ForkJoinPool();
+                cycleCount = new AtomicInteger();
+                cycleCount.set(0);
             }
-            connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
-//            int connCount = 0;
-            ForkJoinPool fjp = new ForkJoinPool();
-            cycleCount = new AtomicInteger();
-            cycleCount.set(0);
-            for (int div = 5; div < 9; div++) {
 
-                filled = new HashSet<>();
-                directUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + ", DIV" + div + " started");
-                while (runState != RunState.Stoping && !fullfilled(div, connProbScale)) {
-                    fjp.invoke(new newConnClass(step, div));
+            @Override
+            public Integer call() {
+                for (int div = 5; div < 9; div++) {
+                    filled = new HashSet<>();
+                    directUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + ", DIV" + div + " started");
+                    while (runState != RunState.Stoping && !fullfilled(div, connProbScale)) {
+                        fjp.invoke(new newConnClass(step, div));
+                    }
+                    System.out.println(cycleCount.get());
                 }
-                D.tp(cycleCount.get());
+                return cycleCount.get();
             }
-            sumUp();
-        } while (true);
-        runState = RunState.Finished;
+        }
+
+        GenConn gen = new GenConn();
+        reinit();
+        Future<Integer> genResult = es.submit(gen);
+        runState = RunState.GeneratingModel;
+        System.out.println("submitted");
+        try {
+            genResult.get();
+        } catch (InterruptedException | ExecutionException | NullPointerException ex) {
+//            Logger.getLogger(ModelNewN.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex.toString());
+        }
+        runState = RunState.ModelGenerated;
+        sumUp();
         directUpdate("Model exit.");
     }
 }

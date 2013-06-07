@@ -8,7 +8,7 @@ import java.awt.Toolkit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,12 +20,12 @@ import javax.swing.SwingWorker;
  *
  * @author Libra
  */
-public class ModelNewUI extends javax.swing.JFrame {
+public class ModelUI extends javax.swing.JFrame {
 
     /**
      * Creates new form ModelViewUI
      */
-    public ModelNewUI() {
+    public ModelUI() {
         initComponents();
     }
 
@@ -180,7 +180,7 @@ public class ModelNewUI extends javax.swing.JFrame {
             }
         });
 
-        txtGenPairTIme.setText("15");
+        txtGenPairTIme.setText("2");
         txtGenPairTIme.setPreferredSize(new java.awt.Dimension(25, 20));
         txtGenPairTIme.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -685,9 +685,10 @@ public class ModelNewUI extends javax.swing.JFrame {
         m0.setWeightScale(Float.parseFloat(txtWeightScale.getText()));
         m0.setWriteFile(chkWriteFile.isSelected());
         m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
-//        m0.setLessThan300(rdo300Less.isSelected());
-        m0.setRunning();
-        notifyWaiting(waiting);
+        m0.genModelNetwork();
+        
+        //excute or swingworker
+
     }//GEN-LAST:event_btnStartActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
@@ -748,7 +749,7 @@ public class ModelNewUI extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new ModelNewUI().setVisible(true);
+                new ModelUI().setVisible(true);
             }
         });
     }
@@ -824,14 +825,14 @@ public class ModelNewUI extends javax.swing.JFrame {
         pathToFile = CommonsLib.getDefaultFile();
         es = Executors.newCachedThreadPool();
         es.execute(modelCalcWorker());
-        es.execute(modelDisplayWorker());
-        es.execute(progressUpdateWorker());
+//        es.execute(modelDisplayWorker());
+//        es.execute(progressUpdateWorker());
     }
 
     private void initNew() {
         btnShow.setEnabled(false);
         pathToFile = CommonsLib.getDefaultFile();
-        
+
     }
 
     private SwingWorker modelCalcWorker() {
@@ -858,8 +859,6 @@ public class ModelNewUI extends javax.swing.JFrame {
                 m0.setGenMonitorTime(Integer.parseInt(txtGenPairTIme.getText()));
                 m0.setEs(es);
                 m0.init();
-                displaySem.release();
-                es.execute(m0);
                 return null;
             }
 
@@ -918,43 +917,7 @@ public class ModelNewUI extends javax.swing.JFrame {
         };
         return modelWorker;
     }
-
-    private SwingWorker progressUpdateWorker() {
-        SwingWorker modelWorker = new SwingWorker<Void, Void>() {
-            @Override
-            public Void doInBackground() {
-                try {
-                    do {
-                        Thread.sleep(500);
-                    } while (null == m0);
-                } catch (InterruptedException e) {
-                }
-
-                while (!m0.isFinished()) {
-                    try {
-                        newProgress = m0.getLastUpdate();
-                        publish();
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                updateProgress(m0.getLastUpdate());
-            }
-
-            @Override
-            protected void process(List<Void> v) {
-                updateProgress();
-            }
-        };
-        return modelWorker;
-    }
-    private Timer ProgressTimer;
-
+  
     private SwingWorker clusterWorker() {
         SwingWorker clusterWorker = new SwingWorker<Void, Void>() {
             @Override
@@ -966,21 +929,23 @@ public class ModelNewUI extends javax.swing.JFrame {
                 while (repeat > 0) {
                     int[] histo = m0.probeCluster(Integer.parseInt(txtGenGrpTime.getText()), type, size);
 //                D.tp("TYPE " + type + ", " + Arrays.toString(histo));
-                    D.tpi(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
+                    System.out.print(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
+                    System.out.print("\t");
                     if (chkFreq.isSelected()) {
                         int total = 0;
                         for (int i = 0; i < histo.length; i++) {
                             total += histo[i];
                         }
                         for (int i = 0; i < histo.length; i++) {
-                            D.tpi((double) histo[i] / total);
+                            System.out.print((double) histo[i] / total);
+                            System.out.print("\t");
                         }
                     } else {
                         for (int i = 0; i < histo.length; i++) {
-                            D.tpi(histo[i]);
+                            System.out.print(histo[i]);
                         }
                     }
-                    D.tp();
+                    System.out.println();
                     repeat--;
                 }
                 split();
@@ -1009,7 +974,8 @@ public class ModelNewUI extends javax.swing.JFrame {
     }
 
     private SwingWorker ioDegreeWoker() {
-        SwingWorker ioWorker = new SwingWorker<Void, Void>() {
+        SwingWorker ioWorker;
+        ioWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() {
                 int repeat = chkRepeat.isSelected() ? 5 : 1;
@@ -1018,22 +984,24 @@ public class ModelNewUI extends javax.swing.JFrame {
                             Integer.parseInt(txtGenGrpTime.getText()),
                             rdoIOGlu.isSelected(), rdoInput.isSelected());
 
-                    D.tpi((rdoInput.isSelected() ? "Input" : "output"),
-                            (rdoIOGlu.isSelected() ? "Glu" : "GABA"));
+                    System.out.println((rdoInput.isSelected() ? "Input" : "output") + "\t"
+                            + (rdoIOGlu.isSelected() ? "Glu" : "GABA"));
                     if (chkFreq.isSelected()) {
                         int total = 0;
                         for (int i = 0; i < degrees.length; i++) {
                             total += degrees[i];
                         }
                         for (int i = 0; i < degrees.length; i++) {
-                            D.tpi((double) degrees[i] / total);
+                            System.out.print((double) degrees[i] / total);
+                            System.out.print("\t");
                         }
                     } else {
                         for (int i = 0; i < degrees.length; i++) {
-                            D.tpi(degrees[i]);
+                            System.out.print(degrees[i]);
+                            System.out.print("\t");
                         }
                     }
-                    D.tp();
+                    System.out.println();
                     repeat--;
                 }
                 split();
@@ -1056,7 +1024,7 @@ public class ModelNewUI extends javax.swing.JFrame {
     }
 
     private void split() {
-        D.tp("===========================================");
+        System.out.println("===========================================");
         Toolkit.getDefaultToolkit().beep();
     }
 

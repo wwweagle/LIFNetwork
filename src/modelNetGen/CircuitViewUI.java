@@ -41,7 +41,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        canvas = new iodegree.lib.devpModel.CanvasBean();
+        canvas = new CanvasBean();
         btnSave = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -109,7 +109,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        String suffix="";
+        String suffix;
         switch (networkType) {
             case Ctrl:
                 suffix = "Ctrl";
@@ -159,7 +159,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSave;
-    private iodegree.lib.devpModel.CanvasBean canvas;
+    private CanvasBean canvas;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
