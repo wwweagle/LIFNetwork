@@ -9,5 +9,10 @@ package modelNetGen;
  * @author Libra
  */
 public enum RunState {
-    Running, Quiting, Stoping, Finished, GeneratingModel, ModelGenerated
+
+    Instantiated,
+    ReadyGenCells, GeneratingCells, CellsGenerated,
+    ReadyGenMonitor, GeneratingMonitor, MonitorGenerated,
+    ReadyGenNet, GeneratingNet, NetGenerated,
+    UserRequestStop, StoppedByUser
 }

@@ -7,13 +7,9 @@ package modelNetGen;
 import java.awt.Toolkit;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.swing.SwingWorker;
 
 /**
@@ -102,6 +98,8 @@ public class ModelUI extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtPrg = new javax.swing.JTextArea();
+        jPanel4 = new javax.swing.JPanel();
+        prgBar = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -578,7 +576,7 @@ public class ModelUI extends javax.swing.JFrame {
                                     .addComponent(rdoOutput))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(btnIODegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 7, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -599,16 +597,36 @@ public class ModelUI extends javax.swing.JFrame {
             .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
+        jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(prgBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(prgBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -618,8 +636,10 @@ public class ModelUI extends javax.swing.JFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -627,52 +647,44 @@ public class ModelUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnInitModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInitModelActionPerformed
-        initModel();
+        btnShow.setEnabled(false);
+        pathToFile = CommonsLib.getDefaultFile();
+        modelInitWorker().execute();
         btnInitModel.setEnabled(false);
     }//GEN-LAST:event_btnInitModelActionPerformed
 
     private void btnClusterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClusterActionPerformed
-        es.execute(clusterWorker());
+        clusterWorker().execute();
     }//GEN-LAST:event_btnClusterActionPerformed
 
     private void btnCommNeiTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCommNeiTestActionPerformed
 //        ModelProbe probe = new ModelProbe(m0);
-        es.execute(commNeiborWoker());
+        commNeiborWoker().execute();
     }//GEN-LAST:event_btnCommNeiTestActionPerformed
 
     private void btnStopModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopModelActionPerformed
-        m0.stop();
-//        es.shutdown();
+        m0.setRunState(RunState.UserRequestStop);
     }//GEN-LAST:event_btnStopModelActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        if (null != es) {
-            es.shutdown();
-        }
-        if (null != circuitView) {
-            circuitView.closeWindow();
-        }
     }//GEN-LAST:event_formWindowClosed
 
     private void rdoRandActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoRandActionPerformed
         modelType = ModelType.Ctrl;
-        circuitView.setNetworkType(modelType);
+//        circuitView.setNetworkType(modelType);
     }//GEN-LAST:event_rdoRandActionPerformed
 
     private void rdoBiDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoBiDirActionPerformed
         modelType = ModelType.NetworkBiDir;
-        circuitView.setNetworkType(modelType);
     }//GEN-LAST:event_rdoBiDirActionPerformed
 
     private void rdoUniDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoUniDirActionPerformed
         modelType = ModelType.Network;
-        circuitView.setNetworkType(modelType);
     }//GEN-LAST:event_rdoUniDirActionPerformed
 
     private void btnShowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowActionPerformed
-//        es.execute(modelDisplayWorker());
-        circuitView.setNetworkType(modelType);
-        circuitView.setVisible(true);
+        btnShow.setEnabled(false);
+        displayModel();
     }//GEN-LAST:event_btnShowActionPerformed
 
     private void txtGenPairTImeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtGenPairTImeActionPerformed
@@ -680,40 +692,36 @@ public class ModelUI extends javax.swing.JFrame {
     }//GEN-LAST:event_txtGenPairTImeActionPerformed
 
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
-        m0.setType(modelType);
-        m0.setConnProbScale(Float.parseFloat(txtConnProb.getText()));
-        m0.setWeightScale(Float.parseFloat(txtWeightScale.getText()));
-        m0.setWriteFile(chkWriteFile.isSelected());
-        m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
-        m0.genModelNetwork();
-        
-        //excute or swingworker
-
+        (new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                m0.setType(modelType);
+                m0.setConnProbScale(Float.parseFloat(txtConnProb.getText()));
+                m0.setWeightScale(Float.parseFloat(txtWeightScale.getText()));
+                m0.setWriteFile(chkWriteFile.isSelected());
+                m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
+                updateProgress();
+                m0.genModelNetwork();
+                return null;
+            }
+        }).execute();
+        btnShow.setEnabled(true);
     }//GEN-LAST:event_btnStartActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
-        m0.setExit();
-        notifyWaiting(waiting);
         btnInitModel.setEnabled(true);
     }//GEN-LAST:event_btnExitActionPerformed
-
-    private void notifyWaiting(AtomicBoolean waiting) {
-        synchronized (waiting) {
-            waiting.set(false);
-            waiting.notify();
-        }
-    }
 
     private void btnSplitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSplitActionPerformed
         split();      // TODO add your handling code here:
     }//GEN-LAST:event_btnSplitActionPerformed
 
     private void btnIODegreeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIODegreeActionPerformed
-        es.execute(ioDegreeWoker());
+        ioDegreeWoker().execute();
     }//GEN-LAST:event_btnIODegreeActionPerformed
 
     private void btnGlobalDegreeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGlobalDegreeActionPerformed
-        es.execute(globalDegreeWorker());
+        globalDegreeWorker().execute();
     }//GEN-LAST:event_btnGlobalDegreeActionPerformed
 
     private void rdo300LessActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdo300LessActionPerformed
@@ -787,6 +795,7 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
@@ -794,6 +803,7 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.ButtonGroup maxDistGrp;
     private javax.swing.ButtonGroup modelGrp;
+    private javax.swing.JProgressBar prgBar;
     private javax.swing.JRadioButton rdo300Less;
     private javax.swing.JRadioButton rdo300More;
     private javax.swing.JRadioButton rdoBiDir;
@@ -820,104 +830,66 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JTextField txtWeightScale;
     // End of variables declaration//GEN-END:variables
 
-    private void initModel() {
-        btnShow.setEnabled(false);
-        pathToFile = CommonsLib.getDefaultFile();
-        es = Executors.newCachedThreadPool();
-        es.execute(modelCalcWorker());
-//        es.execute(modelDisplayWorker());
-//        es.execute(progressUpdateWorker());
-    }
-
-    private void initNew() {
-        btnShow.setEnabled(false);
-        pathToFile = CommonsLib.getDefaultFile();
-
-    }
-
-    private SwingWorker modelCalcWorker() {
+    private SwingWorker modelInitWorker() {
         SwingWorker calcWorker;
         calcWorker = new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
-//                D.tp("calc worker started");
-                try {
-                    displaySem.acquire();
-                } catch (InterruptedException e) {
-                }
                 float gluFac = Float.parseFloat(txtGluFac.getText());
                 float gabaFac = Float.parseFloat(txtGABAFac.getText());
                 float iterFac = Float.parseFloat(txtIterFac.getText());
-                m0 = new ModelNewN(gluFac, gabaFac, iterFac, waiting);
+                m0 = new ModelNewN(gluFac, gabaFac, iterFac);
+                updateProgress();
                 m0.setLessThan300(rdo300Less.isSelected());
-                m0.setTxtProg(txtPrg);
-//                updateProgress("Running Model" + modelType.name());
                 m0.setFile(pathToFile);
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
                 m0.setCell(neuronNum, 8429, 0.76708864f);
-//                m0.setSamplePairs(100000);
                 m0.setGenMonitorTime(Integer.parseInt(txtGenPairTIme.getText()));
-                m0.setEs(es);
                 m0.init();
                 return null;
-            }
-
-            @Override
-            protected void done() {
             }
         };
         return calcWorker;
     }
 
-    private SwingWorker modelDisplayWorker() {
-        SwingWorker modelWorker = new SwingWorker<Set<Integer>, HashSet<Integer>>() {
+    private void displayModel() {
+        (new SwingWorker<Void, Void>() {
             @Override
-            public Set<Integer> doInBackground() {
+            public Void doInBackground() {
                 circuitView = new CircuitViewUI();
-                try {
-                    displaySem.acquire();
-                } catch (InterruptedException e) {
-                }
+                circuitView.setNetworkType(modelType);
+                circuitView.setVisible(true);
+
                 circuitView.setDim(m0.getDimension());
                 circuitView.setCellList(m0.getCellList());
                 circuitView.setMyWorker(this);
-                btnShow.setEnabled(true);
 
-                while (!m0.isFinished()) {
-                    try {
-                        publish(new HashSet<>(m0.getConnected()));
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        System.out.println(e.toString());
+                final ScheduledExecutorService ses = Executors.newScheduledThreadPool(2);
+                final Runnable displayUpdate = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!circuitView.isVisible()) {
+                            btnShow.setEnabled(true);
+                            ses.shutdown();
+                        }
+                        if (m0.getRunState() == RunState.GeneratingNet) {
+                            circuitView.setConnected(new HashSet<>(m0.getConnected()));
+                            circuitView.repaintCanvas();
+                        }
+
+                        if (m0.getRunState() == RunState.NetGenerated) {
+                            circuitView.setConnected(new HashSet<>(m0.getConnected()));
+                            circuitView.repaintCanvas();
+                            ses.shutdown();
+                        }
                     }
-                }
-
-                displaySem.release();
-                return m0.getConnected();
+                };
+                ses.scheduleWithFixedDelay(displayUpdate, 1, 1, TimeUnit.SECONDS);
+                return null;
             }
-
-            @Override
-            protected void done() {
-                if (circuitView.isVisible()) {
-                    try {
-                        circuitView.setConnected(get());
-                    } catch (ExecutionException | InterruptedException e) {
-                    }
-                    circuitView.repaintCanvas();
-                }
-            }
-
-            @Override
-            protected void process(List<HashSet<Integer>> conns) {
-                if (circuitView.isVisible()) {
-                    circuitView.setConnected(conns.get(conns.size() - 1));
-                    circuitView.repaintCanvas();
-                }
-            }
-        };
-        return modelWorker;
+        }).execute();
     }
-  
+
     private SwingWorker clusterWorker() {
         SwingWorker clusterWorker = new SwingWorker<Void, Void>() {
             @Override
@@ -1029,28 +1001,35 @@ public class ModelUI extends javax.swing.JFrame {
     }
 
     private void updateProgress() {
-        String s = newProgress + "\r\n";
-        if (!lastProgress.equals(s)) {
-            txtPrg.append(s);
-            lastProgress = s;
+        if (updating) {
+            return;
         }
-    }
+        updating = true;
+        final ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
+        Runnable progressUpdater = new Runnable() {
+            @Override
+            public void run() {
 
-    private void updateProgress(String s) {
-        s += "\r\n";
-        if (!lastProgress.equals(s)) {
-            txtPrg.append(s);
-            lastProgress = s;
-        }
+                List<String> updates = m0.getUpdates();
+                txtPrg.setText("");
+                for (int i = 0; i < updates.size(); i++) {
+                    String s = updates.get(i) + "\r\n";
+                    txtPrg.append(s);
+//                    System.out.println(m0.getProgress());
+                    prgBar.setValue(m0.getProgress());
+                }
+                if (m0.getRunState() == RunState.StoppedByUser || m0.getRunState() == RunState.NetGenerated) {
+                    ses.shutdown();
+                    prgBar.setValue(0);
+                    updating = false;
+                }
+            }
+        };
+        ses.scheduleWithFixedDelay(progressUpdater, 1, 1, TimeUnit.SECONDS);
     }
     private ModelNewN m0;
-    final private Semaphore displaySem = new Semaphore(1);
-//    private Semaphore reRunSem = new Semaphore(1);
-    private ExecutorService es;
     private CircuitViewUI circuitView;
     private String pathToFile;
     private ModelType modelType = ModelType.Network;
-    private String lastProgress = "";
-    private String newProgress = "";
-    final AtomicBoolean waiting = new AtomicBoolean(true);
+    private boolean updating = false;
 }

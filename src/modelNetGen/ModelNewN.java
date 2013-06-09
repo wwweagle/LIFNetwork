@@ -15,24 +15,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinTask.invokeAll;
-import java.util.concurrent.Future;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JTextArea;
 import javax.swing.Timer;
 import org.apache.commons.math3.random.RandomGenerator;
 import savedParameters.NetworkParameters;
@@ -43,10 +39,9 @@ import savedParameters.NetworkParameters;
  */
 public class ModelNewN {
 
+    final private RandomGenerator r;
     private ArrayList<RndCell> cellList;
-    private RandomGenerator r;
-    int[][] monitorPairSet;
-    ExecutorService es;
+    private int[][] monitorPairSet;
     private Set<Integer> connected;
     private ArrayList<HashMap<Integer, Float>> obsConnProfile;
     private HashSet<Integer> filled;
@@ -59,14 +54,13 @@ public class ModelNewN {
     final private float GLU_IO_COE;
     final private float GABA_IO_COE;
     private int dim;
-    private String lastUpdate = "";
     private RunState runState;
+    final private List<String> updates;
+    private int progress;
     private boolean lessThan300;
     private ModelType TYPE;
-    private JTextArea txtProg;
+//    private JTextArea txtProg;
     private int genMonitorTime = 20;
-    final private AtomicBoolean waiting;
-    private AtomicInteger cycleCount;
     private float connProbScale;
     private boolean writeFile;
     private float weightScale;
@@ -80,12 +74,14 @@ public class ModelNewN {
      * @param gabaE GABA IO coefficient
      * @param iterateFactor Expected average iterate cycle
      */
-    ModelNewN(float gluE, float gabaE, float iterateFactor, AtomicBoolean sema) {
+    ModelNewN(float gluE, float gabaE, float iterateFactor) {
         r = Com.getR();
         this.GLU_IO_COE = gluE;
         this.GABA_IO_COE = gabaE;
         this.ITERATE_FACTOR = iterateFactor;
-        this.waiting = sema;
+        runState = RunState.Instantiated;
+        updates = new LinkedList<>();
+        progress = 0;
     }
 
     public void setType(ModelType type) {
@@ -100,22 +96,14 @@ public class ModelNewN {
         this.DEPOLAR_GABA = DEPOLAR_GABA;
     }
 
-    public void setEs(ExecutorService es) {
-        this.es = es;
-    }
-
-    public void setRunning() {
-        runState = RunState.Running;
-    }
-
     public boolean init() {
 
         if (cellList.size() < 3 || obsConnProfile.isEmpty()) {
             return false;
         }
-        monitorPairSet = genPairMonitor(4, genMonitorTime);
+        monitorPairSet = genPairMonitor(genMonitorTime);
         connected = new HashSet<>();
-        runState = RunState.Running;
+        runState = RunState.ReadyGenCells;
         return true;
     }
 
@@ -133,6 +121,22 @@ public class ModelNewN {
         float d = (float) Math.sqrt(area);
         d = d * 10000;//cm to micro-m;
         return Math.round(d);
+    }
+
+    private void setProgress(int progress) {
+        if (progress >= 0 && progress <= 100) {
+            this.progress = progress;
+        }
+    }
+
+    private void setProgress(int currProgress, int maxProgress) {
+        if (currProgress >= 0 && maxProgress >= currProgress) {
+            this.progress = currProgress * 100 / maxProgress;
+        }
+    }
+
+    public int getProgress() {
+        return progress;
     }
 
     public void setCell(int nCell, int density, float gluRate) {
@@ -235,19 +239,21 @@ public class ModelNewN {
                 }
             }
         }
-        lastUpdate = count + "/" + oriSet.size() + " catagories met";
+        setProgress(count, oriSet.size());
 //        m0.updateProfile(gen);
 
 //        D.tp("pass fullfill");
         return false;
     }
 
-    private Set<int[]> genGrpMonitor(int threads, int size, int timeInS) {
+    private Set<int[]> genGrpMonitor(int size, int timeInS) {
+        int threads = Runtime.getRuntime().availableProcessors();
+        ExecutorService es = Executors.newFixedThreadPool(threads);
         Set<int[]> monitor = Collections.newSetFromMap(new ConcurrentHashMap<int[], Boolean>());
         Set<Long> had = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
         CountDownLatch cdl = new CountDownLatch(threads);
         genGrpsClass[] genGrps = new genGrpsClass[threads];
-        directUpdate("build up monitor in " + timeInS + " seconds");
+        progressUpdate("build up monitor in " + timeInS + " seconds");
 
         for (int i = 0; i < threads; i++) {
             genGrps[i] = new genGrpsClass(size, monitor, had, cdl);
@@ -258,18 +264,21 @@ public class ModelNewN {
         try {
             cdl.await();
         } catch (InterruptedException e) {
+            System.out.println(e.toString());
         }
-        directUpdate("Stop Signal Sent");
-        directUpdate("monitor size:" + monitor.size());
+        progressUpdate("Stop Signal Sent");
+        progressUpdate("monitor size:" + monitor.size());
         return monitor;
     }
 
-    private int[][] genPairMonitor(int threads, int timeInS) {
+    private int[][] genPairMonitor(int timeInS) {
+        int threads = Runtime.getRuntime().availableProcessors();
+        ExecutorService es = Executors.newFixedThreadPool(threads);
         Set<int[]> monitor = Collections.newSetFromMap(new ConcurrentHashMap<int[], Boolean>());
         Set<Integer> had = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
         CountDownLatch cdl = new CountDownLatch(threads);
         genPairsClass[] genPairs = new genPairsClass[threads];
-        directUpdate("build up monitor in " + timeInS + " seconds");
+        progressUpdate("build up monitor in " + timeInS + " seconds");
 
         for (int i = 0; i < threads; i++) {
             genPairs[i] = new genPairsClass(monitor, had, cdl);
@@ -291,7 +300,7 @@ public class ModelNewN {
             monitorArr[i] = rev;
             i++;
         }
-        directUpdate("monitor size:" + monitor.size());
+        progressUpdate("monitor size:" + monitor.size());
         return monitorArr;
     }
 
@@ -362,29 +371,26 @@ public class ModelNewN {
         }
     }
 
-    public void stop() {
-        runState = RunState.Stoping;
+    public void setRunState(RunState runState) {
+        this.runState = runState;
     }
 
-    public void setExit() {
-        runState = RunState.Quiting;
+    public RunState getRunState() {
+        return runState;
     }
 
-    private void directUpdate(String s) {
-        if (null != txtProg) {
-            txtProg.append(s + "\r\n");
+    private void progressUpdate(String s) {
+        synchronized (updates) {
+            if (updates.size() > 0 && s.equals(updates.get(updates.size() - 1))) {
+                return;
+            }
+            updates.add(s);
         }
-
     }
 
-    public void setTxtProg(JTextArea txtProg) {
-        this.txtProg = txtProg;
-    }
-
-    public boolean isRunning() {
-        return runState == RunState.Running;
-    }
-
+//    public void setTxtProg(JTextArea txtProg) {
+//        this.txtProg = txtProg;
+//    }
     public Set<Integer> getConnected() {
         return connected;
     }
@@ -397,12 +403,10 @@ public class ModelNewN {
         return cellList;
     }
 
-    public boolean isFinished() {
-        return runState == RunState.Finished;
-    }
-
-    public String getLastUpdate() {
-        return lastUpdate;
+    public List<String> getUpdates() {
+        synchronized (updates) {
+            return updates;
+        }
     }
 
     private int oneCommNeib(int id1, int id2, int id3) {
@@ -429,7 +433,7 @@ public class ModelNewN {
 
     public void probeCommNeib(int time, boolean fwdGlu, boolean revGlu) {
         HashMap<Integer, Integer> commNeib = new HashMap<>();
-        Set<int[]> monitorSet = genGrpMonitor(4, 3, time);
+        Set<int[]> monitorSet = genGrpMonitor(3, time);
         for (int[] grp : monitorSet) {
 //            int[] grp = genRndGrp(3, had);
             Com.sAdd(commNeib, oneCommNeib(grp[0], grp[1], grp[2]));
@@ -473,7 +477,7 @@ public class ModelNewN {
 
     public int[] probeIO(int time, boolean glu, boolean input) {
         int[] degrees = new int[4];
-        Set<int[]> monitorSet = genGrpMonitor(4, 4, time);
+        Set<int[]> monitorSet = genGrpMonitor(4, time);
         for (int[] grp : monitorSet) {
             for (int i = 0; i < grp.length; i++) {
                 if (!(cellList.get(i).isGlu() == glu || input)) {
@@ -500,7 +504,7 @@ public class ModelNewN {
 //        for (int i = 0; i < sampleSize; i++) {
 //            grpList[i] = genRndGrp(size, had);
 //        }
-        Set<int[]> monitorSet = genGrpMonitor(4, size, time);
+        Set<int[]> monitorSet = genGrpMonitor(size, time);
 //        D.tp("mon gened");
 
         int[] histo = new int[(size == 3) ? 7 : 13];
@@ -729,26 +733,6 @@ public class ModelNewN {
 
     }
 
-    private void waitSema(AtomicBoolean waiting) {
-        synchronized (waiting) {
-            while (waiting.get()) {
-                try {
-                    waiting.wait();
-                } catch (InterruptedException e) {
-                }
-            }
-            waiting.set(true);
-        }
-    }
-
-    private void reinit() {
-        int nCell = cellList.size();
-        gluIn = new AtomicIntegerArray(nCell);
-        gluOut = new AtomicIntegerArray(nCell);
-        gabaIn = new AtomicIntegerArray(nCell);
-        gabaOut = new AtomicIntegerArray(nCell);
-    }
-
     public void probeGlobalDegrees() {
         TreeMap<Integer, Integer> gluInMap = new TreeMap<>();
         TreeMap<Integer, Integer> gluOutMap = new TreeMap<>();
@@ -791,7 +775,7 @@ public class ModelNewN {
             sumGABA += gabaOut.get(i);
         }
 
-        directUpdate(sumGlu + " glu connections, " + sumGABA + " GABA connections.");
+        progressUpdate(sumGlu + " glu connections, " + sumGABA + " GABA connections.");
 
 
         System.out.println("===========================================");
@@ -805,13 +789,23 @@ public class ModelNewN {
 
     public void genModelNetwork() {
 
+        final int step = cellList.size() >>> 5;
+        final ForkJoinPool fjp = new ForkJoinPool();
+        final AtomicInteger cycleCount = new AtomicInteger();//Default Value is 0      
+        final int nCell = cellList.size();
+        connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+        gluIn = new AtomicIntegerArray(nCell);
+        gluOut = new AtomicIntegerArray(nCell);
+        gabaIn = new AtomicIntegerArray(nCell);
+        gabaOut = new AtomicIntegerArray(nCell);
+
         /////////////////////////////////////////////////
-        class newConnClass extends RecursiveAction {
+        class GenNewConnection extends RecursiveAction {
 
             int need;
             int div;
 
-            newConnClass(int need, int div) {
+            GenNewConnection(int need, int div) {
                 this.need = need;
                 this.div = div;
             }
@@ -820,7 +814,7 @@ public class ModelNewN {
             protected void compute() {
                 boolean found = false;
                 if (need == 1) {
-                    while (runState != RunState.Stoping && !found) {
+                    while (runState != RunState.UserRequestStop && !found) {
                         int rnd = r.nextInt(monitorPairSet.length);
                         int id1 = monitorPairSet[rnd][0];
                         int id2 = monitorPairSet[rnd][1];
@@ -832,7 +826,7 @@ public class ModelNewN {
                         found = newConnection(div, id1, id2);
                     }
                 } else {
-                    invokeAll(new newConnClass(need - 1, div), new newConnClass(1, div));
+                    invokeAll(new GenNewConnection(need - 1, div), new GenNewConnection(1, div));
                 }
             }
 
@@ -884,46 +878,18 @@ public class ModelNewN {
             }
         }
         /////////////////////////////////////////////////
-        class GenConn implements Callable<Integer> {
 
-            final private int step;
-            final private ForkJoinPool fjp;
-
-            public GenConn() {
-                step = cellList.size() >>> 5;
-                connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
-                fjp = new ForkJoinPool();
-                cycleCount = new AtomicInteger();
-                cycleCount.set(0);
+        runState = RunState.GeneratingNet;
+        for (int div = 5; div < 9; div++) {
+            filled = new HashSet<>();
+            progressUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + ", DIV" + div + " started");
+            while (runState != RunState.UserRequestStop && !fullfilled(div, connProbScale)) {
+                fjp.invoke(new GenNewConnection(step, div));
             }
-
-            @Override
-            public Integer call() {
-                for (int div = 5; div < 9; div++) {
-                    filled = new HashSet<>();
-                    directUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + ", DIV" + div + " started");
-                    while (runState != RunState.Stoping && !fullfilled(div, connProbScale)) {
-                        fjp.invoke(new newConnClass(step, div));
-                    }
-                    System.out.println(cycleCount.get());
-                }
-                return cycleCount.get();
-            }
+            System.out.println(cycleCount.get());
         }
-
-        GenConn gen = new GenConn();
-        reinit();
-        Future<Integer> genResult = es.submit(gen);
-        runState = RunState.GeneratingModel;
-        System.out.println("submitted");
-        try {
-            genResult.get();
-        } catch (InterruptedException | ExecutionException | NullPointerException ex) {
-//            Logger.getLogger(ModelNewN.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println(ex.toString());
-        }
-        runState = RunState.ModelGenerated;
+        runState = RunState.NetGenerated;
         sumUp();
-        directUpdate("Model exit.");
+        progressUpdate("Model Generated");
     }
 }
