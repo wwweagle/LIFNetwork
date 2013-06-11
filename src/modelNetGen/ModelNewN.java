@@ -22,13 +22,17 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinTask.invokeAll;
+import java.util.concurrent.Future;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Timer;
 import org.apache.commons.math3.random.RandomGenerator;
 import savedParameters.NetworkParameters;
@@ -41,7 +45,7 @@ public class ModelNewN {
 
     final private RandomGenerator r;
     private ArrayList<RndCell> cellList;
-    private int[][] monitorPairSet;
+//    private int[][] monitorPairSet;
     private Set<Integer> connected;
     private ArrayList<HashMap<Integer, Float>> obsConnProfile;
     private HashSet<Integer> filled;
@@ -59,11 +63,11 @@ public class ModelNewN {
     private int progress;
     private boolean lessThan300;
     private ModelType TYPE;
-//    private JTextArea txtProg;
     private int genMonitorTime = 20;
     private float connProbScale;
     private boolean writeFile;
     private float weightScale;
+    private Map<Integer, List<int[]>> toConn;
 
     /**
      * Build a new iterate model
@@ -121,12 +125,6 @@ public class ModelNewN {
         float d = (float) Math.sqrt(area);
         d = d * 10000;//cm to micro-m;
         return Math.round(d);
-    }
-
-    private void setProgress(int progress) {
-        if (progress >= 0 && progress <= 100) {
-            this.progress = progress;
-        }
     }
 
     private void setProgress(int currProgress, int maxProgress) {
@@ -302,6 +300,62 @@ public class ModelNewN {
         }
         progressUpdate("monitor size:" + monitor.size());
         return monitorArr;
+    }
+
+    private void genPairMonitor() {
+        int threads = Runtime.getRuntime().availableProcessors();
+        int threadLength = cellList.size() / threads;
+        ExecutorService es = Executors.newFixedThreadPool(threads);
+        class genPairClass implements Runnable {
+
+            final int start;
+            final int end;
+
+            public genPairClass(int start, int end) {
+                this.start = start;
+                this.end = end;
+            }
+
+            @Override
+            public void run() {
+                for (int pre = start; pre < end; pre++) {
+                    for (int post = start + 1; post < cellList.size(); post++) {
+                        //if not near
+                        if (distanceBetween(pre, post) > 0) {//if pre near post, add to pairMonitor
+                        
+                        }
+                    }
+                }
+            }
+
+            private int distanceBetween(int pre, int post) {
+                int x1 = cellList.get(pre).getX();
+                int x2 = cellList.get(post).getX();
+                int y1 = cellList.get(pre).getY();
+                int y2 = cellList.get(post).getY();
+                int dx = (x2 >= x1) ? (x2 - x1) : (x1 - x2);
+                int dy = (y2 >= y1) ? (y2 - y1) : (y1 - y2);
+                if (dx > 500 || dy > 500 || (dx + dy) > 708) {
+                    return -1;
+                }
+                int dist = (int) Math.sqrt(dx * dx + dy * dy);
+                return dist > 500 ? -1 : dist;
+            }
+        }
+        Future<?>[] handle = new Future<?>[threads];
+        for (int i = 0; i < threads - 1; i++) {
+            handle[i] = es.submit(new genPairClass(threadLength * i, threadLength * (i + 1)));
+        }
+        handle[threads - 1] = es.submit(new genPairClass(threadLength * (threads - 1), cellList.size()));
+
+        for (int i = 0; i < handle.length; i++) {
+            try {
+                handle[i].get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(ModelNewN.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
     }
 
     class genPairsClass implements Runnable {
