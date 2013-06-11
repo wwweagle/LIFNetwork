@@ -60,9 +60,6 @@ public class ModelUI extends javax.swing.JFrame {
         btnStart = new javax.swing.JButton();
         btnExit = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JSeparator();
-        jLabel8 = new javax.swing.JLabel();
-        rdo300Less = new javax.swing.JRadioButton();
-        rdo300More = new javax.swing.JRadioButton();
         txtNeuronNum = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
         txtConnProb = new javax.swing.JTextField();
@@ -216,20 +213,6 @@ public class ModelUI extends javax.swing.JFrame {
         jSeparator3.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jSeparator3.setPreferredSize(new java.awt.Dimension(10, 100));
 
-        jLabel8.setText("Maximum Intercellular Distance");
-
-        maxDistGrp.add(rdo300Less);
-        rdo300Less.setText("300");
-        rdo300Less.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rdo300LessActionPerformed(evt);
-            }
-        });
-
-        maxDistGrp.add(rdo300More);
-        rdo300More.setSelected(true);
-        rdo300More.setText("500");
-
         txtNeuronNum.setText("1000");
         txtNeuronNum.setPreferredSize(new java.awt.Dimension(40, 20));
 
@@ -280,12 +263,7 @@ public class ModelUI extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(rdoBiDir)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rdoUniDir))
-                    .addComponent(jLabel8)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(rdo300Less)
-                        .addGap(18, 18, 18)
-                        .addComponent(rdo300More)))
+                        .addComponent(rdoUniDir)))
                 .addGap(18, 18, 18)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -372,13 +350,7 @@ public class ModelUI extends javax.swing.JFrame {
                             .addComponent(chkDepolarGABA)
                             .addComponent(txtIterFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(rdo300Less)
-                            .addComponent(rdo300More))
-                        .addGap(9, 9, 9))))
+                        .addGap(62, 62, 62))))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -648,7 +620,7 @@ public class ModelUI extends javax.swing.JFrame {
 
     private void btnInitModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInitModelActionPerformed
         btnShow.setEnabled(false);
-        pathToFile = CommonsLib.getDefaultFile();
+        pathToFile = FilesCommons.getDefaultFile();
         modelInitWorker().execute();
         btnInitModel.setEnabled(false);
     }//GEN-LAST:event_btnInitModelActionPerformed
@@ -724,10 +696,6 @@ public class ModelUI extends javax.swing.JFrame {
         globalDegreeWorker().execute();
     }//GEN-LAST:event_btnGlobalDegreeActionPerformed
 
-    private void rdo300LessActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdo300LessActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_rdo300LessActionPerformed
-
     private void txtIterFacActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIterFacActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtIterFacActionPerformed
@@ -790,7 +758,6 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -804,8 +771,6 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup maxDistGrp;
     private javax.swing.ButtonGroup modelGrp;
     private javax.swing.JProgressBar prgBar;
-    private javax.swing.JRadioButton rdo300Less;
-    private javax.swing.JRadioButton rdo300More;
     private javax.swing.JRadioButton rdoBiDir;
     private javax.swing.JRadioButton rdoBoth;
     private javax.swing.JRadioButton rdoGABA;
@@ -840,7 +805,6 @@ public class ModelUI extends javax.swing.JFrame {
                 float iterFac = Float.parseFloat(txtIterFac.getText());
                 m0 = new ModelNewN(gluFac, gabaFac, iterFac);
                 updateProgress();
-                m0.setLessThan300(rdo300Less.isSelected());
                 m0.setFile(pathToFile);
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
                 m0.setCell(neuronNum, 8429, 0.76708864f);

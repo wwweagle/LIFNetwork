@@ -99,14 +99,14 @@ public class ModelDB {
         return conns;
     }
 
-    private ArrayList<HashMap<Integer, Integer>> getConnMap(boolean lessThan300) {
+    private ArrayList<HashMap<Integer, Integer>> getConnMap() {
         ArrayList<PotentialSynapse> conns = getConns();
         ArrayList<HashMap<Integer, Integer>> connMaps = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             connMaps.add(new HashMap<Integer, Integer>());
         }
         for (PotentialSynapse conn : conns) {
-            int mapKey = Com.getMapKey(conn.getFwdGlu(), conn.getRevGlu(), conn.getDist(), lessThan300);
+            int mapKey = Com.getMapKey(conn.getFwdGlu(), conn.getRevGlu(), conn.getDist());
             for (int div = 8; div >= conn.getDiv(); div--) {
                 Com.sAdd(connMaps.get(div - 5), mapKey);
             }
@@ -114,7 +114,7 @@ public class ModelDB {
         return connMaps;
     }
 
-    private ArrayList<HashMap<Integer, Integer>> getSlotMap(boolean lessThan300) {
+    private ArrayList<HashMap<Integer, Integer>> getSlotMap() {
         ArrayList<HashMap<Integer, Integer>> slotsMaps = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             slotsMaps.add(new HashMap<Integer, Integer>());
@@ -122,7 +122,7 @@ public class ModelDB {
         ArrayList<PotentialSynapse> slots = getSlots();
 
         for (PotentialSynapse conn : slots) {
-            int mapKey = Com.getMapKey(conn.getFwdGlu(), conn.getRevGlu(), conn.getDist(), lessThan300);
+            int mapKey = Com.getMapKey(conn.getFwdGlu(), conn.getRevGlu(), conn.getDist());
             allSlot.add(mapKey);
             for (int div = 8; div >= conn.getDiv(); div--) {
                 Com.sAdd(slotsMaps.get(div - 5), mapKey);
@@ -131,14 +131,14 @@ public class ModelDB {
         return slotsMaps;
     }
 
-    public ArrayList<HashMap<Integer, Float>> getPBase(boolean lessThan300) {
+    public ArrayList<HashMap<Integer, Float>> getPBase() {
         ArrayList<HashMap<Integer, Float>> pBases = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             pBases.add(new HashMap<Integer, Float>());
         }
 
-        ArrayList<HashMap<Integer, Integer>> slotsMaps = getSlotMap(lessThan300);
-        ArrayList<HashMap<Integer, Integer>> connsMaps = getConnMap(lessThan300);
+        ArrayList<HashMap<Integer, Integer>> slotsMaps = getSlotMap();
+        ArrayList<HashMap<Integer, Integer>> connsMaps = getConnMap();
         for (int div = 0; div < 4; div++) {
             for (Integer i : allSlot) {
                 int nConn = connsMaps.get(div).containsKey(i) ? connsMaps.get(div).get(i) : 0;

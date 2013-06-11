@@ -14,7 +14,7 @@ import javax.swing.JFileChooser;
  *
  * @author Librizzy
  */
-public class CommonsLib {
+public class FilesCommons {
 
     static public String getDefaultFile() {
         String pathToFile = "C:\\Users\\Libra\\Desktop\\GAD0.accdb";

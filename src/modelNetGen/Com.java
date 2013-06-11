@@ -16,21 +16,19 @@ import org.apache.commons.math3.random.Well44497b;
  */
 public class Com {
 
-    static final private int[] bins = {50, 100, 150, 200, 250, 350};
+//    static final private int[] bins = {50, 100, 150, 200, 250, 350};
     static private RandomGenerator r = new SynchronizedRandomGenerator(new Well44497b());
 
-    static private int getBin(int n, boolean lessThan300) {
-        if (lessThan300) {
-            return n < 250 ? n / 50 : 5;
-        } else {
-            for (int i = 0; i < bins.length; i++) {
-                if (n < bins[i]) {
-                    return i;
-                }
-            }
-            return bins.length;
-        }
-//        return n < 250 ? n / 50 : 5;
+    static private int getBin(int n) {
+//        for (int i = 0; i < bins.length; i++) {
+//            if (n < bins[i]) {
+//                return i;
+//            }
+//        }
+//        return bins.length;
+        return n > 350 ? 7
+                : n > 250 ? 6
+                : n / 50;
 
     }
 
@@ -42,9 +40,9 @@ public class Com {
         return (preId << 12) + postID;
     }
 
-    static public int getMapKey(boolean fwdGlu, boolean revGlu, int dist, boolean lessThan300) {
+    static public int getMapKey(boolean fwdGlu, boolean revGlu, int dist) {
         int key = 0;
-        int bin = getBin(dist, lessThan300);
+        int bin = getBin(dist);
 //        int type = (fwdGlu ? 0 : 1) + (revGlu ? 0 : 1);
 //        key += type << 12;
         key += ((fwdGlu ? 0 : 1) << 13);
@@ -53,10 +51,10 @@ public class Com {
         return key;
     }
 
-    static public int getMapKey(int id1, int id2, ArrayList<RndCell> cellList, boolean lessThan300) {
+    static public int getMapKey(int id1, int id2, ArrayList<RndCell> cellList) {
         boolean glu1 = cellList.get(id1).isGlu();
         boolean glu2 = cellList.get(id2).isGlu();
-        return getMapKey(glu1, glu2, dist(id1, id2, cellList), lessThan300);
+        return getMapKey(glu1, glu2, dist(id1, id2, cellList));
     }
 
     static public int dist(int id1, int id2, ArrayList<RndCell> cellList) {
@@ -68,7 +66,7 @@ public class Com {
         int y2 = cell2.getY();
         int dx = x1 - x2;
         int dy = y1 - y2;
-        int dist = (int) Math.round(Math.sqrt(dx * dx + dy * dy) - 0.5);
+        int dist = (int) Math.sqrt(dx * dx + dy * dy);
         return dist;
     }
 

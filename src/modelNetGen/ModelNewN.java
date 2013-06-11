@@ -61,7 +61,6 @@ public class ModelNewN {
     private RunState runState;
     final private List<String> updates;
     private int progress;
-    private boolean lessThan300;
     private ModelType TYPE;
     private int genMonitorTime = 20;
     private float connProbScale;
@@ -92,10 +91,6 @@ public class ModelNewN {
         this.TYPE = type;
     }
 
-    public void setLessThan300(boolean lessThan300) {
-        this.lessThan300 = lessThan300;
-    }
-
     public void setDEPOLAR_GABA(boolean DEPOLAR_GABA) {
         this.DEPOLAR_GABA = DEPOLAR_GABA;
     }
@@ -117,7 +112,7 @@ public class ModelNewN {
 
     public void setFile(String pathToFile) {
         ModelDB db = new ModelDB(pathToFile);
-        obsConnProfile = db.getPBase(lessThan300);
+        obsConnProfile = db.getPBase();
     }
 
     private int getDimension(int nCell, int density) {
@@ -183,7 +178,7 @@ public class ModelNewN {
 
         for (int[] pair : monitorPairSet) {
             int setKey = Com.getSetKey(pair[0], pair[1]);
-            int mapKey = Com.getMapKey(pair[0], pair[1], cellList, lessThan300);
+            int mapKey = Com.getMapKey(pair[0], pair[1], cellList);
 
             Com.sAdd(slotMap, mapKey);
             if (connected.contains(setKey)) {
@@ -412,7 +407,7 @@ public class ModelNewN {
                 }
                 id1 = r.nextInt(cellList.size());
                 id2 = r.nextInt(cellList.size());
-            } while (!cellList.get(id1).near(cellList.get(id2), lessThan300) || id2 == id1 || had.contains(getSetKey(id1, id2)));
+            } while (!cellList.get(id1).near(cellList.get(id2)) || id2 == id1 || had.contains(getSetKey(id1, id2)));
 
 //            D.tp(Com.dist(id1, id2, cellList)+","+farApart(id1,id2));
             int[] rtn = {id1, id2};
@@ -711,7 +706,7 @@ public class ModelNewN {
         Object[][] cellNum = new Object[2][1];
         cellNum[0][0] = gabaCells.size();
         cellNum[1][0] = gluCells.size();
-        CommonsLib.writeMatrix("cellNum" + suffix + ".csv", cellNum);
+        FilesCommons.writeMatrix("cellNum" + suffix + ".csv", cellNum);
 
 
         int totalCount = cellList.size();
@@ -730,7 +725,7 @@ public class ModelNewN {
             }
         }
         String fileName = TYPE == ModelType.Network ? "actOrg" + suffix + ".csv" : "distOrg" + suffix + ".csv";
-        CommonsLib.writeMatrix(fileName, weight);
+        FilesCommons.writeMatrix(fileName, weight);
 
 
     }
@@ -886,9 +881,9 @@ public class ModelNewN {
 
             boolean newConnection(int div, int id1, int id2) {//from 1 to 2
 
-                int mapKey = Com.getMapKey(id1, id2, cellList, lessThan300);
+                int mapKey = Com.getMapKey(id1, id2, cellList);
 
-                if (filled.contains(mapKey) || (!obsConnProfile.get(div - 5).containsKey(mapKey)) || !cellList.get(id1).near(cellList.get(id2), lessThan300)) {
+                if (filled.contains(mapKey) || (!obsConnProfile.get(div - 5).containsKey(mapKey)) || !cellList.get(id1).near(cellList.get(id2))) {
                     return false;
                 }
                 float p = obsConnProfile.get(div - 5).get(mapKey) / ITERATE_FACTOR;

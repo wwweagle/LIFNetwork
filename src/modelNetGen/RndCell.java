@@ -65,13 +65,12 @@ public class RndCell {
         return y;
     }
 
-    public boolean near(RndCell c, boolean lessThan300) {
+    public boolean near(RndCell c) {
         int x2 = c.getX();
         int y2 = c.getY();
 
         double dist = Math.sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));
-        return (dist < (lessThan300 ? 300 : 500));
-//        return (dist < 300);
+        return (dist < 500);
     }
 
     public boolean veryNear(RndCell c) {
