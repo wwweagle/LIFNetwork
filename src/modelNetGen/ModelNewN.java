@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -66,7 +67,6 @@ public class ModelNewN {
     private float connProbScale;
     private boolean writeFile;
     private float weightScale;
-    private Map<Integer, List<int[]>> toConn;
 
     /**
      * Build a new iterate model
@@ -301,7 +301,7 @@ public class ModelNewN {
         int threads = Runtime.getRuntime().availableProcessors();
         int threadLength = cellList.size() / threads;
         ExecutorService es = Executors.newFixedThreadPool(threads);
-        class genPairClass implements Runnable {
+        class genPairClass implements Callable<Monitor> {
 
             final int start;
             final int end;
@@ -312,15 +312,22 @@ public class ModelNewN {
             }
 
             @Override
-            public void run() {
+            public Monitor call() {
+                Monitor monitor = new Monitor();
                 for (int pre = start; pre < end; pre++) {
                     for (int post = start + 1; post < cellList.size(); post++) {
-                        //if not near
-                        if (distanceBetween(pre, post) > 0) {//if pre near post, add to pairMonitor
-                        
+                        int dist = distanceBetween(pre, post);
+                        if (dist > 0) {//if pre near post, add to pairMonitor
+                            int mapkey = Com.getMapKey(cellList.get(pre).isGlu(),
+                                    cellList.get(post).isGlu(), dist);
+                            monitor.addPairToConn(pre, post, mapkey);
+                            mapkey = Com.getMapKey(cellList.get(post).isGlu(),
+                                    cellList.get(pre).isGlu(), dist);
+                            monitor.addPairToConn(post, pre, mapkey);
                         }
                     }
                 }
+                return monitor;
             }
 
             private int distanceBetween(int pre, int post) {
@@ -940,5 +947,39 @@ public class ModelNewN {
         runState = RunState.NetGenerated;
         sumUp();
         progressUpdate("Model Generated");
+    }
+
+    class Monitor {
+
+        final private Map<Integer, List<int[]>> toConn;
+        final int distBinCount = 7;//Less Than 50 100 150 200 250 350 500
+
+        public Monitor() {
+            toConn = new HashMap<>();
+            for (int i = 0; i < distBinCount; i++) {
+                Integer newKey = iterateKey(true, true, i);
+                toConn.put(newKey, new ArrayList<int[]>());
+                newKey = iterateKey(true, false, i);
+                toConn.put(newKey, new ArrayList<int[]>());
+                newKey = iterateKey(false, true, i);
+                toConn.put(newKey, new ArrayList<int[]>());
+                newKey = iterateKey(false, false, i);
+                toConn.put(newKey, new ArrayList<int[]>());
+            }
+        }
+
+        private Integer iterateKey(boolean preGlu, boolean postGlu, int distBin) {
+            int key = 0;
+            key += ((preGlu ? 0 : 1) << 13);
+            key += ((postGlu ? 0 : 1) << 12);
+            key += distBin;
+            return key;
+        }
+
+        public void addPairToConn(int pre, int post, Integer mapKey) {
+            int[] newPair = {pre, post};
+            toConn.get(mapKey).add(newPair);
+        }
+//        private void init
     }
 }
