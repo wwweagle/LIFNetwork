@@ -26,8 +26,8 @@ public class Com {
 //            }
 //        }
 //        return bins.length;
-        return n > 350 ? 7
-                : n > 250 ? 6
+        return n > 350 ? 6
+                : n > 250 ? 5
                 : n / 50;
 
     }

@@ -803,13 +803,12 @@ public class ModelUI extends javax.swing.JFrame {
                 float gluFac = Float.parseFloat(txtGluFac.getText());
                 float gabaFac = Float.parseFloat(txtGABAFac.getText());
                 float iterFac = Float.parseFloat(txtIterFac.getText());
+                //TODO need to test pathToFile exist
                 m0 = new ModelNewN(gluFac, gabaFac, iterFac);
                 updateProgress();
-                m0.setFile(pathToFile);
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
                 m0.setCell(neuronNum, 8429, 0.76708864f);
-                m0.setGenMonitorTime(Integer.parseInt(txtGenPairTIme.getText()));
-                m0.init();
+                m0.init(pathToFile);
                 return null;
             }
         };

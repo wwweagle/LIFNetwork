@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
@@ -32,8 +33,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Timer;
 import org.apache.commons.math3.random.RandomGenerator;
 import savedParameters.NetworkParameters;
@@ -46,9 +45,8 @@ public class ModelNewN {
 
     final private RandomGenerator r;
     private ArrayList<RndCell> cellList;
-//    private int[][] monitorPairSet;
     private Set<Integer> connected;
-    private ArrayList<HashMap<Integer, Float>> obsConnProfile;
+    private List<Map<Integer, Integer>> connNeeded;
     private HashSet<Integer> filled;
     private AtomicIntegerArray gluIn;
     private AtomicIntegerArray gluOut;
@@ -63,10 +61,12 @@ public class ModelNewN {
     final private List<String> updates;
     private int progress;
     private ModelType TYPE;
-    private int genMonitorTime = 20;
+//    private int genMonitorTime = 20;
     private float connProbScale;
     private boolean writeFile;
     private float weightScale;
+    private Monitor allPair;
+    private Monitor unconnPair;
 
     /**
      * Build a new iterate model
@@ -95,24 +95,43 @@ public class ModelNewN {
         this.DEPOLAR_GABA = DEPOLAR_GABA;
     }
 
-    public boolean init() {
+    public boolean init(String pathToFile) {
 
-        if (cellList.size() < 3 || obsConnProfile.isEmpty()) {
+        if (cellList.size() < 3) {
             return false;
         }
-        monitorPairSet = genPairMonitor(genMonitorTime);
+        allPair = genPairMonitor();
         connected = new HashSet<>();
+        //Init conn target number
+        ModelDB db = new ModelDB(pathToFile);
+        List<HashMap<Integer, Float>> obsConnProfile;
+        obsConnProfile = db.getPBase();
+        Queue<Integer> keys = allPair.getKeySet();
+        connNeeded = new ArrayList<>();
+        for (int i = 0; i < obsConnProfile.size(); i++) {
+            Map<Integer, Integer> needed = new HashMap<>();
+            for (Integer key : keys) {
+                if (obsConnProfile.get(i).containsKey(key)) {
+                    needed.put(key, Math.round(
+                            obsConnProfile.get(i).get(key) * allPair.getList(key).size()));
+                }
+            }
+            connNeeded.add(i, needed);
+        }
+        //temp test
+//        
+//        for (int i = 0; i < connNeeded.size(); i++) {
+//            System.out.println("div "+(i+5));
+//            for (Integer key : keys) {
+//                if(connNeeded.get(i).containsKey(key)){
+//                    System.out.println("key "+key+", value "+connNeeded.get(i).get(key));
+//                }
+//            }
+//        }
+        //finished conn target number
+
         runState = RunState.ReadyGenCells;
         return true;
-    }
-
-    public void setGenMonitorTime(int genMonitorTime) {
-        this.genMonitorTime = genMonitorTime;
-    }
-
-    public void setFile(String pathToFile) {
-        ModelDB db = new ModelDB(pathToFile);
-        obsConnProfile = db.getPBase();
     }
 
     private int getDimension(int nCell, int density) {
@@ -171,41 +190,48 @@ public class ModelNewN {
 
     }
 
-    public HashMap<Integer, Float> genConnProfile() {
+    private HashMap<Integer, Float> genConnProfile(Monitor allPair, Monitor unconnPair) {
         HashMap<Integer, Float> currConnProfile = new HashMap<>();
-        HashMap<Integer, Integer> slotMap = new HashMap<>();
-        HashMap<Integer, Integer> connMap = new HashMap<>();
+//        HashMap<Integer, Integer> slotMap = new HashMap<>();
+//        HashMap<Integer, Integer> connMap = new HashMap<>();
 
-        for (int[] pair : monitorPairSet) {
-            int setKey = Com.getSetKey(pair[0], pair[1]);
-            int mapKey = Com.getMapKey(pair[0], pair[1], cellList);
-
-            Com.sAdd(slotMap, mapKey);
-            if (connected.contains(setKey)) {
-                Com.sAdd(connMap, mapKey);
-            }
+        Queue<Integer> keySet = allPair.getKeySet();
+        for (Integer key : keySet) {
+            float ratio = 1 - (unconnPair.getList(key).size() / allPair.getList(key).size());
+            currConnProfile.put(key, ratio);
         }
-//TEMP TEST
-        Set<Map.Entry<Integer, Integer>> slots = slotMap.entrySet();
-        for (Map.Entry<Integer, Integer> ent : slots) {
-//            int boolFwd = (ent.getKey() >>> 13);
-//            int boolRev = ((ent.getKey() & 4096) >>> 12);
-//            int distZ = ent.getKey() & 4095;
-            int nSlot = ent.getValue();
-            int nConn = Com.sGet(connMap, ent.getKey());
-            float ratio = (float) nConn / nSlot;
-            currConnProfile.put(ent.getKey(), ratio);
-//            D.tp(boolFwd + "," + boolRev + "," + distZ + "," + r);
-        }
-//        D.tp("pass");
         return currConnProfile;
+//
+//        for (int[] pair : monitorPairSet) {
+//            int setKey = Com.getSetKey(pair[0], pair[1]);
+//            int mapKey = Com.getMapKey(pair[0], pair[1], cellList);
+//
+//            Com.sAdd(slotMap, mapKey);
+//            if (connected.contains(setKey)) {
+//                Com.sAdd(connMap, mapKey);
+//            }
+//        }
+////TEMP TEST
+//        Set<Map.Entry<Integer, Integer>> slots = slotMap.entrySet();
+//        for (Map.Entry<Integer, Integer> ent : slots) {
+////            int boolFwd = (ent.getKey() >>> 13);
+////            int boolRev = ((ent.getKey() & 4096) >>> 12);
+////            int distZ = ent.getKey() & 4095;
+//            int nSlot = ent.getValue();
+//            int nConn = Com.sGet(connMap, ent.getKey());
+//            float ratio = (float) nConn / nSlot;
+//            currConnProfile.put(ent.getKey(), ratio);
+////            D.tp(boolFwd + "," + boolRev + "," + distZ + "," + r);
+//        }
+////        D.tp("pass");
+
     }
 
     public boolean fullfilled(int div, float ratio) {
 //        float connRatio = ratio.length == 0 ? 0.99f : ratio[0];
 //        D.tpi("enter fullfill");
 //        HashMap<Integer, Float> obsConnProfile = obsConnProfile;
-        HashMap<Integer, Float> genMap = genConnProfile();
+        HashMap<Integer, Float> genMap = genConnProfile(allPair, unconnPair);
         Set<Map.Entry<Integer, Float>> oriSet = obsConnProfile.get(div - 5).entrySet();
 
         int count = 0;
@@ -297,10 +323,11 @@ public class ModelNewN {
         return monitorArr;
     }
 
-    private void genPairMonitor() {
+    private Monitor genPairMonitor() {
         int threads = Runtime.getRuntime().availableProcessors();
         int threadLength = cellList.size() / threads;
         ExecutorService es = Executors.newFixedThreadPool(threads);
+
         class genPairClass implements Callable<Monitor> {
 
             final int start;
@@ -315,15 +342,20 @@ public class ModelNewN {
             public Monitor call() {
                 Monitor monitor = new Monitor();
                 for (int pre = start; pre < end; pre++) {
+                    for (int post = 0; post < start; post++) {
+                        int dist = distanceBetween(pre, post);
+                        if (dist > 0) {//if pre near post, add to pairMonitor
+                            int mapkey = Com.getMapKey(cellList.get(pre).isGlu(),
+                                    cellList.get(post).isGlu(), dist);
+                            monitor.addPairToConn(pre, post, mapkey);
+                        }
+                    }
                     for (int post = start + 1; post < cellList.size(); post++) {
                         int dist = distanceBetween(pre, post);
                         if (dist > 0) {//if pre near post, add to pairMonitor
                             int mapkey = Com.getMapKey(cellList.get(pre).isGlu(),
                                     cellList.get(post).isGlu(), dist);
                             monitor.addPairToConn(pre, post, mapkey);
-                            mapkey = Com.getMapKey(cellList.get(post).isGlu(),
-                                    cellList.get(pre).isGlu(), dist);
-                            monitor.addPairToConn(post, pre, mapkey);
                         }
                     }
                 }
@@ -344,19 +376,27 @@ public class ModelNewN {
                 return dist > 500 ? -1 : dist;
             }
         }
-        Future<?>[] handle = new Future<?>[threads];
+        ArrayList<Future<Monitor>> handles = new ArrayList<>();
+//        Future<?>[] handle = new Future<?>[threads];
         for (int i = 0; i < threads - 1; i++) {
-            handle[i] = es.submit(new genPairClass(threadLength * i, threadLength * (i + 1)));
+            handles.add(es.submit(new genPairClass(threadLength * i, threadLength * (i + 1))));
         }
-        handle[threads - 1] = es.submit(new genPairClass(threadLength * (threads - 1), cellList.size()));
+        handles.add(es.submit(new genPairClass(threadLength * (threads - 1), cellList.size())));
 
-        for (int i = 0; i < handle.length; i++) {
+        Monitor monitor = new Monitor();
+        for (Future<Monitor> f : handles) {
             try {
-                handle[i].get();
+                Monitor m = f.get();
+                monitor.addAll(m);
             } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(ModelNewN.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println(ex.toString());
             }
         }
+//        System.out.println("return monitor");
+//        monitor.listAll();
+        return monitor;
+
+
 
     }
 
@@ -593,6 +633,8 @@ public class ModelNewN {
             histo[count]++;
         }
         return histo;
+
+
     }
 
     class genGrpsClass implements Runnable {
@@ -871,15 +913,15 @@ public class ModelNewN {
                 boolean found = false;
                 if (need == 1) {
                     while (runState != RunState.UserRequestStop && !found) {
-                        int rnd = r.nextInt(monitorPairSet.length);
-                        int id1 = monitorPairSet[rnd][0];
-                        int id2 = monitorPairSet[rnd][1];
-                        if (connected.contains(Com.getSetKey(id1, id2))) {
-                            continue;
-                        } else {
-                            cycleCount.getAndIncrement();
-                        }
-                        found = newConnection(div, id1, id2);
+//                        int rnd = r.nextInt(monitorPairSet.length);
+//                        int id1 = monitorPairSet[rnd][0];
+//                        int id2 = monitorPairSet[rnd][1];
+//                        if (connected.contains(Com.getSetKey(id1, id2))) {
+//                            continue;
+//                        } else {
+//                            cycleCount.getAndIncrement();
+//                        }
+//                        found = newConnection(div, id1, id2);
                     }
                 } else {
                     invokeAll(new GenNewConnection(need - 1, div), new GenNewConnection(1, div));
@@ -933,8 +975,7 @@ public class ModelNewN {
                 return false;
             }
         }
-        /////////////////////////////////////////////////
-
+/////////////////////////////////////////////////
         runState = RunState.GeneratingNet;
         for (int div = 5; div < 9; div++) {
             filled = new HashSet<>();
@@ -949,23 +990,136 @@ public class ModelNewN {
         progressUpdate("Model Generated");
     }
 
+    public void genModelNetworkNew() {
+        unconnPair = new Monitor();
+        unconnPair.addAll(allPair);
+        Queue<Integer> keys = unconnPair.getKeySet();
+        class genConn implements Callable<Queue<Queue<int[]>>> {
+
+            final private Queue<int[]> conned;
+            final private Queue<int[]> unConned;
+            final private Queue<int[]> toConn;
+            final private int div;
+
+            public genConn(Queue<int[]> toConn, int div) {
+                this.toConn = toConn;
+                conned = new LinkedList<>();
+                unConned = new LinkedList<>();
+                this.div = div;
+            }
+
+            @Override
+            public Queue<Queue<int[]>> call() {
+                for (int[] pair : toConn) {
+                    if (newConnection(div, pair[0], pair[1])) {
+                        if (cellList.get(pair[0]).isGlu()) {
+                            gluOut.incrementAndGet(pair[0]);
+                            gluIn.incrementAndGet(pair[1]);
+                        } else {
+                            gabaOut.incrementAndGet(pair[0]);
+                            gabaIn.incrementAndGet(pair[1]);
+                        }
+                        conned.add(pair);
+                        //if fulfill break
+                    } else {
+                        unConned.add(pair);
+                    }
+                }
+                Queue<Queue<int[]>> rtn = new LinkedList<>();
+                rtn.add(conned);
+                rtn.add(unConned);
+                return rtn;
+            }
+
+            boolean newConnection(int div, int pre, int post) {//from 1 to 2
+
+                int mapKey = Com.getMapKey(pre, post, cellList);
+
+                if (filled.contains(mapKey) || (!obsConnProfile.get(div - 5).containsKey(mapKey)) || !cellList.get(pre).near(cellList.get(post))) {
+                    return false;
+                }
+                float p = obsConnProfile.get(div - 5).get(mapKey) / ITERATE_FACTOR;
+                /*
+                 * Activity dependent connection
+                 */
+                if (TYPE == ModelType.NetworkBiDir) {
+                    int gluIO = gluIn.get(pre) + gluIn.get(post) + gluOut.get(pre) + gluOut.get(post);
+                    int gabaIO = gabaIn.get(pre) + gabaIn.get(post) + gabaOut.get(pre) + gabaOut.get(post);
+                    float gluIOFactor = gluIO * GLU_IO_COE;
+                    float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
+                    float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
+                    p *= (IOFactor + 1f);
+                } else if (TYPE == ModelType.Network) {
+                    int gluIO = gluOut.get(pre) + gluOut.get(post);
+                    int gabaIO = gabaOut.get(pre) + gabaOut.get(post);
+                    float gluIOFactor = gluIO * GLU_IO_COE;
+                    float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
+                    float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
+                    p *= (IOFactor + 1f);
+                } else if (TYPE == ModelType.Ctrl) {
+                    p *= 10;
+                }
+                /*
+                 * Active or not
+                 */
+                return p > r.nextFloat() ? true : false;
+            }
+        }
+        int threads = Runtime.getRuntime().availableProcessors();
+        ExecutorService es = Executors.newFixedThreadPool(threads);
+        Queue<Future<Queue<Queue<int[]>>>> handles = new LinkedList<>();
+
+        for (int div = 5; div < 9; div++) {
+
+//while        
+            for (Integer key : keys) {
+
+                handles.add(es.submit(new genConn(unconnPair.getList(key), div)));
+            }
+
+//        runState = RunState.GeneratingNet;
+
+            for (Future<Queue<Queue<int[]>>> handle : handles) {
+                try {
+                    Queue<Queue<int[]>> q = handle.get();
+                    Queue<int[]> conned = q.poll();
+                    for (int[] pair : conned) {
+                        connected.add((pair[0] << 12) + pair[1]);
+                    }
+
+
+                } catch (InterruptedException | ExecutionException ex) {
+                    System.out.println("Net Model, Get Que");
+                    System.out.println(ex.toString());
+
+
+                }
+            }
+            //while end
+        }
+
+
+    }
+
     class Monitor {
 
-        final private Map<Integer, List<int[]>> toConn;
-        final int distBinCount = 7;//Less Than 50 100 150 200 250 350 500
+        final private Map<Integer, Queue<int[]>> toConn;
+        final private int distBinCount = 7;//Less Than 50 100 150 200 250 350 500
+        final private Queue<Integer> keySet;
 
         public Monitor() {
             toConn = new HashMap<>();
+            keySet = new LinkedList<>();
             for (int i = 0; i < distBinCount; i++) {
-                Integer newKey = iterateKey(true, true, i);
-                toConn.put(newKey, new ArrayList<int[]>());
-                newKey = iterateKey(true, false, i);
-                toConn.put(newKey, new ArrayList<int[]>());
-                newKey = iterateKey(false, true, i);
-                toConn.put(newKey, new ArrayList<int[]>());
-                newKey = iterateKey(false, false, i);
-                toConn.put(newKey, new ArrayList<int[]>());
+                keySet.add(iterateKey(true, true, i));
+                keySet.add(iterateKey(true, false, i));
+                keySet.add(iterateKey(false, true, i));
+                keySet.add(iterateKey(false, false, i));
             }
+            for (Integer key : keySet) {
+                toConn.put(key, new LinkedList<int[]>());
+            }
+
         }
 
         private Integer iterateKey(boolean preGlu, boolean postGlu, int distBin) {
@@ -980,6 +1134,30 @@ public class ModelNewN {
             int[] newPair = {pre, post};
             toConn.get(mapKey).add(newPair);
         }
-//        private void init
+
+        public void addAll(Monitor input) {
+            for (Integer key : keySet) {
+                toConn.get(key).addAll(input.getList(key));
+            }
+        }
+
+        public Queue<int[]> getList(Integer key) {
+            return toConn.get(key);
+        }
+
+        public Queue<Integer> getKeySet() {
+            return keySet;
+        }
+
+        public void listAll() {
+            System.out.println("List Map Sizes");
+            int total = 0;
+            for (Integer key : keySet) {
+                System.out.print(key + ",");
+                System.out.println(toConn.get(key).size());
+                total += toConn.get(key).size();
+            }
+            System.out.println("total " + total);
+        }
     }
 }

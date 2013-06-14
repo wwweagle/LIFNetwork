@@ -33,8 +33,8 @@ public class ModelDB {
                 + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
-                            ResultSet.TYPE_SCROLL_INSENSITIVE,
-                            ResultSet.CONCUR_READ_ONLY)) {
+                    ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY)) {
                 String qryStr = "SELECT DISTINCT tblCellwCoord.RecordDate, tblCellwCoord.CultureDate, tblCellwCoord.GroupNo, tblCellwCoord.DIV, tblCellwCoord.CellID AS id1, tblCellwCoord_1.CellID AS id2, tblCellwCoord.GAD, tblCellwCoord_1.GAD AS revGAD, tblCellwCoord.CellX, tblCellwCoord.CellY, tblCellwCoord_1.CellX, tblCellwCoord_1.CellY "
                         + "FROM tblCellwCoord INNER JOIN tblCellwCoord AS tblCellwCoord_1 ON tblCellwCoord.GroupNo = tblCellwCoord_1.GroupNo AND tblCellwCoord.RecordDate = tblCellwCoord_1.RecordDate "
                         + "WHERE tblCellwCoord_1.CellID<>tblCellwCoord.CellID "
@@ -71,8 +71,8 @@ public class ModelDB {
                 + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
-                            ResultSet.TYPE_SCROLL_INSENSITIVE,
-                            ResultSet.CONCUR_READ_ONLY)) {
+                    ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY)) {
                 String qryStr = "SELECT DISTINCT tblCellwCoord.DIV, tblCellwCoord.GAD, tblCellwCoord_1.GAD, tblCellwCoord.CellX, tblCellwCoord.CellY, tblCellwCoord_1.CellX, tblCellwCoord_1.CellY, tblConnection.PreCellID, tblConnection.PostCellID "
                         + "FROM (tblConnection INNER JOIN tblCellwCoord ON tblConnection.PreCellID = tblCellwCoord.CellID) INNER JOIN tblCellwCoord AS tblCellwCoord_1 ON tblConnection.PostCellID = tblCellwCoord_1.CellID; ";
                 ResultSet rs = stmt.executeQuery(qryStr);
@@ -141,8 +141,9 @@ public class ModelDB {
         ArrayList<HashMap<Integer, Integer>> connsMaps = getConnMap();
         for (int div = 0; div < 4; div++) {
             for (Integer i : allSlot) {
-                int nConn = connsMaps.get(div).containsKey(i) ? connsMaps.get(div).get(i) : 0;
-                float ratio = (float) nConn / slotsMaps.get(div).get(i);
+                float ratio = (connsMaps.get(div).containsKey(i)
+                        ? ((float) connsMaps.get(div).get(i) / slotsMaps.get(div).get(i))
+                        : 0);
                 pBases.get(div).put(i, ratio);
             }
         }
@@ -155,8 +156,8 @@ public class ModelDB {
                 + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
-                            ResultSet.TYPE_FORWARD_ONLY,
-                            ResultSet.CONCUR_READ_ONLY)) {
+                    ResultSet.TYPE_FORWARD_ONLY,
+                    ResultSet.CONCUR_READ_ONLY)) {
                 String qryStr = "SELECT qGroupSizenCell.Size, Count(qGroupSizenCell.GroupNo) AS Sum "
                         + "FROM qGroupSizenCell "
                         + "GROUP BY qGroupSizenCell.Size;";
