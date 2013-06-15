@@ -84,6 +84,7 @@ public class CanvasBean extends JPanel implements Serializable {
 //    }
     public void setCellList(ArrayList<RndCell> cellList) {
         this.cellList = cellList;
+        System.out.println("Canvas noticed cell number " + cellList.size());
     }
 
     public void setModelDim(int dim) {
@@ -92,6 +93,7 @@ public class CanvasBean extends JPanel implements Serializable {
 
     public void setConnected(Set<Integer> connected) {
         this.connected = connected;
+        System.out.println("Canvas noticed conn number " + this.connected.size());
     }
 
     private void drawBG() {

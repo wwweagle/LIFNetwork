@@ -825,9 +825,9 @@ public class ModelUI extends javax.swing.JFrame {
 
                 circuitView.setDim(m0.getDimension());
                 circuitView.setCellList(m0.getCellList());
-                circuitView.setMyWorker(this);
+//                circuitView.setMyWorker(this);
 
-                final ScheduledExecutorService ses = Executors.newScheduledThreadPool(2);
+                final ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
                 final Runnable displayUpdate = new Runnable() {
                     @Override
                     public void run() {

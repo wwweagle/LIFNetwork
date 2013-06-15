@@ -1076,7 +1076,7 @@ public class ModelNewN {
         int threads = Runtime.getRuntime().availableProcessors();
         ExecutorService es = Executors.newFixedThreadPool(threads);
 
-
+        runState=RunState.GeneratingNet;
         for (int div = 5; div < 9; div++) {
             progressUpdate("Modeling Div " + div);
             Map<Integer, Integer> connNeedPerDiv = connNeeded.get(div - 5);

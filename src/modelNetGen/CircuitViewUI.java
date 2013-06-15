@@ -184,12 +184,12 @@ public class CircuitViewUI extends javax.swing.JFrame {
         Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
     }
 
-    public void setMyWorker(SwingWorker worker) {
-        this.myWorker = worker;
-    }
-
-    public SwingWorker getMyWorker() {
-        return myWorker;
-    }
-    SwingWorker myWorker;
+//    public void setMyWorker(SwingWorker worker) {
+//        this.myWorker = worker;
+//    }
+//
+//    public SwingWorker getMyWorker() {
+//        return myWorker;
+//    }
+//    SwingWorker myWorker;
 }
