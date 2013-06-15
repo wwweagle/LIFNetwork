@@ -23,11 +23,12 @@ public class FilesCommons {
             return pathToFile;
         }
 
-        pathToFile = "C:\\Users\\Librizzy\\Desktop\\CircuitData\\GAD0.accdb";
+        pathToFile = "GAD0.accdb";
         f = new File(pathToFile);
         if (f.exists()) {
-            return pathToFile;
+            return f.getAbsolutePath();
         }
+        
 
         javax.swing.JFileChooser DataFileChooser = new javax.swing.JFileChooser();
 

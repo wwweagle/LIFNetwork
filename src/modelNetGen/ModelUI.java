@@ -673,7 +673,7 @@ public class ModelUI extends javax.swing.JFrame {
                 m0.setWriteFile(chkWriteFile.isSelected());
                 m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
                 updateProgress();
-                m0.genModelNetwork();
+                m0.genModelNetworkNew(pathToFile);
                 return null;
             }
         }).execute();
@@ -808,7 +808,7 @@ public class ModelUI extends javax.swing.JFrame {
                 updateProgress();
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
                 m0.setCell(neuronNum, 8429, 0.76708864f);
-                m0.init(pathToFile);
+                m0.init();
                 return null;
             }
         };
