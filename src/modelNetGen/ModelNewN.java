@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +39,8 @@ import savedParameters.NetworkParameters;
 public class ModelNewN {
 
     final private RandomGenerator r;
-    private ArrayList<RndCell> cellList;
-    private Set<Integer> connected;
+    final private ArrayList<RndCell> cellList;
+    final private Set<Integer> connected;
     private AtomicIntegerArray gluIn;
     private AtomicIntegerArray gluOut;
     private AtomicIntegerArray gabaIn;
@@ -79,6 +78,8 @@ public class ModelNewN {
         runState = RunState.Instantiated;
         updates = new LinkedList<>();
         progress = 0;
+        connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+        cellList = new ArrayList<>();
     }
 
     public void setType(ModelType type) {
@@ -95,7 +96,6 @@ public class ModelNewN {
             return false;
         }
         allPair = genPairMonitor();
-        connected = new HashSet<>();
         //Init conn target number
 
 
@@ -134,7 +134,6 @@ public class ModelNewN {
 
     public void setCell(int nCell, int density, float gluRate) {
         dim = getDimension(nCell, density);
-        cellList = new ArrayList<>();
         for (int i = 0; i < nCell; i++) {
             RndCell newCell = new RndCell(dim, gluRate);
             cellList.add(newCell);
@@ -986,7 +985,7 @@ public class ModelNewN {
 
         //Tool Variables
         final int nCell = cellList.size();
-        connected = new HashSet<>();
+        connected.clear();
         gluIn = new AtomicIntegerArray(nCell);
         gluOut = new AtomicIntegerArray(nCell);
         gabaIn = new AtomicIntegerArray(nCell);
@@ -1076,7 +1075,7 @@ public class ModelNewN {
         int threads = Runtime.getRuntime().availableProcessors();
         ExecutorService es = Executors.newFixedThreadPool(threads);
 
-        runState=RunState.GeneratingNet;
+        runState = RunState.GeneratingNet;
         for (int div = 5; div < 9; div++) {
             progressUpdate("Modeling Div " + div);
             Map<Integer, Integer> connNeedPerDiv = connNeeded.get(div - 5);

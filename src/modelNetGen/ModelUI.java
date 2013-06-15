@@ -819,6 +819,7 @@ public class ModelUI extends javax.swing.JFrame {
         (new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
+//                System.out.println("model inited");
                 circuitView = new CircuitViewUI();
                 circuitView.setNetworkType(modelType);
                 circuitView.setVisible(true);
@@ -831,20 +832,29 @@ public class ModelUI extends javax.swing.JFrame {
                 final Runnable displayUpdate = new Runnable() {
                     @Override
                     public void run() {
+                        System.out.println("update");
                         if (!circuitView.isVisible()) {
                             btnShow.setEnabled(true);
                             ses.shutdown();
                         }
                         if (m0.getRunState() == RunState.GeneratingNet) {
+                            System.out.println("ready update");
+                            try{
                             circuitView.setConnected(new HashSet<>(m0.getConnected()));
+                            }catch (Throwable ex){
+                                System.out.println(ex.toString());
+                            }
                             circuitView.repaintCanvas();
+                            System.out.println("update success");
                         }
 
                         if (m0.getRunState() == RunState.NetGenerated) {
                             circuitView.setConnected(new HashSet<>(m0.getConnected()));
                             circuitView.repaintCanvas();
+                            System.out.println("ses is shutting down");
                             ses.shutdown();
                         }
+                        System.out.println("update finished");
                     }
                 };
                 ses.scheduleWithFixedDelay(displayUpdate, 1, 1, TimeUnit.SECONDS);
