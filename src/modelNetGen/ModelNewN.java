@@ -975,13 +975,16 @@ public class ModelNewN {
             connNeeded = new ArrayList<>();
             for (int i = 0; i < obsConnProfile.size(); i++) {
                 System.out.println();
-                System.out.print("div"+(i+5)+"\t");
                 Map<Integer, Integer> needed = new HashMap<>();
                 for (Integer key : keys) {
                     if (obsConnProfile.get(i).containsKey(key)) {
-                        needed.put(key, Math.round(
-                                obsConnProfile.get(i).get(key) * allPair.getList(key).size()));
-                        System.out.print("\t key\t"+key+"\tratio\t"+obsConnProfile.get(i).get(key)+"\tnum\t"+needed.get(key));
+                        int currNeed = Math.round(
+                                obsConnProfile.get(i).get(key) * allPair.getList(key).size());
+                        for (int j = i-1; j >= 0; j--) { // diffential growth
+                            currNeed -= (connNeeded.get(j).containsKey(key))
+                                    ? connNeeded.get(j).get(key) : 0;
+                        }
+                        needed.put(key, currNeed);
                     }
                 }
                 connNeeded.add(i, needed);
@@ -1007,23 +1010,21 @@ public class ModelNewN {
                 final private Queue<int[]> toConn;
                 final private int nConnNeeded;
                 final private float prob;
-                final private int key;//TODO remove after debug
 
-                public genConn(Queue<int[]> toConn, int nNeeded, float prob, int key) {
+                public genConn(Queue<int[]> toConn, int nNeeded, float prob) {
                     this.toConn = toConn;
                     this.conned = new LinkedList<>();
                     this.unConned = new LinkedList<>();
                     this.nConnNeeded = nNeeded;
                     this.prob = prob;
-                    this.key=key;
                 }
 
                 @Override
                 public Queue<Queue<int[]>> call() {
 //                System.out.println("615 called generation");
                     int newConn = 0;
-                    System.out.println(key+"\t"+toConn.size()+"\t"+nConnNeeded);
-                                        
+//                    System.out.println(key + "\t" + toConn.size() + "\t" + nConnNeeded);
+
                     for (int[] pair : toConn) {
                         if (newConn >= nConnNeeded) {
                             break;
@@ -1084,17 +1085,11 @@ public class ModelNewN {
             ExecutorService es = Executors.newFixedThreadPool(threads);
 
             runState = RunState.GeneratingNet;
-            for (int div = 5; div < 9; div++) {
-                progressUpdate("Modeling Div " + div);
-                Map<Integer, Integer> connNeedPerDiv = connNeeded.get(div - 5);
-                Map<Integer, Float> probMap = obsConnProfile.get(div - 5);
-//            Queueue<Integer> toConn = new LinkedList<>();
-//            for (Integer key : connNeedPerDiv.keySet()) {
-//                if (connNeedPerDiv.get(key)
-//                        > (connNeedPerDiv.get(key) - unconnPair.getList(key).size())) {
-//                    toConn.add(key);
-//                }
-//            }
+            for (int div = 0; div < 4; div++) { //bias by 5
+                progressUpdate("Modeling Div " + (div + 5));
+                Map<Integer, Integer> connNeedPerDiv = connNeeded.get(div);
+                Map<Integer, Float> probMap = obsConnProfile.get(div);
+
                 int totalProgress = connNeedPerDiv.size();
                 while (connNeedPerDiv.size() > 0 && runState != RunState.UserRequestStop) {
                     setProgress(totalProgress - connNeedPerDiv.size(), totalProgress);
@@ -1105,7 +1100,7 @@ public class ModelNewN {
                         int toConn = connNeedPerDiv.get(key);
                         float prob = probMap.get(key) / ITERATE_FACTOR;
                         keyList.offer(key);
-                        handles.offer(es.submit(new genConn(unconnPair.getList(key), toConn, prob,key)));
+                        handles.offer(es.submit(new genConn(unconnPair.getList(key), toConn, prob)));
                     }
 
 //        runState = RunState.GeneratingNet;
