@@ -78,7 +78,7 @@ public class ModelNewN {
         runState = RunState.Instantiated;
         updates = new LinkedList<>();
         progress = 0;
-        connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+        connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>(30000));
         cellList = new ArrayList<>();
     }
 
@@ -965,121 +965,129 @@ public class ModelNewN {
 //    }
 
     public void genModelNetworkNew(String pathToFile) {
-        //Target Numbers
-        List<Map<Integer, Integer>> connNeeded;
-        ModelDB db = new ModelDB(pathToFile);
-        List<HashMap<Integer, Float>> obsConnProfile;
-        obsConnProfile = db.getPBase();
-        Queue<Integer> keys = allPair.getKeySet();
-        connNeeded = new ArrayList<>();
-        for (int i = 0; i < obsConnProfile.size(); i++) {
-            Map<Integer, Integer> needed = new HashMap<>();
-            for (Integer key : keys) {
-                if (obsConnProfile.get(i).containsKey(key)) {
-                    needed.put(key, Math.round(
-                            obsConnProfile.get(i).get(key) * allPair.getList(key).size()));
+        try {
+            //Target Numbers
+            List<Map<Integer, Integer>> connNeeded;
+            ModelDB db = new ModelDB(pathToFile);
+            List<HashMap<Integer, Float>> obsConnProfile;
+            obsConnProfile = db.getPBase();
+            Queue<Integer> keys = allPair.getKeySet();
+            connNeeded = new ArrayList<>();
+            for (int i = 0; i < obsConnProfile.size(); i++) {
+                System.out.println();
+                System.out.print("div"+(i+5)+"\t");
+                Map<Integer, Integer> needed = new HashMap<>();
+                for (Integer key : keys) {
+                    if (obsConnProfile.get(i).containsKey(key)) {
+                        needed.put(key, Math.round(
+                                obsConnProfile.get(i).get(key) * allPair.getList(key).size()));
+                        System.out.print("\t key\t"+key+"\tratio\t"+obsConnProfile.get(i).get(key)+"\tnum\t"+needed.get(key));
+                    }
                 }
-            }
-            connNeeded.add(i, needed);
-        }
-
-        //Tool Variables
-        final int nCell = cellList.size();
-        connected.clear();
-        gluIn = new AtomicIntegerArray(nCell);
-        gluOut = new AtomicIntegerArray(nCell);
-        gabaIn = new AtomicIntegerArray(nCell);
-        gabaOut = new AtomicIntegerArray(nCell);
-
-
-        //TODO if allPair is not used elsewhere should move here locally
-
-        unconnPair = new Monitor();
-        unconnPair.addAll(allPair);
-        class genConn implements Callable<Queue<Queue<int[]>>> {
-
-            final private Queue<int[]> conned;
-            final private Queue<int[]> unConned;
-            final private Queue<int[]> toConn;
-            final private int nConnNeeded;
-            final private float prob;
-
-            public genConn(Queue<int[]> toConn, int nNeeded, float prob) {
-                this.toConn = toConn;
-                this.conned = new LinkedList<>();
-                this.unConned = new LinkedList<>();
-                this.nConnNeeded = nNeeded;
-                this.prob = prob;
+                connNeeded.add(i, needed);
             }
 
-            @Override
-            public Queue<Queue<int[]>> call() {
+            //Tool Variables
+            final int nCell = cellList.size();
+            connected.clear();
+            gluIn = new AtomicIntegerArray(nCell);
+            gluOut = new AtomicIntegerArray(nCell);
+            gabaIn = new AtomicIntegerArray(nCell);
+            gabaOut = new AtomicIntegerArray(nCell);
+
+
+            //TODO if allPair is not used elsewhere should move here locally
+
+            unconnPair = new Monitor();
+            unconnPair.addAll(allPair);
+            class genConn implements Callable<Queue<Queue<int[]>>> {
+
+                final private Queue<int[]> conned;
+                final private Queue<int[]> unConned;
+                final private Queue<int[]> toConn;
+                final private int nConnNeeded;
+                final private float prob;
+                final private int key;//TODO remove after debug
+
+                public genConn(Queue<int[]> toConn, int nNeeded, float prob, int key) {
+                    this.toConn = toConn;
+                    this.conned = new LinkedList<>();
+                    this.unConned = new LinkedList<>();
+                    this.nConnNeeded = nNeeded;
+                    this.prob = prob;
+                    this.key=key;
+                }
+
+                @Override
+                public Queue<Queue<int[]>> call() {
 //                System.out.println("615 called generation");
-                int newConn = 0;
-                for (int[] pair : toConn) {
-                    if (newConn >= nConnNeeded) {
-                        break;
-                    }
-                    if (newConnection(prob, pair[0], pair[1])) {
-                        if (cellList.get(pair[0]).isGlu()) {
-                            gluOut.incrementAndGet(pair[0]);
-                            gluIn.incrementAndGet(pair[1]);
-                        } else {
-                            gabaOut.incrementAndGet(pair[0]);
-                            gabaIn.incrementAndGet(pair[1]);
+                    int newConn = 0;
+                    System.out.println(key+"\t"+toConn.size()+"\t"+nConnNeeded);
+                                        
+                    for (int[] pair : toConn) {
+                        if (newConn >= nConnNeeded) {
+                            break;
                         }
-                        conned.add(pair);
-                        newConn++;
-                        //if fulfill break
-                    } else {
-                        unConned.add(pair);
+                        if (newConnection(prob, pair[0], pair[1])) {
+                            if (cellList.get(pair[0]).isGlu()) {
+                                gluOut.incrementAndGet(pair[0]);
+                                gluIn.incrementAndGet(pair[1]);
+                            } else {
+                                gabaOut.incrementAndGet(pair[0]);
+                                gabaIn.incrementAndGet(pair[1]);
+                            }
+                            conned.add(pair);
+                            newConn++;
+                            //if fulfill break
+                        } else {
+                            unConned.add(pair);
+                        }
                     }
-                }
-                Queue<Queue<int[]>> rtn = new LinkedList<>();
-                rtn.offer(conned);
-                rtn.offer(unConned);
+                    Queue<Queue<int[]>> rtn = new LinkedList<>();
+                    rtn.offer(conned);
+                    rtn.offer(unConned);
 //                System.out.println("615 returned que");
-                return rtn;
-            }
-
-            boolean newConnection(float prob, int pre, int post) {//from 1 to 2
-//                System.out.println("615 enter new conn");
-                float p = prob;
-                /*
-                 * Activity dependent connection
-                 */
-                if (TYPE == ModelType.NetworkBiDir) {
-                    int gluIO = gluIn.get(pre) + gluIn.get(post) + gluOut.get(pre) + gluOut.get(post);
-                    int gabaIO = gabaIn.get(pre) + gabaIn.get(post) + gabaOut.get(pre) + gabaOut.get(post);
-                    float gluIOFactor = gluIO * GLU_IO_COE;
-                    float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
-                    float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
-                    p *= (IOFactor + 1f);
-                } else if (TYPE == ModelType.Network) {
-                    int gluIO = gluOut.get(pre) + gluOut.get(post);
-                    int gabaIO = gabaOut.get(pre) + gabaOut.get(post);
-                    float gluIOFactor = gluIO * GLU_IO_COE;
-                    float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
-                    float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
-                    p *= (IOFactor + 1f);
-                } else if (TYPE == ModelType.Ctrl) {
-                    p *= 10;
+                    return rtn;
                 }
-                /*
-                 * Active or not
-                 */
-//                System.out.println("615 ended new conn");
-                return p > r.nextFloat() ? true : false;
-            }
-        }
-        int threads = Runtime.getRuntime().availableProcessors();
-        ExecutorService es = Executors.newFixedThreadPool(threads);
 
-        runState = RunState.GeneratingNet;
-        for (int div = 5; div < 9; div++) {
-            progressUpdate("Modeling Div " + div);
-            Map<Integer, Integer> connNeedPerDiv = connNeeded.get(div - 5);
-            Map<Integer, Float> probMap = obsConnProfile.get(div - 5);
+                boolean newConnection(float prob, int pre, int post) {//from 1 to 2
+//                System.out.println("615 enter new conn");
+                    float p = prob;
+                    /*
+                     * Activity dependent connection
+                     */
+                    if (TYPE == ModelType.NetworkBiDir) {
+                        int gluIO = gluIn.get(pre) + gluIn.get(post) + gluOut.get(pre) + gluOut.get(post);
+                        int gabaIO = gabaIn.get(pre) + gabaIn.get(post) + gabaOut.get(pre) + gabaOut.get(post);
+                        float gluIOFactor = gluIO * GLU_IO_COE;
+                        float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
+                        float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
+                        p *= (IOFactor + 1f);
+                    } else if (TYPE == ModelType.Network) {
+                        int gluIO = gluOut.get(pre) + gluOut.get(post);
+                        int gabaIO = gabaOut.get(pre) + gabaOut.get(post);
+                        float gluIOFactor = gluIO * GLU_IO_COE;
+                        float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
+                        float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
+                        p *= (IOFactor + 1f);
+                    } else if (TYPE == ModelType.Ctrl) {
+                        p *= 10;
+                    }
+                    /*
+                     * Active or not
+                     */
+//                System.out.println("615 ended new conn");
+                    return p > r.nextFloat() ? true : false;
+                }
+            }
+            int threads = Runtime.getRuntime().availableProcessors();
+            ExecutorService es = Executors.newFixedThreadPool(threads);
+
+            runState = RunState.GeneratingNet;
+            for (int div = 5; div < 9; div++) {
+                progressUpdate("Modeling Div " + div);
+                Map<Integer, Integer> connNeedPerDiv = connNeeded.get(div - 5);
+                Map<Integer, Float> probMap = obsConnProfile.get(div - 5);
 //            Queueue<Integer> toConn = new LinkedList<>();
 //            for (Integer key : connNeedPerDiv.keySet()) {
 //                if (connNeedPerDiv.get(key)
@@ -1087,51 +1095,53 @@ public class ModelNewN {
 //                    toConn.add(key);
 //                }
 //            }
-            int totalProgress = connNeedPerDiv.size();
-            while (connNeedPerDiv.size() > 0 && runState != RunState.UserRequestStop) {
-                setProgress(totalProgress - connNeedPerDiv.size(), totalProgress);
-                Queue<Integer> keyList = new LinkedList<>();
-                Queue<Future<Queue<Queue<int[]>>>> handles = new LinkedList<>();
-                Set<Integer> keysNeeded = connNeedPerDiv.keySet();
-                for (Integer key : keysNeeded) {
-                    int toConn = connNeedPerDiv.get(key);
-                    float prob = probMap.get(key) / ITERATE_FACTOR;
-                    keyList.offer(key);
-                    handles.offer(es.submit(new genConn(unconnPair.getList(key), toConn, prob)));
-                }
+                int totalProgress = connNeedPerDiv.size();
+                while (connNeedPerDiv.size() > 0 && runState != RunState.UserRequestStop) {
+                    setProgress(totalProgress - connNeedPerDiv.size(), totalProgress);
+                    Queue<Integer> keyList = new LinkedList<>();
+                    Queue<Future<Queue<Queue<int[]>>>> handles = new LinkedList<>();
+                    Set<Integer> keysNeeded = connNeedPerDiv.keySet();
+                    for (Integer key : keysNeeded) {
+                        int toConn = connNeedPerDiv.get(key);
+                        float prob = probMap.get(key) / ITERATE_FACTOR;
+                        keyList.offer(key);
+                        handles.offer(es.submit(new genConn(unconnPair.getList(key), toConn, prob,key)));
+                    }
 
 //        runState = RunState.GeneratingNet;
 
-                while (handles.size() > 0) {
-                    try {
-                        Integer key = keyList.poll();
-                        Future<Queue<Queue<int[]>>> handle = handles.poll();
-                        Queue<Queue<int[]>> q = handle.get();
-                        Queue<int[]> conned = q.poll();
-                        int newConn = conned.size();
-                        for (int[] pair : conned) {
-                            connected.add((pair[0] << 12) + pair[1]);
+                    while (handles.size() > 0) {
+                        try {
+                            Integer key = keyList.poll();
+                            Future<Queue<Queue<int[]>>> handle = handles.poll();
+                            Queue<Queue<int[]>> q = handle.get();
+                            Queue<int[]> conned = q.poll();
+                            int newConn = conned.size();
+                            for (int[] pair : conned) {
+                                connected.add((pair[0] << 12) + pair[1]);
+                            }
+                            int wasNeeded = connNeedPerDiv.get(key);
+                            if (wasNeeded <= newConn) {
+                                connNeedPerDiv.remove(key);
+                            } else {
+                                connNeedPerDiv.put(key, wasNeeded - newConn);
+                                Queue<int[]> stillNeedConn = q.poll();
+                                unconnPair.setList(key, stillNeedConn);
+                            }
+                        } catch (InterruptedException | ExecutionException ex) {
+                            System.out.println("Net Model, Get Que");
+                            System.out.println(ex.toString());
                         }
-                        int wasNeeded = connNeedPerDiv.get(key);
-                        if (wasNeeded <= newConn) {
-                            connNeedPerDiv.remove(key);
-                        } else {
-                            connNeedPerDiv.put(key, wasNeeded - newConn);
-                            Queue<int[]> stillNeedConn = q.poll();
-                            unconnPair.setList(key, stillNeedConn);
-                        }
-                    } catch (InterruptedException | ExecutionException ex) {
-                        System.out.println("Net Model, Get Que");
-                        System.out.println(ex.toString());
                     }
                 }
+                //while end
             }
-            //while end
+            //for div 5-9 end
+            runState = (runState == RunState.UserRequestStop) ? RunState.StoppedByUser : RunState.NetGenerated;
+            sumUp();
+        } catch (Throwable ex) {
+            System.out.println(ex.toString());
         }
-        //for div 5-9 end
-        runState = (runState == RunState.UserRequestStop) ? RunState.StoppedByUser : RunState.NetGenerated;
-        sumUp();
-
     }
 
     class Monitor {
