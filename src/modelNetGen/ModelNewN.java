@@ -58,8 +58,6 @@ public class ModelNewN {
     private float connProbScale;
     private boolean writeFile;
     private float weightScale;
-    private Monitor allPair;
-    private Monitor unconnPair;
 
     /**
      * Build a new iterate model
@@ -95,7 +93,7 @@ public class ModelNewN {
         if (cellList.size() < 3) {
             return false;
         }
-        allPair = genPairMonitor();
+
         //Init conn target number
 
 
@@ -170,81 +168,6 @@ public class ModelNewN {
 
     }
 
-    private HashMap<Integer, Float> genConnProfile(Monitor allPair, Monitor unconnPair) {
-        HashMap<Integer, Float> currConnProfile = new HashMap<>();
-//        HashMap<Integer, Integer> slotMap = new HashMap<>();
-//        HashMap<Integer, Integer> connMap = new HashMap<>();
-
-        Queue<Integer> keySet = allPair.getKeySet();
-        for (Integer key : keySet) {
-            float ratio = 1 - (unconnPair.getList(key).size() / allPair.getList(key).size());
-            currConnProfile.put(key, ratio);
-        }
-        return currConnProfile;
-//
-//        for (int[] pair : monitorPairSet) {
-//            int setKey = Com.getSetKey(pair[0], pair[1]);
-//            int mapKey = Com.getMapKey(pair[0], pair[1], cellList);
-//
-//            Com.sAdd(slotMap, mapKey);
-//            if (connected.contains(setKey)) {
-//                Com.sAdd(connMap, mapKey);
-//            }
-//        }
-////TEMP TEST
-//        Set<Map.Entry<Integer, Integer>> slots = slotMap.entrySet();
-//        for (Map.Entry<Integer, Integer> ent : slots) {
-////            int boolFwd = (ent.getKey() >>> 13);
-////            int boolRev = ((ent.getKey() & 4096) >>> 12);
-////            int distZ = ent.getKey() & 4095;
-//            int nSlot = ent.getValue();
-//            int nConn = Com.sGet(connMap, ent.getKey());
-//            float ratio = (float) nConn / nSlot;
-//            currConnProfile.put(ent.getKey(), ratio);
-////            D.tp(boolFwd + "," + boolRev + "," + distZ + "," + r);
-//        }
-////        D.tp("pass");
-
-    }
-//
-//    public boolean fullfilled(int div, float ratio) {
-////        float connRatio = ratio.length == 0 ? 0.99f : ratio[0];
-////        D.tpi("enter fullfill");
-////        HashMap<Integer, Float> obsConnProfile = obsConnProfile;
-//        HashMap<Integer, Float> genMap = genConnProfile(allPair, unconnPair);
-//        Set<Map.Entry<Integer, Float>> oriSet = obsConnProfile.get(div - 5).entrySet();
-//
-//        int count = 0;
-//        for (Map.Entry<Integer, Float> ent : oriSet) {
-//            int key = ent.getKey();
-//            if (genMap.containsKey(key) && (genMap.get(key) >= (ent.getValue() * ratio))) {
-//                count++;
-//                filled.add(key);
-//                if (count >= oriSet.size()) {
-////                    directUpdate(count + "/" + oriSet.size() + " catagories met");
-////                    directUpdate("Generation complete.");
-////                    //                    TEMP DEBUG
-////                    D.tp("ratio check: div" + div);
-////                    for (Map.Entry<Integer, Float> chkEnt : oriSet) {
-////                        D.tp(chkEnt.getKey(), chkEnt.getValue());
-////                    }
-////                    D.tp("gen");
-////                    Set<Map.Entry<Integer, Float>> genSet = genMap.entrySet();
-////                    for (Map.Entry<Integer, Float> chkEnt : genSet) {
-////                        D.tp(chkEnt.getKey(), chkEnt.getValue());
-////                    }//END DEBUG
-//
-//                    return true;
-//                }
-//            }
-//        }
-//        setProgress(count, oriSet.size());
-////        m0.updateProfile(gen);
-//
-////        D.tp("pass fullfill");
-//        return false;
-//    }
-
     private Set<int[]> genGrpMonitor(int size, int timeInS) {
         int threads = Runtime.getRuntime().availableProcessors();
         ExecutorService es = Executors.newFixedThreadPool(threads);
@@ -268,39 +191,6 @@ public class ModelNewN {
         progressUpdate("Stop Signal Sent");
         progressUpdate("monitor size:" + monitor.size());
         return monitor;
-    }
-
-    private int[][] genPairMonitor(int timeInS) {
-        int threads = Runtime.getRuntime().availableProcessors();
-        ExecutorService es = Executors.newFixedThreadPool(threads);
-        Set<int[]> monitor = Collections.newSetFromMap(new ConcurrentHashMap<int[], Boolean>());
-        Set<Integer> had = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
-        CountDownLatch cdl = new CountDownLatch(threads);
-        genPairsClass[] genPairs = new genPairsClass[threads];
-        progressUpdate("build up monitor in " + timeInS + " seconds");
-
-        for (int i = 0; i < threads; i++) {
-            genPairs[i] = new genPairsClass(monitor, had, cdl);
-            es.execute(genPairs[i]);
-            genPairs[i].startTimer(timeInS);
-        }
-
-        try {
-            cdl.await();
-        } catch (InterruptedException e) {
-        }
-//        directUpdate("Stop Signal Sent");
-        int[][] monitorArr = new int[monitor.size() * 2][2];
-        int i = 0;
-        for (int[] pair : monitor) {
-            monitorArr[i] = pair;
-            i++;
-            int[] rev = {pair[1], pair[0]};
-            monitorArr[i] = rev;
-            i++;
-        }
-        progressUpdate("monitor size:" + monitor.size());
-        return monitorArr;
     }
 
     private Monitor genPairMonitor() {
@@ -368,6 +258,7 @@ public class ModelNewN {
 //        System.out.println("return monitor");
 //        monitor.listAll();
         progressUpdate("Monitor Generated.");
+//        monitor.listAll();
         return monitor;
     }
 
@@ -455,9 +346,6 @@ public class ModelNewN {
         }
     }
 
-//    public void setTxtProg(JTextArea txtProg) {
-//        this.txtProg = txtProg;
-//    }
     public Set<Integer> getConnected() {
         return connected;
     }
@@ -566,13 +454,8 @@ public class ModelNewN {
     }
 
     public int[] probeCluster(int time, int type, int size) {
-//        HashSet<Long> had = new HashSet<>();
-//        int[][] grpList = new int[sampleSize][size];
-//        for (int i = 0; i < sampleSize; i++) {
-//            grpList[i] = genRndGrp(size, had);
-//        }
+
         Set<int[]> monitorSet = genGrpMonitor(size, time);
-//        D.tp("mon gened");
 
         int[] histo = new int[(size == 3) ? 7 : 13];
         for (int[] grp : monitorSet) {
@@ -588,7 +471,7 @@ public class ModelNewN {
             count += countCluster(type, id3, id2);
 
             /*
-             * This after is unfinished but highly usable
+             * Here after is unfinished but highly usable
              * DO NOT DELETE
              */
             if (size == 4) {
@@ -814,22 +697,22 @@ public class ModelNewN {
             Com.sAdd(gabaInMap, gabaIn.get(i));
             Com.sAdd(gabaOutMap, gabaOut.get(i));
         }
-//        System.out.println("Glu In=====================================");
-//        for (int i = 0; i < gluInMap.size(); i++) {
-//            D.tp(i, gluInMap.get(i));
-//        }
-//        D.tp("Glu Out=====================================");
-//        for (int i = 0; i < gluOutMap.size(); i++) {
-//            D.tp(i, gluInMap.get(i));
-//        }
-//        D.tp("GABA In=====================================");
-//        for (int i = 0; i < gabaInMap.size(); i++) {
-//            D.tp(i, gluInMap.get(i));
-//        }
-//        D.tp("GABA Out=====================================");
-//        for (int i = 0; i < gabaOutMap.size(); i++) {
-//            D.tp(i, gluInMap.get(i));
-//        }
+        System.out.println("Glu In=====================================");
+        for (int i = 0; i < gluInMap.size(); i++) {
+            Com.tp(i, gluInMap.get(i));
+        }
+        Com.tp("Glu Out=====================================");
+        for (int i = 0; i < gluOutMap.size(); i++) {
+            Com.tp(i, gluInMap.get(i));
+        }
+        Com.tp("GABA In=====================================");
+        for (int i = 0; i < gabaInMap.size(); i++) {
+            Com.tp(i, gluInMap.get(i));
+        }
+        Com.tp("GABA Out=====================================");
+        for (int i = 0; i < gabaOutMap.size(); i++) {
+            Com.tp(i, gluInMap.get(i));
+        }
 
     }
 
@@ -858,151 +741,51 @@ public class ModelNewN {
         progressUpdate("Model Generated");
 
     }
-//
-//    public void genModelNetwork() {
-//
-//        final int step = cellList.size() >>> 5;
-//        final ForkJoinPool fjp = new ForkJoinPool();
-//        final AtomicInteger cycleCount = new AtomicInteger();//Default Value is 0      
-//        final int nCell = cellList.size();
-//        connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
-//        gluIn = new AtomicIntegerArray(nCell);
-//        gluOut = new AtomicIntegerArray(nCell);
-//        gabaIn = new AtomicIntegerArray(nCell);
-//        gabaOut = new AtomicIntegerArray(nCell);
-//
-//        /////////////////////////////////////////////////
-//        class GenNewConnection extends RecursiveAction {
-//
-//            int need;
-//            int div;
-//
-//            GenNewConnection(int need, int div) {
-//                this.need = need;
-//                this.div = div;
-//            }
-//
-//            @Override
-//            protected void compute() {
-//                boolean found = false;
-//                if (need == 1) {
-//                    while (runState != RunState.UserRequestStop && !found) {
-////                        int rnd = r.nextInt(monitorPairSet.length);
-////                        int id1 = monitorPairSet[rnd][0];
-////                        int id2 = monitorPairSet[rnd][1];
-////                        if (connected.contains(Com.getSetKey(id1, id2))) {
-////                            continue;
-////                        } else {
-////                            cycleCount.getAndIncrement();
-////                        }
-////                        found = newConnection(div, id1, id2);
-//                    }
-//                } else {
-//                    invokeAll(new GenNewConnection(need - 1, div), new GenNewConnection(1, div));
-//                }
-//            }
-//
-//            boolean newConnection(int div, int id1, int id2) {//from 1 to 2
-//
-//                int mapKey = Com.getMapKey(id1, id2, cellList);
-//
-//                if (filled.contains(mapKey) || (!obsConnProfile.get(div - 5).containsKey(mapKey)) || !cellList.get(id1).near(cellList.get(id2))) {
-//                    return false;
-//                }
-//                float p = obsConnProfile.get(div - 5).get(mapKey) / ITERATE_FACTOR;
-//                /*
-//                 * Activity dependent connection
-//                 */
-//                if (TYPE == ModelType.NetworkBiDir) {
-//                    int gluIO = gluIn.get(id1) + gluIn.get(id2) + gluOut.get(id1) + gluOut.get(id2);
-//                    int gabaIO = gabaIn.get(id1) + gabaIn.get(id2) + gabaOut.get(id1) + gabaOut.get(id2);
-//                    float gluIOFactor = gluIO * GLU_IO_COE;
-//                    float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
-//                    float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
-//                    p *= (IOFactor + 1f);
-//                } else if (TYPE == ModelType.Network) {
-//                    int gluIO = gluOut.get(id1) + gluOut.get(id2);
-//                    int gabaIO = gabaOut.get(id1) + gabaOut.get(id2);
-//                    float gluIOFactor = gluIO * GLU_IO_COE;
-//                    float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
-//                    float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
-//                    p *= (IOFactor + 1f);
-//                } else if (TYPE == ModelType.Ctrl) {
-//                    p *= 10;
-//                }
-//                /*
-//                 * Active or not
-//                 */
-//                if (p > r.nextFloat()) {
-//                    if (cellList.get(id1).isGlu()) {
-//                        gluOut.incrementAndGet(id1);
-//                        gluIn.incrementAndGet(id2);
-//                    } else {
-//                        gabaOut.incrementAndGet(id1);
-//                        gabaIn.incrementAndGet(id2);
-//                    }
-//
-//                    connected.add(Com.getSetKey(id1, id2));
-//
-//                    return true;
-//                }
-//                return false;
-//            }
-//        }
-///////////////////////////////////////////////////
-//        runState = RunState.GeneratingNet;
-//        for (int div = 5; div < 9; div++) {
-//            filled = new HashSet<>();
-//            progressUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + ", DIV" + div + " started");
-//            while (runState != RunState.UserRequestStop && !fullfilled(div, connProbScale)) {
-//                fjp.invoke(new GenNewConnection(step, div));
-//            }
-//            System.out.println(cycleCount.get());
-//        }
-//        runState = RunState.NetGenerated;
-//        sumUp();
-//        progressUpdate("Model Generated");
-//    }
 
-    public void genModelNetworkNew(String pathToFile) {
+    public void genModelNetwork(String pathToFile) {
         try {
             //Target Numbers
-            List<Map<Integer, Integer>> connNeeded;
-            ModelDB db = new ModelDB(pathToFile);
-            List<HashMap<Integer, Float>> obsConnProfile;
-            obsConnProfile = db.getPBase();
-            Queue<Integer> keys = allPair.getKeySet();
-            connNeeded = new ArrayList<>();
-            for (int i = 0; i < obsConnProfile.size(); i++) {
-                System.out.println();
+            final Monitor allPair = genPairMonitor();
+            final Queue<Integer> keys = allPair.getKeySet();
+            final Monitor unconnPair;
+            final List<Map<Integer, Integer>> connNeeded = new ArrayList<>();
+            final ModelDB db = new ModelDB(pathToFile);
+            final List<HashMap<Integer, Float>> obsConnProfile = db.getPBase();
+            for (int i = 0;
+                    i < obsConnProfile.size();
+                    i++) {
+//                Com.tp("div", (i + 5));
                 Map<Integer, Integer> needed = new HashMap<>();
                 for (Integer key : keys) {
                     if (obsConnProfile.get(i).containsKey(key)) {
+
                         int currNeed = Math.round(
                                 obsConnProfile.get(i).get(key) * allPair.getList(key).size());
-                        for (int j = i-1; j >= 0; j--) { // diffential growth
+//                        Com.tp("key", key, "ratio", obsConnProfile.get(i).get(key),"size", allPair.getList(key).size(),"num", currNeed);
+                        for (int j = i - 1; j >= 0; j--) { // diffential growth
                             currNeed -= (connNeeded.get(j).containsKey(key))
                                     ? connNeeded.get(j).get(key) : 0;
                         }
                         needed.put(key, currNeed);
+
                     }
                 }
                 connNeeded.add(i, needed);
-            }
 
+            }
             //Tool Variables
             final int nCell = cellList.size();
+
             connected.clear();
             gluIn = new AtomicIntegerArray(nCell);
             gluOut = new AtomicIntegerArray(nCell);
             gabaIn = new AtomicIntegerArray(nCell);
             gabaOut = new AtomicIntegerArray(nCell);
-
-
             //TODO if allPair is not used elsewhere should move here locally
-
             unconnPair = new Monitor();
+
             unconnPair.addAll(allPair);
+
             class genConn implements Callable<Queue<Queue<int[]>>> {
 
                 final private Queue<int[]> conned;
@@ -1083,9 +866,9 @@ public class ModelNewN {
             }
             int threads = Runtime.getRuntime().availableProcessors();
             ExecutorService es = Executors.newFixedThreadPool(threads);
-
             runState = RunState.GeneratingNet;
-            for (int div = 0; div < 4; div++) { //bias by 5
+            for (int div = 0;
+                    div < 4; div++) { //bias by 5
                 progressUpdate("Modeling Div " + (div + 5));
                 Map<Integer, Integer> connNeedPerDiv = connNeeded.get(div);
                 Map<Integer, Float> probMap = obsConnProfile.get(div);
@@ -1133,9 +916,12 @@ public class ModelNewN {
             }
             //for div 5-9 end
             runState = (runState == RunState.UserRequestStop) ? RunState.StoppedByUser : RunState.NetGenerated;
+
             sumUp();
         } catch (Throwable ex) {
             System.out.println(ex.toString());
+
+
         }
     }
 

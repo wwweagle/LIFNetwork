@@ -89,6 +89,24 @@ public class Com {
         int[] rtn = {preID, postID};
         return rtn;
     }
+
+    public static <T> void tp(T... s) {
+        if (s.length < 1) {
+        } else {
+            for (T str : s) {
+                System.out.print(str);
+                System.out.print("\t");
+            }
+        }
+        System.out.println();
+    }
+
+    public static <T> void tpi(T... s) {
+        for (T str : s) {
+            System.out.print(str);
+            System.out.print("\t");
+        }
+    }
 //
 //    static public int sGet(ConcurrentHashMap<Integer, Integer> map, Integer id) {
 //        return map.containsKey(id) ? map.get(id) : 0;

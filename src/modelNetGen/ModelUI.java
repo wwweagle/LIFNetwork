@@ -673,7 +673,7 @@ public class ModelUI extends javax.swing.JFrame {
                 m0.setWriteFile(chkWriteFile.isSelected());
                 m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
                 updateProgress();
-                m0.genModelNetworkNew(pathToFile);
+                m0.genModelNetwork(pathToFile);
                 return null;
             }
         }).execute();
