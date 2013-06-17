@@ -804,11 +804,9 @@ public class ModelUI extends javax.swing.JFrame {
                 float gabaFac = Float.parseFloat(txtGABAFac.getText());
                 float iterFac = Float.parseFloat(txtIterFac.getText());
                 //TODO need to test pathToFile exist
-                m0 = new ModelNewN(gluFac, gabaFac, iterFac);
-                updateProgress();
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
-                m0.setCell(neuronNum, 8429, 0.76708864f);
-                m0.init();
+                m0 = new ModelNewN(gluFac, gabaFac, iterFac,neuronNum, 8429, 0.76708864f);
+                updateProgress();
                 return null;
             }
         };

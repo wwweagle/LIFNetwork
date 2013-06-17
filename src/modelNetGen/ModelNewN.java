@@ -58,6 +58,7 @@ public class ModelNewN {
     private float connProbScale;
     private boolean writeFile;
     private float weightScale;
+    final private Monitor allPair;
 
     /**
      * Build a new iterate model
@@ -68,7 +69,7 @@ public class ModelNewN {
      * @param gabaE GABA IO coefficient
      * @param iterateFactor Expected average iterate cycle
      */
-    ModelNewN(float gluE, float gabaE, float iterateFactor) {
+    ModelNewN(float gluE, float gabaE, float iterateFactor, int nCell, int density, float gluRate) {
         r = Com.getR();
         this.GLU_IO_COE = gluE;
         this.GABA_IO_COE = gabaE;
@@ -78,6 +79,16 @@ public class ModelNewN {
         progress = 0;
         connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>(30000));
         cellList = new ArrayList<>();
+        dim = getDimension(nCell, density);
+        for (int i = 0; i < nCell; i++) {
+            RndCell newCell = new RndCell(dim, gluRate);
+            cellList.add(newCell);
+        }
+        allPair = genPairMonitor();
+        if (cellList.size() < 3) {
+            progressUpdate("Empty Cell List");
+        }
+        runState = RunState.ReadyGenCells;
     }
 
     public void setType(ModelType type) {
@@ -86,31 +97,6 @@ public class ModelNewN {
 
     public void setDEPOLAR_GABA(boolean DEPOLAR_GABA) {
         this.DEPOLAR_GABA = DEPOLAR_GABA;
-    }
-
-    public boolean init() {
-
-        if (cellList.size() < 3) {
-            return false;
-        }
-
-        //Init conn target number
-
-
-        //temp test
-//        
-//        for (int i = 0; i < connNeeded.size(); i++) {
-//            System.out.println("div "+(i+5));
-//            for (Integer key : keys) {
-//                if(connNeeded.get(i).containsKey(key)){
-//                    System.out.println("key "+key+", value "+connNeeded.get(i).get(key));
-//                }
-//            }
-//        }
-        //finished conn target number
-
-        runState = RunState.ReadyGenCells;
-        return true;
     }
 
     private int getDimension(int nCell, int density) {
@@ -128,14 +114,6 @@ public class ModelNewN {
 
     public int getProgress() {
         return progress;
-    }
-
-    public void setCell(int nCell, int density, float gluRate) {
-        dim = getDimension(nCell, density);
-        for (int i = 0; i < nCell; i++) {
-            RndCell newCell = new RndCell(dim, gluRate);
-            cellList.add(newCell);
-        }
     }
 
     public void setConnProbScale(float connProbScale) {
@@ -745,7 +723,7 @@ public class ModelNewN {
     public void genModelNetwork(String pathToFile) {
         try {
             //Target Numbers
-            final Monitor allPair = genPairMonitor();
+
             final Queue<Integer> keys = allPair.getKeySet();
             final Monitor unconnPair;
             final List<Map<Integer, Integer>> connNeeded = new ArrayList<>();
