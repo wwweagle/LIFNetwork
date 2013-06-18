@@ -85,6 +85,7 @@ public class ModelNewN {
             cellList.add(newCell);
         }
         allPair = genPairMonitor();
+        allPair.listAll();
         if (cellList.size() < 3) {
             progressUpdate("Empty Cell List");
         }
@@ -233,9 +234,8 @@ public class ModelNewN {
                 System.out.println(ex.toString());
             }
         }
-//        System.out.println("return monitor");
 //        monitor.listAll();
-        progressUpdate("Monitor Generated.");
+//        progressUpdate("Monitor Generated.");
 //        monitor.listAll();
         return monitor;
     }
@@ -952,14 +952,14 @@ public class ModelNewN {
         }
 
         public void listAll() {
-            System.out.println("List Map Sizes");
+//            System.out.println("List Map Sizes");
             int total = 0;
             for (Integer key : keySet) {
-                System.out.print(key + ",");
-                System.out.println(toConn.get(key).size());
+//                System.out.print(key + ",");
+//                System.out.println(toConn.get(key).size());
                 total += toConn.get(key).size();
             }
-            System.out.println("total " + total);
+            progressUpdate("Total " + total + " possible pairs");
         }
 
         public void setList(Integer key, Queue<int[]> value) {
