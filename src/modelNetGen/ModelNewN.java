@@ -191,7 +191,7 @@ public class ModelNewN {
             public Monitor call() {
                 Monitor monitor = new Monitor();
                 for (int pre = start; pre < end; pre++) {
-                    for (int post = 0; post < end; post++) {
+                    for (int post = 0; post < cellList.size(); post++) {
                         int dist = distanceBetween(pre, post);
                         if (dist > 0) {//if pre near post, add to pairMonitor
                             int mapkey = Com.getMapKey(cellList.get(pre).isGlu(),
