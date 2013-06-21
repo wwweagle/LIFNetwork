@@ -738,7 +738,7 @@ public class ModelNewN {
                     if (obsConnProfile.get(i).containsKey(key)) {
 
                         int currNeed = Math.round(
-                                obsConnProfile.get(i).get(key) * allPair.getList(key).size());
+                                obsConnProfile.get(i).get(key) * allPair.getList(key).size()*connProbScale);
 //                        Com.tp("key", key, "ratio", obsConnProfile.get(i).get(key),"size", allPair.getList(key).size(),"num", currNeed);
                         for (int j = i - 1; j >= 0; j--) { // diffential growth
                             currNeed -= (connNeeded.get(j).containsKey(key))
