@@ -807,7 +807,7 @@ public class ModelUI extends javax.swing.JFrame {
                 float iterFac = Float.parseFloat(txtIterFac.getText());
                 //TODO need to test pathToFile exist
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
-                m0 = new ModelNewN(gluFac, gabaFac, iterFac,neuronNum, 8429, 0.76708864f);
+                m0 = new ModelNewN(gluFac, gabaFac, iterFac, neuronNum, 8429, 0.76708864f);
                 updateProgress();
                 btnStart.setEnabled(true);
                 return null;
@@ -859,33 +859,44 @@ public class ModelUI extends javax.swing.JFrame {
         SwingWorker clusterWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() {
-                int type = rdoBoth.isSelected() ? 0 : rdoGlu.isSelected() ? 1 : 2;
-                int size = rdoTri.isSelected() ? 3 : 4;
-                int repeat = chkRepeat.isSelected() ? 5 : 1;
+                final int type = rdoBoth.isSelected() ? 0 : rdoGlu.isSelected() ? 1 : 2;
+                final int size = rdoTri.isSelected() ? 3 : 4;
+                final int totalProgress=chkRepeat.isSelected() ? 5 : 1;
+                final ResultUI ui = new ResultUI();
+                ui.setVisible(true);
+                ui.setResultTitle("Clusting");
 
+                int repeat = totalProgress;
                 while (repeat > 0) {
+                    ui.setProgress((totalProgress-repeat)*100/totalProgress);
                     int[] histo = m0.probeCluster(Integer.parseInt(txtGenGrpTime.getText()), type, size);
 //                D.tp("TYPE " + type + ", " + Arrays.toString(histo));
-                    System.out.print(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
-                    System.out.print("\t");
+//                    System.out.print(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
+//                    System.out.print("\t");
+                    ui.appendText(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
+                    ui.appendText("\t");
                     if (chkFreq.isSelected()) {
                         int total = 0;
                         for (int i = 0; i < histo.length; i++) {
                             total += histo[i];
                         }
                         for (int i = 0; i < histo.length; i++) {
-                            System.out.print((double) histo[i] / total);
-                            System.out.print("\t");
+//                            System.out.print((double) histo[i] / total);
+//                            System.out.print("\t");
+                            ui.appendText((double) histo[i] / total+"\t");
                         }
                     } else {
                         for (int i = 0; i < histo.length; i++) {
-                            System.out.print(histo[i]);
+//                            System.out.print(histo[i]);
+                            ui.appendText(histo[i]+"");
                         }
                     }
-                    System.out.println();
+//                    System.out.println();
+                    ui.appendText("\n");
                     repeat--;
                 }
-                split();
+//                split();
+                ui.setProgress(100);
                 return null;
             }
         };
