@@ -708,9 +708,9 @@ public class ModelNewN {
         progressUpdate(sumGlu + " glu connections, " + sumGABA + " GABA connections.");
 
 
-        System.out.println("===========================================");
-        System.out.println(TYPE + (DEPOLAR_GABA ? ", GABA_DEP" : ", GABA_HYP") + " Finished");
-        System.out.println("===========================================");
+//        System.out.println("===========================================");
+//        progressUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_Depolarize" : ", GABA_Hyperpolarize") + "model finished");
+//        System.out.println("===========================================");
         Toolkit.getDefaultToolkit().beep();
         if (writeFile) {
             writeSave(weightScale);

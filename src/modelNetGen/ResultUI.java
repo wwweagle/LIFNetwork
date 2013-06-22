@@ -174,26 +174,29 @@ public class ResultUI extends javax.swing.JFrame {
     private javax.swing.JProgressBar prgBar;
     private javax.swing.JTextArea txtOut;
     // End of variables declaration//GEN-END:variables
-    
-    public void setTxt(Queue<String> txt){
+
+    public void setTxt(Queue<String> txt) {
         txtOut.setText("");
-        while(txt.size()>0){
+        while (txt.size() > 0) {
             txtOut.append(txt.poll());
         }
     }
-    
-    public void appendText(String s){
-        txtOut.append(s);
+
+    public void appendText(String... s) {
+        for (int i = 0; i < s.length-1; i++) {
+            txtOut.append(s[i]);
+            txtOut.append("\t");
+        }
+        txtOut.append(s[s.length-1]);
     }
-    
-    public void setResultTitle(String s){
+
+    public void setResultTitle(String s) {
         lblTitle.setText(s);
     }
-    
-    public void setProgress(int progress){
-        if(progress>=0 && progress<=100){
+
+    public void setProgress(int progress) {
+        if (progress >= 0 && progress <= 100) {
             prgBar.setValue(progress);
         }
     }
-
 }

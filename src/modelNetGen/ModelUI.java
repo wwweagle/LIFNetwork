@@ -80,7 +80,6 @@ public class ModelUI extends javax.swing.JFrame {
         rdoQuad = new javax.swing.JRadioButton();
         txtGenGrpTime = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        btnSplit = new javax.swing.JButton();
         chkFreq = new javax.swing.JCheckBox();
         chkRepeat = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
@@ -92,6 +91,7 @@ public class ModelUI extends javax.swing.JFrame {
         btnIODegree = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
         btnGlobalDegree = new javax.swing.JButton();
+        jSeparator5 = new javax.swing.JSeparator();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtPrg = new javax.swing.JTextArea();
@@ -400,14 +400,6 @@ public class ModelUI extends javax.swing.JFrame {
 
         jLabel6.setText("s sampling");
 
-        btnSplit.setText("Split");
-        btnSplit.setPreferredSize(new java.awt.Dimension(85, 25));
-        btnSplit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSplitActionPerformed(evt);
-            }
-        });
-
         chkFreq.setSelected(true);
         chkFreq.setText("Freq");
 
@@ -479,10 +471,8 @@ public class ModelUI extends javax.swing.JFrame {
                                 .addComponent(rdoTri)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(rdoQuad))
-                            .addComponent(chkFreq)
-                            .addComponent(chkRepeat)))
+                            .addComponent(chkFreq)))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(btnSplit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel4)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
                         .addComponent(jSeparator2))
@@ -498,8 +488,17 @@ public class ModelUI extends javax.swing.JFrame {
                 .addGap(22, 22, 22)
                 .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(btnGlobalDegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(btnGlobalDegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSeparator5)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(chkRepeat)
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addContainerGap())))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -509,7 +508,12 @@ public class ModelUI extends javax.swing.JFrame {
                     .addComponent(jSeparator4)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnGlobalDegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(chkRepeat)
+                                .addGap(38, 38, 38)
+                                .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnGlobalDegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(rdoBoth)
@@ -521,11 +525,7 @@ public class ModelUI extends javax.swing.JFrame {
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(btnCluster, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(chkFreq))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(btnSplit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(chkRepeat))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel4)
@@ -549,7 +549,7 @@ public class ModelUI extends javax.swing.JFrame {
                                     .addComponent(rdoOutput))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(btnIODegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 10, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -686,10 +686,6 @@ public class ModelUI extends javax.swing.JFrame {
         btnInitModel.setEnabled(true);
     }//GEN-LAST:event_btnExitActionPerformed
 
-    private void btnSplitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSplitActionPerformed
-        split();      // TODO add your handling code here:
-    }//GEN-LAST:event_btnSplitActionPerformed
-
     private void btnIODegreeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIODegreeActionPerformed
         ioDegreeWoker().execute();
     }//GEN-LAST:event_btnIODegreeActionPerformed
@@ -739,7 +735,6 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JButton btnIODegree;
     private javax.swing.JButton btnInitModel;
     private javax.swing.JButton btnShow;
-    private javax.swing.JButton btnSplit;
     private javax.swing.JButton btnStart;
     private javax.swing.JButton btnStopModel;
     private javax.swing.JCheckBox chkDepolarGABA;
@@ -770,6 +765,7 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSeparator jSeparator5;
     private javax.swing.ButtonGroup maxDistGrp;
     private javax.swing.ButtonGroup modelGrp;
     private javax.swing.JProgressBar prgBar;
@@ -861,20 +857,23 @@ public class ModelUI extends javax.swing.JFrame {
             protected Void doInBackground() {
                 final int type = rdoBoth.isSelected() ? 0 : rdoGlu.isSelected() ? 1 : 2;
                 final int size = rdoTri.isSelected() ? 3 : 4;
-                final int totalProgress=chkRepeat.isSelected() ? 5 : 1;
+                final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
                 final ResultUI ui = new ResultUI();
                 ui.setVisible(true);
-                ui.setResultTitle("Clusting");
+                ui.setResultTitle("Clusting "
+                        + modelType.toString() + " Model "
+                        + (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar"));
 
                 int repeat = totalProgress;
                 while (repeat > 0) {
-                    ui.setProgress((totalProgress-repeat)*100/totalProgress);
+                    ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
                     int[] histo = m0.probeCluster(Integer.parseInt(txtGenGrpTime.getText()), type, size);
 //                D.tp("TYPE " + type + ", " + Arrays.toString(histo));
 //                    System.out.print(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
 //                    System.out.print("\t");
-                    ui.appendText(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
-                    ui.appendText("\t");
+                    ui.appendText(modelType.toString(),
+                            type == 0 ? "Both" : type == 1 ? "Glu" : "GABA",
+                            "GABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"), "\t");
                     if (chkFreq.isSelected()) {
                         int total = 0;
                         for (int i = 0; i < histo.length; i++) {
@@ -883,12 +882,12 @@ public class ModelUI extends javax.swing.JFrame {
                         for (int i = 0; i < histo.length; i++) {
 //                            System.out.print((double) histo[i] / total);
 //                            System.out.print("\t");
-                            ui.appendText((double) histo[i] / total+"\t");
+                            ui.appendText((double) histo[i] / total + "\t");
                         }
                     } else {
                         for (int i = 0; i < histo.length; i++) {
 //                            System.out.print(histo[i]);
-                            ui.appendText(histo[i]+"");
+                            ui.appendText(histo[i] + "");
                         }
                     }
 //                    System.out.println();
@@ -926,33 +925,40 @@ public class ModelUI extends javax.swing.JFrame {
         ioWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() {
-                int repeat = chkRepeat.isSelected() ? 5 : 1;
+                final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
+                final ResultUI ui = new ResultUI();
+                ui.setVisible(true);
+                ui.setResultTitle("Degrees "
+                        + modelType.toString() + " Model "
+                        + (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar"));
+
+                int repeat = totalProgress;
                 while (repeat > 0) {
+                    ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
                     int[] degrees = m0.probeIO(
                             Integer.parseInt(txtGenGrpTime.getText()),
                             rdoIOGlu.isSelected(), rdoInput.isSelected());
 
-                    System.out.println((rdoInput.isSelected() ? "Input" : "output") + "\t"
-                            + (rdoIOGlu.isSelected() ? "Glu" : "GABA"));
+                    ui.appendText((rdoInput.isSelected() ? "Input" : "output"),
+                            (rdoIOGlu.isSelected() ? "Glu" : "GABA") + "\t");
                     if (chkFreq.isSelected()) {
                         int total = 0;
                         for (int i = 0; i < degrees.length; i++) {
                             total += degrees[i];
                         }
                         for (int i = 0; i < degrees.length; i++) {
-                            System.out.print((double) degrees[i] / total);
-                            System.out.print("\t");
+                            ui.appendText((double) degrees[i] / total + "\t");
                         }
                     } else {
                         for (int i = 0; i < degrees.length; i++) {
-                            System.out.print(degrees[i]);
-                            System.out.print("\t");
+                            ui.appendText(degrees[i] + "\t");
                         }
                     }
-                    System.out.println();
+                    ui.appendText("\n");
                     repeat--;
                 }
-                split();
+//                split();
+                ui.setProgress(100);
                 return null;
             }
         };
