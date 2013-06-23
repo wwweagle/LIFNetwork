@@ -4,9 +4,10 @@
  */
 package modelNetGen;
 
-import java.awt.Toolkit;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
+import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -866,6 +867,9 @@ public class ModelUI extends javax.swing.JFrame {
 
                 int repeat = totalProgress;
                 while (repeat > 0) {
+                    if (!ui.isVisible()) {
+                        break;
+                    }
                     ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
                     int[] histo = m0.probeCluster(Integer.parseInt(txtGenGrpTime.getText()), type, size);
 //                D.tp("TYPE " + type + ", " + Arrays.toString(histo));
@@ -906,14 +910,28 @@ public class ModelUI extends javax.swing.JFrame {
         SwingWorker commNeiborWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() {
-                int repeat = chkRepeat.isSelected() ? 5 : 1;
+                final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
+                final ResultUI ui = new ResultUI();
+                ui.setVisible(true);
+                ui.setResultTitle("Common Neighbor "
+                        + modelType.toString() + " Model "
+                        + (chkFwdGlu.isSelected() ? "Glu To " : "GABA To ")
+                        + (chkRevGlu.isSelected() ? "Glu" : "GABA"));
+
+                int repeat = totalProgress;
+                ui.appendText("w/GluNeibor", "w/oGluNeibor", "w/GABANeibor", "w/oGABANeibor", "\n");
                 while (repeat > 0) {
-                    m0.probeCommNeib(
+                    if (!ui.isVisible()) {
+                        break;
+                    }
+                    ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
+                    float[] ratio = m0.probeCommNeib(
                             Integer.parseInt(txtGenGrpTime.getText()),
                             chkFwdGlu.isSelected(), chkRevGlu.isSelected());
+                    ui.appendText(ratio[0] + "\t" + ratio[1] + "\t" + ratio[2] + "\t" + ratio[3] + "\n");
                     repeat--;
                 }
-                split();
+                ui.setProgress(100);
                 return null;
             }
         };
@@ -934,6 +952,9 @@ public class ModelUI extends javax.swing.JFrame {
 
                 int repeat = totalProgress;
                 while (repeat > 0) {
+                    if (!ui.isVisible()) {
+                        break;
+                    }
                     ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
                     int[] degrees = m0.probeIO(
                             Integer.parseInt(txtGenGrpTime.getText()),
@@ -969,19 +990,43 @@ public class ModelUI extends javax.swing.JFrame {
         SwingWorker globalDegreeWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() {
-                m0.probeGlobalDegrees();
-                split();
+                final ResultUI ui = new ResultUI();
+                ui.setVisible(true);
+                ui.setResultTitle("Degrees "
+                        + modelType.toString() + " Model "
+                        + (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar"));
+                Queue<TreeMap<Integer, Integer>> q = m0.probeGlobalDegrees();
+                ui.appendText("Glu In=====================================\n");
+                TreeMap<Integer, Integer> map = q.poll();
+                for (int i = 0; i < map.size(); i++) {
+                    ui.appendText(i + "\t" + map.get(i) + "\n");
+                }
+                ui.appendText("Glu Out====================================\n");
+                map = q.poll();
+                for (int i = 0; i < map.size(); i++) {
+                    ui.appendText(i + "\t" + map.get(i) + "\n");
+                }
+                ui.appendText("GABA In====================================\n");
+                map = q.poll();
+                for (int i = 0; i < map.size(); i++) {
+                    ui.appendText(i + "\t" + map.get(i) + "\n");
+                }
+                ui.appendText("GABA out====================================\n");
+                map = q.poll();
+                for (int i = 0; i < map.size(); i++) {
+                    ui.appendText(i + "\t" + map.get(i) + "\n");
+                }
+//                split();
                 return null;
             }
         };
         return globalDegreeWorker;
     }
 
-    private void split() {
-        System.out.println("===========================================");
-        Toolkit.getDefaultToolkit().beep();
-    }
-
+//    private void split() {
+//        System.out.println("===========================================");
+//        Toolkit.getDefaultToolkit().beep();
+//    }
     private void updateProgress() {
         if (updating) {
             return;

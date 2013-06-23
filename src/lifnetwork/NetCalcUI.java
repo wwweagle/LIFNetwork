@@ -183,7 +183,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
         jLabel3.setText("GABA Rev Potential");
 
-        txtRandProb.setText("40");
+        txtRandProb.setText("1");
         txtRandProb.setPreferredSize(new java.awt.Dimension(30, 20));
         txtRandProb.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -197,7 +197,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
         jLabel6.setText("Random I amp");
 
-        txtRandAmp.setText("40");
+        txtRandAmp.setText("600");
         txtRandAmp.setPreferredSize(new java.awt.Dimension(30, 20));
         txtRandAmp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

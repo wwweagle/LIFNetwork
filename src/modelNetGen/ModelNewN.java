@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,7 +80,7 @@ public class ModelNewN {
         progress = 0;
         connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>(30000));
         cellList = new ArrayList<>();
-        dim = getDimension(nCell, density);
+        dim = setDimension(nCell, density);
         for (int i = 0; i < nCell; i++) {
             RndCell newCell = new RndCell(dim, gluRate);
             cellList.add(newCell);
@@ -100,7 +101,7 @@ public class ModelNewN {
         this.DEPOLAR_GABA = DEPOLAR_GABA;
     }
 
-    private int getDimension(int nCell, int density) {
+    private int setDimension(int nCell, int density) {
         float area = (float) nCell / density;
         float d = (float) Math.sqrt(area);
         d = d * 10000;//cm to micro-m;
@@ -364,7 +365,7 @@ public class ModelNewN {
         return key;
     }
 
-    public void probeCommNeib(int time, boolean fwdGlu, boolean revGlu) {
+    public float[] probeCommNeib(int time, boolean fwdGlu, boolean revGlu) {
         HashMap<Integer, Integer> commNeib = new HashMap<>();
         Set<int[]> monitorSet = genGrpMonitor(3, time);
         for (int[] grp : monitorSet) {
@@ -403,9 +404,11 @@ public class ModelNewN {
         float r_W_GNei = (float) conned_W_GNei / (conned_W_GNei + noConn_W_GNei);
         float r_Wo_ANei = (float) conned_Wo_ANei / (conned_Wo_ANei + noConn_Wo_ANei);
         float r_W_ANei = (float) conned_W_ANei / (conned_W_ANei + noConn_W_ANei);
-        System.out.println((fwdGlu ? "Glu" : "GABA") + "->" + (revGlu ? "Glu" : "GABA"));
+//        System.out.println((fwdGlu ? "Glu" : "GABA") + "->" + (revGlu ? "Glu" : "GABA"));
 //        D.tp("r_Wo_GNei,r_W_GNei, r_Wo_ANei,r_W_ANei");
-        System.out.println(r_Wo_GNei + "\t" + r_W_GNei + "\t" + r_Wo_ANei + "\t" + r_W_ANei);
+//        System.out.println(r_Wo_GNei + "\t" + r_W_GNei + "\t" + r_Wo_ANei + "\t" + r_W_ANei);
+        float[] rtn = {r_Wo_GNei, r_W_GNei, r_Wo_ANei, r_W_ANei};
+        return rtn;
     }
 
     public int[] probeIO(int time, boolean glu, boolean input) {
@@ -659,15 +662,21 @@ public class ModelNewN {
 
     private float calcWeight(int sum, float avg, float scale) {
         float ceiling = 4.0f * avg;
-        return sum > ceiling ? 1.5f * scale : sum / ceiling + 0.5f * scale + (float) r.nextGaussian() * 0.1f;
-
+        float p = (sum > ceiling ? 1.5f : (sum / ceiling + 0.5f)) * scale;
+        float f;
+        do {
+            f = (float) r.nextGaussian() * p;
+        } while (f <= -p);
+        return f + p;
     }
 
-    public void probeGlobalDegrees() {
+    public Queue<TreeMap<Integer, Integer>> probeGlobalDegrees() {
         TreeMap<Integer, Integer> gluInMap = new TreeMap<>();
         TreeMap<Integer, Integer> gluOutMap = new TreeMap<>();
         TreeMap<Integer, Integer> gabaInMap = new TreeMap<>();
         TreeMap<Integer, Integer> gabaOutMap = new TreeMap<>();
+
+
 
         for (int i = 0; i < cellList.size(); i++) {
             Com.sAdd(gluInMap, gluIn.get(i));
@@ -675,23 +684,29 @@ public class ModelNewN {
             Com.sAdd(gabaInMap, gabaIn.get(i));
             Com.sAdd(gabaOutMap, gabaOut.get(i));
         }
-        System.out.println("Glu In=====================================");
-        for (int i = 0; i < gluInMap.size(); i++) {
-            Com.tp(i, gluInMap.get(i));
-        }
-        Com.tp("Glu Out=====================================");
-        for (int i = 0; i < gluOutMap.size(); i++) {
-            Com.tp(i, gluInMap.get(i));
-        }
-        Com.tp("GABA In=====================================");
-        for (int i = 0; i < gabaInMap.size(); i++) {
-            Com.tp(i, gluInMap.get(i));
-        }
-        Com.tp("GABA Out=====================================");
-        for (int i = 0; i < gabaOutMap.size(); i++) {
-            Com.tp(i, gluInMap.get(i));
-        }
+//        System.out.println("Glu In=====================================");
+//        for (int i = 0; i < gluInMap.size(); i++) {
+//            Com.tp(i, gluInMap.get(i));
+//        }
+//        Com.tp("Glu Out=====================================");
+//        for (int i = 0; i < gluOutMap.size(); i++) {
+//            Com.tp(i, gluInMap.get(i));
+//        }
+//        Com.tp("GABA In=====================================");
+//        for (int i = 0; i < gabaInMap.size(); i++) {
+//            Com.tp(i, gluInMap.get(i));
+//        }
+//        Com.tp("GABA Out=====================================");
+//        for (int i = 0; i < gabaOutMap.size(); i++) {
+//            Com.tp(i, gluInMap.get(i));
+//        }
 
+        Queue<TreeMap<Integer, Integer>> q = new LinkedList<>();
+        q.offer(gluInMap);
+        q.offer(gluOutMap);
+        q.offer(gabaInMap);
+        q.offer(gabaOutMap);
+        return q;
     }
 
     private void sumUp() {
@@ -707,16 +722,12 @@ public class ModelNewN {
 
         progressUpdate(sumGlu + " glu connections, " + sumGABA + " GABA connections.");
 
-
-//        System.out.println("===========================================");
-//        progressUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_Depolarize" : ", GABA_Hyperpolarize") + "model finished");
-//        System.out.println("===========================================");
         Toolkit.getDefaultToolkit().beep();
         if (writeFile) {
             writeSave(weightScale);
         }
         runState = RunState.NetGenerated;
-        progressUpdate("Model Generated");
+        progressUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_Depolarize" : ", GABA_Hyperpolarize") + " Model Generated");
 
     }
 
@@ -738,7 +749,7 @@ public class ModelNewN {
                     if (obsConnProfile.get(i).containsKey(key)) {
 
                         int currNeed = Math.round(
-                                obsConnProfile.get(i).get(key) * allPair.getList(key).size()*connProbScale);
+                                obsConnProfile.get(i).get(key) * allPair.getList(key).size() * connProbScale);
 //                        Com.tp("key", key, "ratio", obsConnProfile.get(i).get(key),"size", allPair.getList(key).size(),"num", currNeed);
                         for (int j = i - 1; j >= 0; j--) { // diffential growth
                             currNeed -= (connNeeded.get(j).containsKey(key))
@@ -767,12 +778,14 @@ public class ModelNewN {
             class genConn implements Callable<Queue<Queue<int[]>>> {
 
                 final private Queue<int[]> conned;
-                final private Queue<int[]> unConned;
+                final private Deque<int[]> unConned;
                 final private Queue<int[]> toConn;
                 final private int nConnNeeded;
                 final private float prob;
 
                 public genConn(Queue<int[]> toConn, int nNeeded, float prob) {
+                    if (toConn instanceof LinkedList<?>) {
+                    }
                     this.toConn = toConn;
                     this.conned = new LinkedList<>();
                     this.unConned = new LinkedList<>();
@@ -782,6 +795,7 @@ public class ModelNewN {
 
                 @Override
                 public Queue<Queue<int[]>> call() {
+
 //                System.out.println("615 called generation");
                     int newConn = 0;
 //                    System.out.println(key + "\t" + toConn.size() + "\t" + nConnNeeded);
@@ -802,7 +816,11 @@ public class ModelNewN {
                             newConn++;
                             //if fulfill break
                         } else {
-                            unConned.add(pair);
+                            if (r.nextBoolean()) {
+                                unConned.addFirst(pair);
+                            } else {
+                                unConned.addLast(pair);
+                            }
                         }
                     }
                     Queue<Queue<int[]>> rtn = new LinkedList<>();
