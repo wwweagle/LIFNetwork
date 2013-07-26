@@ -186,6 +186,7 @@ public class ScreenImage
 		if (types.contains(type))
 		{
 			ImageIO.write(image, type, new File( fileName ));
+//                        System.out.println("writeImage"+fileName);
 		}
 		else
 		{

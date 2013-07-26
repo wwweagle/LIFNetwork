@@ -4,12 +4,17 @@
  */
 package modelNetGen;
 
+import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Set;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,6 +23,7 @@ import java.util.Set;
 public class CircuitViewUI extends javax.swing.JFrame {
 
     private ModelType networkType;
+    String pathToFile;
 
     public void setNetworkType(ModelType networkType) {
         this.networkType = networkType;
@@ -43,6 +49,8 @@ public class CircuitViewUI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
         lblDesc = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        btnOpen = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         canvas = new modelNetGen.CanvasBean();
 
@@ -50,6 +58,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
 
         jPanel1.setPreferredSize(new java.awt.Dimension(77, 300));
 
+        btnSave.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         btnSave.setText("Save");
         btnSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -57,8 +66,20 @@ public class CircuitViewUI extends javax.swing.JFrame {
             }
         });
 
-        lblDesc.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        lblDesc.setText("  ");
+        lblDesc.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        lblDesc.setText("Unknown_Type");
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        jLabel1.setText("ModelType:");
+
+        btnOpen.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        btnOpen.setText("Open");
+        btnOpen.setEnabled(false);
+        btnOpen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOpenActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -67,9 +88,13 @@ public class CircuitViewUI extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(btnSave)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnOpen)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 271, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblDesc)
-                .addContainerGap(487, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -77,7 +102,9 @@ public class CircuitViewUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
-                    .addComponent(lblDesc))
+                    .addComponent(lblDesc)
+                    .addComponent(jLabel1)
+                    .addComponent(btnOpen))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -134,11 +161,38 @@ public class CircuitViewUI extends javax.swing.JFrame {
         }
         BufferedImage bi = ScreenImage.createImage(canvas);
         try {
-            ScreenImage.writeImage(bi, "../img_out/CircuitImage_" + suffix + ".png");
+            pathToFile = Paths.get("").toAbsolutePath().getParent().toString()+"/img_out/CircuitImage_" + suffix + ".png";
+//            System.out.println(pathToFile);
+            ScreenImage.writeImage(bi, pathToFile);
+            btnOpen.setEnabled(true);
         } catch (IOException e) {
             System.err.println(e.toString());
         }        // TODO add your handling code here:
+
+
     }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void btnOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenActionPerformed
+        if (!Desktop.isDesktopSupported()) {
+            JOptionPane.showMessageDialog(this, "This operationg system is not supported ", "File Operation", JOptionPane.INFORMATION_MESSAGE);
+        }
+//TODO Proper handle
+        Desktop desktop = Desktop.getDesktop();
+        if (!desktop.isSupported(Desktop.Action.OPEN)) {
+            JOptionPane.showMessageDialog(this, "This operationg system is not supported ", "File Operation", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        try {
+//            System.out.println("open" + pathToFile);
+            File f=new File(pathToFile);
+            desktop.open(f);
+
+        } catch (IOException e) {
+            System.out.println(e.toString());
+            // Log an error
+        }
+
+    }//GEN-LAST:event_btnOpenActionPerformed
 
     /**
      * @param args the command line arguments
@@ -170,8 +224,10 @@ public class CircuitViewUI extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnOpen;
     private javax.swing.JButton btnSave;
     private modelNetGen.CanvasBean canvas;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblDesc;
@@ -197,7 +253,6 @@ public class CircuitViewUI extends javax.swing.JFrame {
         WindowEvent wev = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
         Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
     }
-
 //    public void setMyWorker(SwingWorker worker) {
 //        this.myWorker = worker;
 //    }

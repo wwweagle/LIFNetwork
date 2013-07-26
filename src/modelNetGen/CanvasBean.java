@@ -4,6 +4,7 @@
  */
 package modelNetGen;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -101,38 +102,43 @@ public class CanvasBean extends JPanel implements Serializable {
         g2d.fillRect(0, 0, canvasDim, canvasDim);
     }
 
-    private void drawACellBody(int x, int y, boolean isGlu) {
-        Point2D.Double cell = new Point2D.Double(sclDn(x), sclDn(y));
-        double dd = canvasDim / 200;
-        double rr = dd / 2;
-        g2d.setColor(isGlu ? Color.RED : Color.GREEN);
-        Ellipse2D body = new Ellipse2D.Double(cell.getX() - rr, cell.getY() - rr, dd, dd);
-        g2d.draw(body);
-        g2d.fill(body);
-    }
+//    private void drawACellBody(int x, int y, boolean isGlu) {
+//        Point2D.Double cell = new Point2D.Double(sclDn(x), sclDn(y));
+//        double dd = canvasDim / 200;
+//        double rr = dd / 2;
+//        g2d.setColor(isGlu ? Color.RED : Color.GREEN);
+//        Ellipse2D body = new Ellipse2D.Double(cell.getX() - rr, cell.getY() - rr, dd, dd);
+//        g2d.draw(body);
+//        g2d.fill(body);
+//    }
 
     private void drawACellBody(int x, int y, int outputs, boolean isGlu) {
         int relativeDD = outputs / 4 + 1;
         Point2D.Double cell = new Point2D.Double(sclDn(x), sclDn(y));
         double dd = canvasDim / 400 * relativeDD;
         double rr = dd / 2;
-        g2d.setColor(isGlu ? Color.RED : Color.GREEN);
+        g2d.setColor(isGlu ? Color.RED : Color.BLUE);
         Ellipse2D body = new Ellipse2D.Double(cell.getX() - rr, cell.getY() - rr, dd, dd);
         g2d.draw(body);
         g2d.fill(body);
     }
 
     private void drawAConn(Point2D.Double fromPt, Point2D.Double toPt, boolean isGlu) {
-        Point2D.Double transX = biasPt(fromPt, toPt, true);
-        Point2D.Double transY = biasPt(fromPt, toPt, false);
+//        Point2D.Double transX = biasPt(fromPt, toPt, true);
+//        Point2D.Double transY = biasPt(fromPt, toPt, false);
+        Point2D.Double[] trimPts = biasPt(fromPt, toPt);
 
-        g2d.setColor(isGlu ? Color.PINK : Color.LIGHT_GRAY);
-        g2d.draw(new Line2D.Double(transX, transY));
-        drawArrowHead(transX, transY);
+        g2d.setColor(isGlu ? Color.RED : Color.BLUE);
+        g2d.draw(new Line2D.Double(trimPts[0], trimPts[1]));
+        g2d.setColor(isGlu ? Color.PINK : Color.CYAN);
+        g2d.draw(new Line2D.Double(trimPts[1], trimPts[2]));
+
+//        drawArrowHead(transX, transY);
     }
 
-    private void drawCells() {
+    private void drawCells() {   
         //TODO unnecessary check
+//        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.85f));
         if (cellList.size() > 0) {
             for (int i = 0; i < cellList.size(); i++) {
                 int x = cellList.get(i).getX();
@@ -174,11 +180,32 @@ public class CanvasBean extends JPanel implements Serializable {
         g2d.setStroke(basicStroke);
     }
 
-    private enum pointType{
+    private enum pointType {
+
         ORIGIN, TARGET, MIDDLE;
     }
-    
-    private Point2D.Double biasPt(Point2D.Double fromPt, Point2D.Double toPt, boolean returnFrom) {
+//
+//    private Point2D.Double biasPt(Point2D.Double fromPt, Point2D.Double toPt, boolean returnFrom) {
+//        double crossD = 2;
+//        double trim = 2;
+//
+//        double lineRad = Math.atan2(fromPt.getY() - toPt.getY(), fromPt.getX() - toPt.getX());
+//
+//        double trimX = trim * Math.cos(lineRad);
+//        double trimY = trim * Math.sin(lineRad);
+//
+//        double biasX = crossD * Math.sin(lineRad);
+//        double biasY = crossD * Math.cos(lineRad);
+//
+//        Point2D.Double newFromPt, newToPt;
+//
+//        newFromPt = new Point2D.Double(fromPt.getX() - biasX - trimX, fromPt.getY() + biasY - trimY);
+//        newToPt = new Point2D.Double(toPt.getX() - biasX + trimX, toPt.getY() + biasY + trimY);
+//
+//        return returnFrom ? newFromPt : newToPt;
+//    }
+
+    private Point2D.Double[] biasPt(Point2D.Double fromPt, Point2D.Double toPt) {
         double crossD = 2;
         double trim = 2;
 
@@ -190,12 +217,17 @@ public class CanvasBean extends JPanel implements Serializable {
         double biasX = crossD * Math.sin(lineRad);
         double biasY = crossD * Math.cos(lineRad);
 
-        Point2D.Double newFromPt, newToPt;
+        Point2D.Double originPt, targetPt, middlePt;
 
-        newFromPt = new Point2D.Double(fromPt.getX() - biasX - trimX, fromPt.getY() + biasY - trimY);
-        newToPt = new Point2D.Double(toPt.getX() - biasX + trimX, toPt.getY() + biasY + trimY);
+        originPt = new Point2D.Double(fromPt.getX() - biasX - trimX, fromPt.getY() + biasY - trimY);
 
-        return returnFrom ? newFromPt : newToPt;
+        targetPt = new Point2D.Double(toPt.getX() - biasX + trimX, toPt.getY() + biasY + trimY);
+
+        middlePt = new Point2D.Double(originPt.getX() + (targetPt.getX() - originPt.getX()) / 2,
+                originPt.getY() + (targetPt.getY() - originPt.getY()) / 2);
+        Point2D.Double[] rtn = {originPt, middlePt, targetPt};
+        return rtn;
+
     }
 
     private void drawArrowHead(Point2D fromPt, Point2D toPt) {
