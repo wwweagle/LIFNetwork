@@ -174,6 +174,10 @@ public class CanvasBean extends JPanel implements Serializable {
         g2d.setStroke(basicStroke);
     }
 
+    private enum pointType{
+        ORIGIN, TARGET, MIDDLE;
+    }
+    
     private Point2D.Double biasPt(Point2D.Double fromPt, Point2D.Double toPt, boolean returnFrom) {
         double crossD = 2;
         double trim = 2;
@@ -214,6 +218,5 @@ public class CanvasBean extends JPanel implements Serializable {
 
         g2d.draw(new Line2D.Double(toPt, cwP));
         g2d.draw(new Line2D.Double(toPt, ccwP));
-
     }
 }
