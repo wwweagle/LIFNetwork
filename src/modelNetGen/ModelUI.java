@@ -804,7 +804,7 @@ public class ModelUI extends javax.swing.JFrame {
                 float iterFac = Float.parseFloat(txtIterFac.getText());
                 //TODO need to test pathToFile exist
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
-                m0 = new ModelNewN(gluFac, gabaFac, iterFac, neuronNum, 8429, 0.76708864f);
+                m0 = new Model(gluFac, gabaFac, iterFac, neuronNum, 8429, 0.76708864f);
                 updateProgress();
                 btnStart.setEnabled(true);
                 return null;
@@ -1054,7 +1054,7 @@ public class ModelUI extends javax.swing.JFrame {
         };
         ses.scheduleWithFixedDelay(progressUpdater, 1, 1, TimeUnit.SECONDS);
     }
-    private ModelNewN m0;
+    private Model m0;
     private CircuitViewUI circuitView;
     private String pathToFile;
     private ModelType modelType = ModelType.Network;

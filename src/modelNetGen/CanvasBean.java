@@ -44,7 +44,7 @@ public class CanvasBean extends JPanel implements Serializable {
     //////////////////////////////////////////////////////////////////////////////
     //CUSTOMIZED CODE
     private Graphics2D g2d;
-    private BasicStroke basicStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
+    final private BasicStroke basicStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
     private int canvasDim = 1;
     private int modelDim = 1;
     private float scale = 1;
@@ -184,26 +184,7 @@ public class CanvasBean extends JPanel implements Serializable {
 
         ORIGIN, TARGET, MIDDLE;
     }
-//
-//    private Point2D.Double biasPt(Point2D.Double fromPt, Point2D.Double toPt, boolean returnFrom) {
-//        double crossD = 2;
-//        double trim = 2;
-//
-//        double lineRad = Math.atan2(fromPt.getY() - toPt.getY(), fromPt.getX() - toPt.getX());
-//
-//        double trimX = trim * Math.cos(lineRad);
-//        double trimY = trim * Math.sin(lineRad);
-//
-//        double biasX = crossD * Math.sin(lineRad);
-//        double biasY = crossD * Math.cos(lineRad);
-//
-//        Point2D.Double newFromPt, newToPt;
-//
-//        newFromPt = new Point2D.Double(fromPt.getX() - biasX - trimX, fromPt.getY() + biasY - trimY);
-//        newToPt = new Point2D.Double(toPt.getX() - biasX + trimX, toPt.getY() + biasY + trimY);
-//
-//        return returnFrom ? newFromPt : newToPt;
-//    }
+
 
     private Point2D.Double[] biasPt(Point2D.Double fromPt, Point2D.Double toPt) {
         double crossD = 2;

@@ -165,7 +165,7 @@ public class NetworkCalc {
 //        ArrayList<Float> iSample = new ArrayList<>(10000);
 //        ArrayList<Float> sSample = new ArrayList<>(10000);
 
-        for (currentTime = 0; currentTime < simulateTime;) {
+        for (currentTime = 0; currentTime < simulateTime; currentTime += dT) {
 
             if (runState == RunState.Stop) {
                 return fireList.size();
@@ -202,8 +202,10 @@ public class NetworkCalc {
              */
 //            statusReport(currentTime);
 
-            int newTime = currentTime + dT;
-            currentTime = newTime;
+//            int newTime = currentTime + dT;
+//            currentTime = newTime;
+
+//            currentTime += dT;
         }
 
         Commons.writeList(pathToFile.replaceAll(".+[\\\\/]", "").replaceAll("\\.ser", "") + "_fireHistory.csv", fireList);

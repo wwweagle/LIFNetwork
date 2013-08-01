@@ -5,6 +5,7 @@
 package modelNetGen;
 
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -46,12 +47,15 @@ public class CircuitViewUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnGrpSize = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
         btnSave = new javax.swing.JButton();
         lblDesc = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         btnOpen = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        rdoLarge = new javax.swing.JRadioButton();
+        rdoSmall = new javax.swing.JRadioButton();
+        scrollPane = new javax.swing.JScrollPane();
         canvas = new modelNetGen.CanvasBean();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -81,6 +85,23 @@ public class CircuitViewUI extends javax.swing.JFrame {
             }
         });
 
+        btnGrpSize.add(rdoLarge);
+        rdoLarge.setSelected(true);
+        rdoLarge.setText("Large");
+        rdoLarge.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rdoLargeActionPerformed(evt);
+            }
+        });
+
+        btnGrpSize.add(rdoSmall);
+        rdoSmall.setText("Small");
+        rdoSmall.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rdoSmallActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -90,7 +111,11 @@ public class CircuitViewUI extends javax.swing.JFrame {
                 .addComponent(btnSave)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnOpen)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 271, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(rdoLarge)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(rdoSmall)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 149, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblDesc)
@@ -104,7 +129,9 @@ public class CircuitViewUI extends javax.swing.JFrame {
                     .addComponent(btnSave)
                     .addComponent(lblDesc)
                     .addComponent(jLabel1)
-                    .addComponent(btnOpen))
+                    .addComponent(btnOpen)
+                    .addComponent(rdoLarge)
+                    .addComponent(rdoSmall))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -121,7 +148,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
             .addGap(0, 3000, Short.MAX_VALUE)
         );
 
-        jScrollPane1.setViewportView(canvas);
+        scrollPane.setViewportView(canvas);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -131,7 +158,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -140,7 +167,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -161,7 +188,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
         }
         BufferedImage bi = ScreenImage.createImage(canvas);
         try {
-            pathToFile = Paths.get("").toAbsolutePath().getParent().toString()+"/img_out/CircuitImage_" + suffix + ".png";
+            pathToFile = Paths.get("").toAbsolutePath().getParent().toString() + "/img_out/CircuitImage_" + suffix + ".png";
 //            System.out.println(pathToFile);
             ScreenImage.writeImage(bi, pathToFile);
             btnOpen.setEnabled(true);
@@ -184,7 +211,7 @@ public class CircuitViewUI extends javax.swing.JFrame {
 
         try {
 //            System.out.println("open" + pathToFile);
-            File f=new File(pathToFile);
+            File f = new File(pathToFile);
             desktop.open(f);
 
         } catch (IOException e) {
@@ -193,6 +220,16 @@ public class CircuitViewUI extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_btnOpenActionPerformed
+
+    private void rdoLargeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoLargeActionPerformed
+        canvas.setPreferredSize((new Dimension(3000, 3000)));
+        canvas.revalidate();
+    }//GEN-LAST:event_rdoLargeActionPerformed
+
+    private void rdoSmallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoSmallActionPerformed
+        canvas.setPreferredSize((new Dimension(640, 640)));
+        canvas.revalidate();
+    }//GEN-LAST:event_rdoSmallActionPerformed
 
     /**
      * @param args the command line arguments
@@ -224,13 +261,16 @@ public class CircuitViewUI extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup btnGrpSize;
     private javax.swing.JButton btnOpen;
     private javax.swing.JButton btnSave;
     private modelNetGen.CanvasBean canvas;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblDesc;
+    private javax.swing.JRadioButton rdoLarge;
+    private javax.swing.JRadioButton rdoSmall;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
     public void setDim(int dim) {

@@ -37,7 +37,7 @@ import savedParameters.NetworkParameters;
  *
  * @author Libra
  */
-public class ModelNewN {
+public class Model {
 
     final private RandomGenerator r;
     final private ArrayList<RndCell> cellList;
@@ -70,7 +70,7 @@ public class ModelNewN {
      * @param gabaE GABA IO coefficient
      * @param iterateFactor Expected average iterate cycle
      */
-    ModelNewN(float gluE, float gabaE, float iterateFactor, int nCell, int density, float gluRate) {
+    Model(float gluE, float gabaE, float iterateFactor, int nCell, int density, float gluRate) {
         r = Com.getR();
         this.GLU_IO_COE = gluE;
         this.GABA_IO_COE = gabaE;
