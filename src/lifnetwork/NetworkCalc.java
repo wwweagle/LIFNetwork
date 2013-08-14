@@ -212,7 +212,35 @@ public class NetworkCalc {
 //        Commons.writeList("vHistory.csv", vSample);
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
+
+        getMaxFirePopulation(fireList);
         return fireList.size();
+    }
+
+    private int getMaxFirePopulation(ArrayList<int[]> fireList) {
+        System.out.println("begin events count");
+        if (fireList.size() < 1) {
+            return 0;
+        }
+        int eventsCount = 1;
+
+        int maxFreq = 0;
+        int startTime = 0;
+        for (int currentEventIndex = 0, currentStartTimeIndex = 0; currentEventIndex < fireList.size(); currentEventIndex++) {
+            currentEventIndex++;
+            if (fireList.get(currentEventIndex)[0] - fireList.get(currentStartTimeIndex)[0] < 100000) { //microseconds, uS
+                //less than 1ms
+                eventsCount++;
+            } else {
+                if (eventsCount > maxFreq) {
+                    maxFreq = eventsCount;
+                    startTime = fireList.get(currentStartTimeIndex)[0];
+                }
+                currentStartTimeIndex++;
+            }
+        }
+        System.out.println((startTime / 1000) + ", " + maxFreq);
+        return maxFreq;
     }
 
     public int getProgress() {
