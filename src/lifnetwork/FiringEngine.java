@@ -4,13 +4,12 @@
  */
 package lifnetwork;
 
+import java.util.ArrayList;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.time.FixedMillisecond;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  *
@@ -21,24 +20,23 @@ public class FiringEngine {
     String title = "Fire!";
     String xAxisLabel = "Time";
     String yAxisLabel = "Cell#";
-    TimeSeriesCollection datas = new TimeSeriesCollection();
+    XYSeriesCollection datas = new XYSeriesCollection();
     boolean legend = false;
     boolean tooltips = false;
     boolean urls = false;
     JFreeChart chart;
 
-    public FiringEngine() {
-        TimeSeries s = new TimeSeries("fires");
-        s.add(new FixedMillisecond(0), 2);
-        s.add(new FixedMillisecond(2), 4);
-        s.add(new FixedMillisecond(4), 6);
-        s.add(new FixedMillisecond(6), 8);
-        datas.addSeries(s);
+    public FiringEngine(ArrayList<int[]> fireList) {
+        XYSeries fires = new XYSeries("Fire!");
+        for (int i = 0; i < fireList.size(); i++) {
+            fires.add(fireList.get(i)[0], fireList.get(i)[1]);
+        }
+        datas.addSeries(fires);
         chart = ChartFactory.createScatterPlot(title, xAxisLabel, yAxisLabel, datas, PlotOrientation.HORIZONTAL, false, false, false);
+
     }
 
     public JFreeChart getChart() {
         return chart;
     }
-    
 }

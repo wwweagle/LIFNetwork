@@ -17,6 +17,7 @@ import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
+import javax.swing.JFrame;
 import savedParameters.NetworkParameters;
 
 /**
@@ -213,7 +214,10 @@ public class NetworkCalc {
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
 
-        getMaxFirePopulation(fireList);
+//        getMaxFirePopulation(fireList);
+        FiringUI fireUI=new FiringUI();
+        fireUI.setChart(new FiringEngine(fireList).getChart());
+        fireUI.setVisible(true);
         return fireList.size();
     }
 
