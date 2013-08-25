@@ -15,6 +15,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import modelNetGen.ModelUI;
+import org.jfree.chart.ChartPanel;
 
 /**
  *
@@ -563,12 +564,26 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_txtGFactorActionPerformed
 
     private void btnGenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenActionPerformed
-        JFrame genUI=new ModelUI();
+        JFrame genUI = new ModelUI();
         genUI.setVisible(true);
     }//GEN-LAST:event_btnGenActionPerformed
 
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
-        (new FiringUI()).setVisible(true);
+//        (new FiringUI()).setVisible(true);
+        if (fui == null) {
+            fui = new FiringUI();
+            fui.setVisible(true);
+        } else if (!fui.isVisible()) {
+            fui.setVisible(true);
+        }
+
+        TimerTask fuiUpdate = new TimerTask() {
+            @Override
+            public void run() {
+            }
+        };
+        fuiRefreshTimer = new Timer(true);
+
     }//GEN-LAST:event_btnViewActionPerformed
 
     private void runModel() {
@@ -705,4 +720,6 @@ public class NetCalcUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private NetworkCalc network;
     private List<String> fileList;
+    private FiringUI fui;
+    private Timer fuiRefreshTimer;
 }

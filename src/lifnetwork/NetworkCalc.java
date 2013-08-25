@@ -17,7 +17,6 @@ import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
-import javax.swing.JFrame;
 import savedParameters.NetworkParameters;
 
 /**
@@ -39,6 +38,7 @@ public class NetworkCalc {
     private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
     //Runtime mechanisms
     private ForkJoinPool fjpool = new ForkJoinPool();
+    List<int[]> fireList = Collections.synchronizedList(new ArrayList<int[]>());
     private RunState runState = RunState.BeforeRun;
     private final String pathToFile;
     private int currentTime;
@@ -161,7 +161,7 @@ public class NetworkCalc {
         /*
          * progress through time
          */
-        ArrayList<int[]> fireList = new ArrayList<>(1000);
+        fireList = Collections.synchronizedList(new ArrayList<int[]>());
 //        ArrayList<Float> vSample = new ArrayList<>(10000);
 //        ArrayList<Float> iSample = new ArrayList<>(10000);
 //        ArrayList<Float> sSample = new ArrayList<>(10000);
@@ -215,8 +215,7 @@ public class NetworkCalc {
 //        Commons.writeList("sHistory.csv", sSample);
 
 //        getMaxFirePopulation(fireList);
-        FiringUI fireUI=new FiringUI();
-        fireUI.setChart(new FiringEngine(fireList).getChart());
+        FiringUI fireUI = new FiringUI();
         fireUI.setVisible(true);
         return fireList.size();
     }
@@ -363,8 +362,11 @@ public class NetworkCalc {
         }
     }
 
-    private enum RunState {
+    public List<int[]> getFireList() {
+        return fireList;
+    }
 
+    private enum RunState {
         BeforeRun, Running, Stop, Finished
     }
 }
