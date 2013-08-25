@@ -4,7 +4,8 @@
  */
 package lifnetwork;
 
-import org.jfree.chart.JFreeChart;
+import java.util.List;
+
 
 /**
  *
@@ -101,14 +102,10 @@ public class FiringUI extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     }//GEN-LAST:event_jButton1ActionPerformed
-
-    public void setChart(JFreeChart chart){
-        chartBean.setChart(chart);
-//        javax.swing.GroupLayout layout=getContentPane().getLayout();
-        
-    }
     
-   
+   public void updateData(List<int[]> fireList){
+       chartBean.updateChart(fireList);
+   }
     
     /**
      * @param args the command line arguments

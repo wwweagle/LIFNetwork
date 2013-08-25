@@ -15,7 +15,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import modelNetGen.ModelUI;
-import org.jfree.chart.ChartPanel;
 
 /**
  *
@@ -580,10 +579,20 @@ public class NetCalcUI extends javax.swing.JFrame {
         TimerTask fuiUpdate = new TimerTask() {
             @Override
             public void run() {
+                if (fui != null && fui.isVisible()) {
+                    if (network != null) {
+                        fui.updateData(network.getFireList());
+                    }
+                } else {
+                    fuiRefreshTimer.cancel();
+                }
             }
         };
-        fuiRefreshTimer = new Timer(true);
 
+        if (fuiRefreshTimer == null) {
+            fuiRefreshTimer = new Timer(true);
+        }
+        fuiRefreshTimer.scheduleAtFixedRate(fuiUpdate, 1000, 1000);
     }//GEN-LAST:event_btnViewActionPerformed
 
     private void runModel() {

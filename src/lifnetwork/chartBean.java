@@ -28,9 +28,11 @@ public class chartBean extends ChartPanel implements Serializable {
     public chartBean() {
         super(ChartFactory.createScatterPlot("Population Fire", "Time (s)", "Neuron #", (new XYSeriesCollection()), PlotOrientation.VERTICAL, false, false, false));
         fireChart = this.getChart();
+        
         XYPlot plot = fireChart.getXYPlot();
         fireCollection = (XYSeriesCollection) plot.getDataset();
         fireSeries = new XYSeries("fires");
+        fireCollection.addSeries(fireSeries);
         currentIndex = 0;
     }
 
@@ -39,7 +41,7 @@ public class chartBean extends ChartPanel implements Serializable {
             return;
         }
         for (int i = currentIndex; i < fireList.size(); i++) {
-            fireSeries.add(fireList.get(i)[0], fireList.get(i)[0]);
+            fireSeries.add((double) fireList.get(i)[0] / 1000000, fireList.get(i)[1]);
         }
         currentIndex = fireList.size();
     }

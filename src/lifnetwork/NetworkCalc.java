@@ -38,7 +38,7 @@ public class NetworkCalc {
     private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
     //Runtime mechanisms
     private ForkJoinPool fjpool = new ForkJoinPool();
-    List<int[]> fireList = Collections.synchronizedList(new ArrayList<int[]>());
+    private List<int[]> fireList = Collections.synchronizedList(new ArrayList<int[]>());
     private RunState runState = RunState.BeforeRun;
     private final String pathToFile;
     private int currentTime;
@@ -215,8 +215,6 @@ public class NetworkCalc {
 //        Commons.writeList("sHistory.csv", sSample);
 
 //        getMaxFirePopulation(fireList);
-        FiringUI fireUI = new FiringUI();
-        fireUI.setVisible(true);
         return fireList.size();
     }
 
