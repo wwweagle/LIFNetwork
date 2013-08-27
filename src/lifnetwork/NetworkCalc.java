@@ -35,10 +35,10 @@ public class NetworkCalc {
     private final int randFactor;//percentage
     private final int randCurrent;
     //Random generator
-    private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
+    final private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
     //Runtime mechanisms
-    private ForkJoinPool fjpool = new ForkJoinPool();
-    private List<int[]> fireList = Collections.synchronizedList(new ArrayList<int[]>());
+    final private ForkJoinPool fjpool = new ForkJoinPool();
+    final private List<int[]> fireList = Collections.synchronizedList(new ArrayList<int[]>());
     private RunState runState = RunState.BeforeRun;
     private final String pathToFile;
     private int currentTime;
@@ -161,7 +161,7 @@ public class NetworkCalc {
         /*
          * progress through time
          */
-        fireList = Collections.synchronizedList(new ArrayList<int[]>());
+//        fireList = Collections.synchronizedList(new ArrayList<int[]>());
 //        ArrayList<Float> vSample = new ArrayList<>(10000);
 //        ArrayList<Float> iSample = new ArrayList<>(10000);
 //        ArrayList<Float> sSample = new ArrayList<>(10000);
@@ -215,32 +215,41 @@ public class NetworkCalc {
 //        Commons.writeList("sHistory.csv", sSample);
 
 //        getMaxFirePopulation(fireList);
+        runState = RunState.Stop;
         return fireList.size();
     }
 
-    private int getMaxFirePopulation(ArrayList<int[]> fireList) {
-        System.out.println("begin events count");
+    public boolean isStopped() {
+        return runState == RunState.Stop;
+    }
+
+//    public int getMaxFirePopulation(ArrayList<int[]> fireList, int timePeriod) {
+    public int getMaxFirePopulation(int timePeriod) {
+//        System.out.println("begin events count");
         if (fireList.size() < 1) {
             return 0;
         }
         int eventsCount = 1;
 
         int maxFreq = 0;
-        int startTime = 0;
-        for (int currentEventIndex = 0, currentStartTimeIndex = 0; currentEventIndex < fireList.size(); currentEventIndex++) {
-            currentEventIndex++;
-            if (fireList.get(currentEventIndex)[0] - fireList.get(currentStartTimeIndex)[0] < 100000) { //microseconds, uS
-                //less than 1ms
-                eventsCount++;
-            } else {
-                if (eventsCount > maxFreq) {
-                    maxFreq = eventsCount;
-                    startTime = fireList.get(currentStartTimeIndex)[0];
+        try {
+            synchronized (fireList) {
+                for (int currentEventIndex = 1, currentStartTimeIndex = 0; currentEventIndex < fireList.size(); currentEventIndex++) {
+                    if (fireList.get(currentEventIndex)[0] - fireList.get(currentStartTimeIndex)[0] < timePeriod * 1000) { //microseconds, uS
+                        //less than 1ms
+                        eventsCount++;
+                    } else {
+                        if (eventsCount > maxFreq) {
+                            maxFreq = eventsCount;
+                        }
+                        currentStartTimeIndex++;
+                    }
                 }
-                currentStartTimeIndex++;
             }
+        } catch (Exception e) {
+            System.out.println(e.toString());
         }
-        System.out.println((startTime / 1000) + ", " + maxFreq);
+//        System.out.println((startTime / 1000) + ", " + maxFreq);
         return maxFreq;
     }
 
@@ -365,6 +374,7 @@ public class NetworkCalc {
     }
 
     private enum RunState {
+
         BeforeRun, Running, Stop, Finished
     }
 }

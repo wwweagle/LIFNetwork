@@ -337,6 +337,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         });
 
         btnView.setText("View");
+        btnView.setEnabled(false);
         btnView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnViewActionPerformed(evt);
@@ -448,6 +449,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     private void btnRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRunActionPerformed
         txtLog.setText("");
         runModel();
+        btnView.setEnabled(true);
     }//GEN-LAST:event_btnRunActionPerformed
 
     private void btnSkipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSkipActionPerformed
@@ -568,20 +570,17 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnGenActionPerformed
 
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
-//        (new FiringUI()).setVisible(true);
-        if (fui == null) {
-            fui = new FiringUI();
-            fui.setVisible(true);
-        } else if (!fui.isVisible()) {
-            fui.setVisible(true);
-        }
-
+        btnView.setEnabled(false);
+        final FiringUI fui = new FiringUI();
+        fui.setVisible(true);
+        final Timer fuiRefreshTimer = new Timer();
         TimerTask fuiUpdate = new TimerTask() {
             @Override
             public void run() {
-                if (fui != null && fui.isVisible()) {
-                    if (network != null) {
-                        fui.updateData(network.getFireList());
+                if (fui != null && fui.isVisible() && network != null) {
+                    fui.updateData(network.getFireList());
+                    if (network.isStopped()) {
+                        fuiRefreshTimer.cancel();
                     }
                 } else {
                     fuiRefreshTimer.cancel();
@@ -589,10 +588,7 @@ public class NetCalcUI extends javax.swing.JFrame {
             }
         };
 
-        if (fuiRefreshTimer == null) {
-            fuiRefreshTimer = new Timer(true);
-        }
-        fuiRefreshTimer.scheduleAtFixedRate(fuiUpdate, 1000, 1000);
+        fuiRefreshTimer.scheduleAtFixedRate(fuiUpdate, 2000, 2000);
     }//GEN-LAST:event_btnViewActionPerformed
 
     private void runModel() {
@@ -615,6 +611,10 @@ public class NetCalcUI extends javax.swing.JFrame {
                     network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, gFactor, pathToFile);
                     startUpdateProgBar();
                     log("Total fires = " + network.cycle());
+                    int n=network.getMaxFirePopulation(2);
+                    log("Max Group Fire within 2ms"+ n);
+                    log("Max Group Fire within 5ms"+ network.getMaxFirePopulation(5));
+                    log("Max Group Fire within 10ms"+ network.getMaxFirePopulation(10));
                     stopUpdateProgBar();
                 }
                 return null;
@@ -729,6 +729,4 @@ public class NetCalcUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private NetworkCalc network;
     private List<String> fileList;
-    private FiringUI fui;
-    private Timer fuiRefreshTimer;
 }
