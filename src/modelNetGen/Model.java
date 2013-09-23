@@ -627,15 +627,6 @@ public class Model {
         }
         float avg = (float) sum / cellList.size();
 
-        ArrayList<Boolean> neurons = new ArrayList<>(cellList.size());
-//        ArrayList<int[]> neuronCoord = new ArrayList<>();
-        for (int i = 0; i < cellList.size(); i++) {
-            neurons.add(cellList.get(i).isGlu());
-//            int[] coord = {cellList.get(i).getX(), cellList.get(i).getY()};
-//            neuronCoord.add(coord);
-        }
-
-
         HashMap<Integer, Float> synapticWeights = new HashMap<>(15 * cellList.size());
         for (Integer key : connected) {
             int[] pair = Com.getIDsFromSetKey(key);
@@ -649,7 +640,7 @@ public class Model {
         /*
          * actually writing serialized saves
          */
-        NetworkParameters save = new NetworkParameters(neurons, synapticWeights);
+        NetworkParameters save = new NetworkParameters(cellList, synapticWeights);
         String type = TYPE == ModelType.Network ? "Net" : "Ctl";
         String suffix = "_C_" + Float.toString(connProbScale) + "_W_" + Float.toString(weightScale);
 

@@ -4,57 +4,63 @@
  */
 package modelNetGen;
 
-import org.apache.commons.math3.random.RandomGenerator;
+import java.io.Serializable;
+//import org.apache.commons.math3.random.RandomGenerator;
 
 /**
  *
  * @author Libra
  */
-public class RndCell {
+public class RndCell implements Serializable{
 
-    private int x;
-    private int y;
-    private boolean isGlu;
-    private int zoneL;
-    private int zoneR;
-    private int zoneU;
-    private int zoneD;
-    private int zoneDim = 200;
+    private Integer x;
+    private Integer y;
+    private Boolean isGlu;
+//    private int zoneL;
+//    private int zoneR;
+//    private int zoneU;
+//    private int zoneD;
+//    private int zoneDim = 200;
 //    private int nearDist = 300;
-    private int veryNearDist = 200;
+    private final Integer veryNearDist = 200;
 //    private int[] zone;
-    RandomGenerator r;
-
-    public boolean near(int[] zone) {
-        int targetX = zone[0];
-        int targetY = zone[1];
-        boolean xNear = (zoneL == targetX || zoneR == targetX);
-        boolean yNear = (zoneU == targetY || zoneD == targetY);
-        return xNear && yNear;
-    }
+//    RandomGenerator r;
+//
+//    public boolean near(int[] zone) {
+//        int targetX = zone[0];
+//        int targetY = zone[1];
+//        boolean xNear = (zoneL == targetX || zoneR == targetX);
+//        boolean yNear = (zoneU == targetY || zoneD == targetY);
+//        return xNear && yNear;
+//    }
 
     RndCell(int dim, float gluRate) {
-        this.r = Com.getR();
+//        this.r = Com.getR();
         setRandomCoord(dim);
         setRandomGlu(gluRate);
     }
 
-    final public void setRandomCoord(int dim) {
-        x = r.nextInt(dim);
-        y = r.nextInt(dim);
-        //Zone Const
-        int subZoneX = x / zoneDim;
-        int subZoneY = y / zoneDim;
+    public RndCell() {
+    }
+    
+    
 
-        zoneL = subZoneX > 0 ? subZoneX - 1 : subZoneX;
-        zoneR = subZoneX;
-        zoneU = subZoneY > 0 ? subZoneY - 1 : subZoneY;
-        zoneD = subZoneY;
+    final public void setRandomCoord(int dim) {
+        x = Com.getR().nextInt(dim);
+        y = Com.getR().nextInt(dim);
+        //Zone Const
+//        int subZoneX = x / zoneDim;
+//        int subZoneY = y / zoneDim;
+
+//        zoneL = subZoneX > 0 ? subZoneX - 1 : subZoneX;
+//        zoneR = subZoneX;
+//        zoneU = subZoneY > 0 ? subZoneY - 1 : subZoneY;
+//        zoneD = subZoneY;
 //        zone = getRndZone();
     }
 
     final public void setRandomGlu(float gluRate) {
-        isGlu = r.nextFloat() < gluRate ? true : false;
+        isGlu = Com.getR().nextFloat() < gluRate ? true : false;
     }
 
     public int getX() {

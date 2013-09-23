@@ -7,6 +7,7 @@ package savedNetworkParameter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import modelNetGen.RndCell;
 
 /**
  *
@@ -17,26 +18,19 @@ public class NetworkParameters implements Serializable {
      * data structure for save
      */
 
-    final private ArrayList<Boolean> neuronIsGlu;
+    final private ArrayList<RndCell> cellList;
     final private HashMap<Integer, Float> synapticWeights;
-//    final private ArrayList<int[]> neuronCoord;
 
-    public NetworkParameters(ArrayList<Boolean> neuronIsGlu, HashMap<Integer, Float> synapticWeights) {
-        this.neuronIsGlu = neuronIsGlu;
+    public NetworkParameters(ArrayList<RndCell> cellList, HashMap<Integer, Float> synapticWeights) {
+        this.cellList = cellList;
         this.synapticWeights = synapticWeights;
-//        this.neuronCoord = neuronCoord;
     }
 
-    public ArrayList<Boolean> getNeuronIsGlu() {
-        return neuronIsGlu;
+    public ArrayList<RndCell> getCellList() {
+        return cellList;
     }
 
     public HashMap<Integer, Float> getSynapticWeights() {
         return synapticWeights;
     }
-//
-//    public ArrayList<int[]> getNeuronCoord() {
-//        return neuronCoord;
-//    }
-    
 }

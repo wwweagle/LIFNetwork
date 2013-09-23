@@ -17,6 +17,7 @@ import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
+import modelNetGen.RndCell;
 import savedNetworkParameter.NetworkParameters;
 
 /**
@@ -83,10 +84,10 @@ public class NetworkCalc {
         /*
          * init cells
          */
-        ArrayList<Boolean> neuronIsGlu = save.getNeuronIsGlu();
+        ArrayList<RndCell> cellList = save.getCellList();
 
-        for (int i = 0; i < neuronIsGlu.size(); i++) {
-            if (neuronIsGlu.get(i)) {
+        for (int i = 0; i < cellList.size(); i++) {
+            if (cellList.get(i).isGlu()) {
                 //init a new glu neuron
                 NeuronType type = NeuronType.GLU;
                 int rm = 790;
@@ -122,9 +123,10 @@ public class NetworkCalc {
             IncomingSynapse incoming = new IncomingSynapse(
                     synapse.getValue(),
                     neuronList.get(pre),
-                    getG(neuronIsGlu.get(pre), neuronIsGlu.get(post)));
+                    getG(cellList.get(pre).isGlu(), cellList.get(post).isGlu()));
             neuronList.get(post).addInput(incoming);
         }
+        System.out.println("parameter exit");
 
     }
 
