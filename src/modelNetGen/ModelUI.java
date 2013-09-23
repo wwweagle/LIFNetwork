@@ -842,7 +842,7 @@ public class ModelUI extends javax.swing.JFrame {
                         if (m0.getRunState() == RunState.NetGenerated) {
                             circuitView.setConnected(new HashSet<>(m0.getConnected()));
                             circuitView.repaintCanvas();
-                            ses.shutdown();
+//                            ses.shutdown();
                         }
                     }
                 };
@@ -871,7 +871,7 @@ public class ModelUI extends javax.swing.JFrame {
                         break;
                     }
                     ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
-                    int[] histo = m0.probeCluster(Integer.parseInt(txtGenGrpTime.getText()), type, size);
+                    int[] histo = m0.probeGroupDensity(Integer.parseInt(txtGenGrpTime.getText()), type, size);
 //                D.tp("TYPE " + type + ", " + Arrays.toString(histo));
 //                    System.out.print(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
 //                    System.out.print("\t");

@@ -30,8 +30,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import javax.swing.Timer;
+import jungClustering.Cluster;
 import org.apache.commons.math3.random.RandomGenerator;
-import savedParameters.NetworkParameters;
+import savedNetworkParameter.NetworkParameters;
 
 /**
  *
@@ -78,7 +79,7 @@ public class Model {
         runState = RunState.Instantiated;
         updates = new LinkedList<>();
         progress = 0;
-        connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>(30000));
+        connected = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>(10000));
         cellList = new ArrayList<>();
         dim = setDimension(nCell, density);
         for (int i = 0; i < nCell; i++) {
@@ -130,7 +131,7 @@ public class Model {
         this.weightScale = weightScale;
     }
 
-    private int countCluster(int type, int id1, int id2) {
+    private int countGroupDensity(int type, int id1, int id2) {
         int setKey = Com.getSetKey(id1, id2);
         if (!connected.contains(setKey)) {
             return 0;
@@ -434,7 +435,7 @@ public class Model {
         return degrees;
     }
 
-    public int[] probeCluster(int time, int type, int size) {
+    public int[] probeGroupDensity(int time, int type, int size) {
 
         Set<int[]> monitorSet = genGrpMonitor(size, time);
 
@@ -444,12 +445,12 @@ public class Model {
             int id2 = grp[1];
             int id3 = grp[2];
             int count = 0;
-            count += countCluster(type, id1, id2);
-            count += countCluster(type, id1, id3);
-            count += countCluster(type, id2, id1);
-            count += countCluster(type, id2, id3);
-            count += countCluster(type, id3, id1);
-            count += countCluster(type, id3, id2);
+            count += countGroupDensity(type, id1, id2);
+            count += countGroupDensity(type, id1, id3);
+            count += countGroupDensity(type, id2, id1);
+            count += countGroupDensity(type, id2, id3);
+            count += countGroupDensity(type, id3, id1);
+            count += countGroupDensity(type, id3, id2);
 
             /*
              * Here after is unfinished but highly usable
@@ -457,12 +458,12 @@ public class Model {
              */
             if (size == 4) {
                 int id4 = grp[3];
-                count += countCluster(type, id1, id4);
-                count += countCluster(type, id4, id1);
-                count += countCluster(type, id2, id4);
-                count += countCluster(type, id4, id2);
-                count += countCluster(type, id3, id4);
-                count += countCluster(type, id4, id3);
+                count += countGroupDensity(type, id1, id4);
+                count += countGroupDensity(type, id4, id1);
+                count += countGroupDensity(type, id2, id4);
+                count += countGroupDensity(type, id4, id2);
+                count += countGroupDensity(type, id3, id4);
+                count += countGroupDensity(type, id4, id3);
 
             }
             histo[count]++;
@@ -627,11 +628,11 @@ public class Model {
         float avg = (float) sum / cellList.size();
 
         ArrayList<Boolean> neurons = new ArrayList<>(cellList.size());
-        ArrayList<int[]> neuronCoord = new ArrayList<>();
+//        ArrayList<int[]> neuronCoord = new ArrayList<>();
         for (int i = 0; i < cellList.size(); i++) {
             neurons.add(cellList.get(i).isGlu());
-            int[] coord = {cellList.get(i).getX(), cellList.get(i).getY()};
-            neuronCoord.add(coord);
+//            int[] coord = {cellList.get(i).getX(), cellList.get(i).getY()};
+//            neuronCoord.add(coord);
         }
 
 
@@ -648,7 +649,7 @@ public class Model {
         /*
          * actually writing serialized saves
          */
-        NetworkParameters save = new NetworkParameters(neurons, synapticWeights, neuronCoord);
+        NetworkParameters save = new NetworkParameters(neurons, synapticWeights);
         String type = TYPE == ModelType.Network ? "Net" : "Ctl";
         String suffix = "_C_" + Float.toString(connProbScale) + "_W_" + Float.toString(weightScale);
 
@@ -684,22 +685,6 @@ public class Model {
             Com.sAdd(gabaInMap, gabaIn.get(i));
             Com.sAdd(gabaOutMap, gabaOut.get(i));
         }
-//        System.out.println("Glu In=====================================");
-//        for (int i = 0; i < gluInMap.size(); i++) {
-//            Com.tp(i, gluInMap.get(i));
-//        }
-//        Com.tp("Glu Out=====================================");
-//        for (int i = 0; i < gluOutMap.size(); i++) {
-//            Com.tp(i, gluInMap.get(i));
-//        }
-//        Com.tp("GABA In=====================================");
-//        for (int i = 0; i < gabaInMap.size(); i++) {
-//            Com.tp(i, gluInMap.get(i));
-//        }
-//        Com.tp("GABA Out=====================================");
-//        for (int i = 0; i < gabaOutMap.size(); i++) {
-//            Com.tp(i, gluInMap.get(i));
-//        }
 
         Queue<TreeMap<Integer, Integer>> q = new LinkedList<>();
         q.offer(gluInMap);
@@ -863,8 +848,7 @@ public class Model {
             int threads = Runtime.getRuntime().availableProcessors();
             ExecutorService es = Executors.newFixedThreadPool(threads);
             runState = RunState.GeneratingNet;
-            for (int div = 0;
-                    div < 4; div++) { //bias by 5
+            for (int div = 0; div < 4; div++) { //bias by 5
                 progressUpdate("Modeling Div " + (div + 5));
                 Map<Integer, Integer> connNeedPerDiv = connNeeded.get(div);
                 Map<Integer, Float> probMap = obsConnProfile.get(div);
@@ -903,7 +887,7 @@ public class Model {
                                 unconnPair.setList(key, stillNeedConn);
                             }
                         } catch (InterruptedException | ExecutionException ex) {
-                            System.out.println("Net Model, Get Que");
+//                            System.out.println("Net Model, Get Que");
                             System.out.println(ex.toString());
                         }
                     }
@@ -911,13 +895,13 @@ public class Model {
                 //while end
             }
             //for div 5-9 end
-            runState = (runState == RunState.UserRequestStop) ? RunState.StoppedByUser : RunState.NetGenerated;
 
             sumUp();
+            Cluster c = new Cluster();
+            c.getClusteredSets(cellList, connected);
+            runState = (runState == RunState.UserRequestStop) ? RunState.StoppedByUser : RunState.NetGenerated;
         } catch (Throwable ex) {
             System.out.println(ex.toString());
-
-
         }
     }
 

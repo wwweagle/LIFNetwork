@@ -17,7 +17,7 @@ import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinTask.invokeAll;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
-import savedParameters.NetworkParameters;
+import savedNetworkParameter.NetworkParameters;
 
 /**
  *
@@ -71,9 +71,6 @@ public class NetworkCalc {
         try (ObjectInputStream in = new ObjectInputStream(
                 new FileInputStream(pathToFile))) {
             save = (NetworkParameters) in.readObject();
-//            System.out.println("deserialize succeed");
-//            System.out.println(save.getNeuronIsGlu().size());
-//            System.out.println(save.getSynapticWeights().size());
 
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("deserialize failed");
