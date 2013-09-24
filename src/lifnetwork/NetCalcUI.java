@@ -542,7 +542,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
     private void btnDefaultFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultFolderActionPerformed
         fileList = new ArrayList<>();
-        File dir = new File("G:\\java\\lifNetwork");
+        File dir = new File(".\\");
         log("Open folder " + dir.getAbsolutePath());
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override
@@ -611,10 +611,10 @@ public class NetCalcUI extends javax.swing.JFrame {
                     network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, gFactor, pathToFile);
                     startUpdateProgBar();
                     log("Total fires = " + network.cycle());
-                    int n=network.getMaxFirePopulation(2);
-                    log("Max Group Fire within 2ms"+ n);
-                    log("Max Group Fire within 5ms"+ network.getMaxFirePopulation(5));
-                    log("Max Group Fire within 10ms"+ network.getMaxFirePopulation(10));
+//                    int n=network.getMaxFirePopulation(2);
+//                    log("Max Group Fire within 2ms"+ n);
+//                    log("Max Group Fire within 5ms"+ network.getMaxFirePopulation(5));
+                    log("Max Group Fire within 100ms"+ network.getMaxFirePopulation(100));
                     stopUpdateProgBar();
                 }
                 return null;

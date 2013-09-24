@@ -7,6 +7,7 @@ package savedNetworkParameter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import modelNetGen.RndCell;
 
 /**
@@ -20,10 +21,12 @@ public class NetworkParameters implements Serializable {
 
     final private ArrayList<RndCell> cellList;
     final private HashMap<Integer, Float> synapticWeights;
+    final private HashSet<HashSet<Integer>> clusters;
 
-    public NetworkParameters(ArrayList<RndCell> cellList, HashMap<Integer, Float> synapticWeights) {
+    public NetworkParameters(ArrayList<RndCell> cellList, HashMap<Integer, Float> synapticWeights, HashSet<HashSet<Integer>> clusters) {
         this.cellList = cellList;
         this.synapticWeights = synapticWeights;
+        this.clusters = clusters;
     }
 
     public ArrayList<RndCell> getCellList() {
@@ -33,4 +36,10 @@ public class NetworkParameters implements Serializable {
     public HashMap<Integer, Float> getSynapticWeights() {
         return synapticWeights;
     }
+
+    public HashSet<HashSet<Integer>> getClusters() {
+        return clusters;
+    }
+    
+    
 }

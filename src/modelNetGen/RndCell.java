@@ -5,61 +5,21 @@
 package modelNetGen;
 
 import java.io.Serializable;
-//import org.apache.commons.math3.random.RandomGenerator;
 
 /**
  *
  * @author Libra
  */
-public class RndCell implements Serializable{
+public class RndCell implements Serializable {
 
-    private Integer x;
-    private Integer y;
-    private Boolean isGlu;
-//    private int zoneL;
-//    private int zoneR;
-//    private int zoneU;
-//    private int zoneD;
-//    private int zoneDim = 200;
-//    private int nearDist = 300;
+    private final Integer x;
+    private final Integer y;
+    private final Boolean isGlu;
     private final Integer veryNearDist = 200;
-//    private int[] zone;
-//    RandomGenerator r;
-//
-//    public boolean near(int[] zone) {
-//        int targetX = zone[0];
-//        int targetY = zone[1];
-//        boolean xNear = (zoneL == targetX || zoneR == targetX);
-//        boolean yNear = (zoneU == targetY || zoneD == targetY);
-//        return xNear && yNear;
-//    }
 
     RndCell(int dim, float gluRate) {
-//        this.r = Com.getR();
-        setRandomCoord(dim);
-        setRandomGlu(gluRate);
-    }
-
-    public RndCell() {
-    }
-    
-    
-
-    final public void setRandomCoord(int dim) {
         x = Com.getR().nextInt(dim);
         y = Com.getR().nextInt(dim);
-        //Zone Const
-//        int subZoneX = x / zoneDim;
-//        int subZoneY = y / zoneDim;
-
-//        zoneL = subZoneX > 0 ? subZoneX - 1 : subZoneX;
-//        zoneR = subZoneX;
-//        zoneU = subZoneY > 0 ? subZoneY - 1 : subZoneY;
-//        zoneD = subZoneY;
-//        zone = getRndZone();
-    }
-
-    final public void setRandomGlu(float gluRate) {
         isGlu = Com.getR().nextFloat() < gluRate ? true : false;
     }
 

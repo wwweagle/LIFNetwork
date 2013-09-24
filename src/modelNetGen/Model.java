@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -640,7 +641,8 @@ public class Model {
         /*
          * actually writing serialized saves
          */
-        NetworkParameters save = new NetworkParameters(cellList, synapticWeights);
+        HashSet<HashSet<Integer>> clusters = (new Cluster()).getClusteredSets(cellList, connected);
+        NetworkParameters save = new NetworkParameters(cellList, synapticWeights, clusters);
         String type = TYPE == ModelType.Network ? "Net" : "Ctl";
         String suffix = "_C_" + Float.toString(connProbScale) + "_W_" + Float.toString(weightScale);
 
@@ -772,10 +774,7 @@ public class Model {
                 @Override
                 public Queue<Queue<int[]>> call() {
 
-//                System.out.println("615 called generation");
                     int newConn = 0;
-//                    System.out.println(key + "\t" + toConn.size() + "\t" + nConnNeeded);
-
                     for (int[] pair : toConn) {
                         if (newConn >= nConnNeeded) {
                             break;
@@ -802,12 +801,10 @@ public class Model {
                     Queue<Queue<int[]>> rtn = new LinkedList<>();
                     rtn.offer(conned);
                     rtn.offer(unConned);
-//                System.out.println("615 returned que");
                     return rtn;
                 }
 
                 boolean newConnection(float prob, int pre, int post) {//from 1 to 2
-//                System.out.println("615 enter new conn");
                     float p = prob;
                     /*
                      * Activity dependent connection
@@ -832,7 +829,6 @@ public class Model {
                     /*
                      * Active or not
                      */
-//                System.out.println("615 ended new conn");
                     return p > r.nextFloat() ? true : false;
                 }
             }
@@ -888,8 +884,6 @@ public class Model {
             //for div 5-9 end
 
             sumUp();
-            Cluster c = new Cluster();
-            c.getClusteredSets(cellList, connected);
             runState = (runState == RunState.UserRequestStop) ? RunState.StoppedByUser : RunState.NetGenerated;
         } catch (Throwable ex) {
             System.out.println(ex.toString());

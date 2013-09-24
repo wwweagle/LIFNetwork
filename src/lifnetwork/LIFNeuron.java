@@ -150,12 +150,10 @@ public class LIFNeuron {
         this.V += (float) dT * (currentIn - (this.V - restPotential) / (rm / 1000f))
                 / this.cm / 1000f;//rm*1000,dT*1000
         firing = (this.V > this.threshold) && (refractoryTime <= 0);
-        this.V = firing ? restPotential : this.V;
-//        System.out.println(currentIn+","+V);
+        this.V = (this.V > this.threshold) ? restPotential : this.V;
         if (firing) {
             refractoryTime = refractoryPeriod;
             this.eventList.add(new synapticEvent(currentTime));
-//            System.out.println("Fire!");
             return true;
         } else {
             refractoryTime -= refractoryTime > 0 ? dT : 0;

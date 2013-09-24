@@ -5,11 +5,11 @@
 package lifnetwork;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +43,7 @@ public class NetworkCalc {
     private RunState runState = RunState.BeforeRun;
     private final String pathToFile;
     private int currentTime;
+    private int[] lookUpTable;
 
     /**
      *
@@ -73,7 +74,19 @@ public class NetworkCalc {
                 new FileInputStream(pathToFile))) {
             save = (NetworkParameters) in.readObject();
 
-        } catch (IOException | ClassNotFoundException e) {
+            HashSet<HashSet<Integer>> clusters = save.getClusters();
+            lookUpTable = new int[save.getCellList().size()];
+            int idx = 0;
+            for (Set<Integer> s : clusters) {
+                for (Integer i : s) {
+                    lookUpTable[i] = idx;
+                    idx++;
+                }
+//                System.out.println(idx + " processed");
+            }
+
+        } catch (Throwable e) {
+            System.out.println(e.toString());
             System.out.println("deserialize failed");
         }
         if (save == null) {
@@ -126,8 +139,6 @@ public class NetworkCalc {
                     getG(cellList.get(pre).isGlu(), cellList.get(post).isGlu()));
             neuronList.get(post).addInput(incoming);
         }
-        System.out.println("parameter exit");
-
     }
 
     private float getG(boolean preIsGlu, boolean postIsGlu) {
@@ -186,7 +197,7 @@ public class NetworkCalc {
             fjpool.invoke(new VoltageCalcFork(fired, 0, neuronList.size(), dT, currentTime));
             synchronized (fired) {
                 for (Integer cell : fired) {
-                    int[] record = {currentTime, cell};
+                    int[] record = {currentTime, lookUpTable[cell]};
                     fireList.add(record);
                 }
             }

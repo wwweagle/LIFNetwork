@@ -44,15 +44,19 @@ public class chartBean extends ChartPanel implements Serializable {
     }
 
     public void updateChart(List<int[]> fireList) {
-        if (fireList.size() <= currentIndex) {
-            currentIndex = 0;
-            fireSeries.clear();
-        }
         synchronized (fireList) {
-            for (int i = currentIndex; i < fireList.size(); i++) {
-                fireSeries.add((double) fireList.get(i)[0] / 1000000, fireList.get(i)[1]);
+            if (fireList.size() <= currentIndex) {
+                currentIndex = 0;
+                fireSeries.clear();
             }
+            try {
+                for (int i = currentIndex; i < fireList.size(); i++) {
+                    fireSeries.add((double) fireList.get(i)[0] / 1000000, fireList.get(i)[1]);
+                }
+            } catch (Throwable e) {
+                System.out.println(e.toString());
+            }
+            currentIndex = fireList.size();
         }
-        currentIndex = fireList.size();
     }
 }
