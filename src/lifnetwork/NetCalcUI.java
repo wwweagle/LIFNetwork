@@ -613,8 +613,9 @@ public class NetCalcUI extends javax.swing.JFrame {
                     log("Total fires = " + network.cycle());
 //                    int n=network.getMaxFirePopulation(2);
 //                    log("Max Group Fire within 2ms"+ n);
-//                    log("Max Group Fire within 5ms"+ network.getMaxFirePopulation(5));
-                    log("Max Group Fire within 100ms"+ network.getMaxFirePopulation(100));
+                    log("Max Group Fire within 20ms " + network.getMaxFirePopulation(20));
+                    log("Frequence of >1% population fire " + network.getPopulationFireFreq(20, 1) + "Hz");
+//                    log("Max Group Fire within 100ms"+ network.getMaxFirePopulation(100));
                     stopUpdateProgBar();
                 }
                 return null;

@@ -263,6 +263,46 @@ public class NetworkCalc {
         return maxFreq;
     }
 
+    //    public int getPopulationFireFreq(ArrayList<int[]> fireList, int timePeriod) {
+    public float getPopulationFireFreq(int timePeriod, int proportion) {
+        if (fireList.size() < 1) {
+            return 0;
+        }
+        int eventsCount = 1;
+
+        int grpFireCount = 0;
+        try {
+            synchronized (fireList) {
+//                for (int currentEventIndex = 1, currentStartTimeIndex = 0; currentEventIndex < fireList.size(); currentEventIndex++) {
+//                    if (fireList.get(currentEventIndex)[0] - fireList.get(currentStartTimeIndex)[0] < timePeriod * 1000) { //microseconds, uS
+//                        eventsCount++;
+//                    } else {
+//                        if (eventsCount > maxFreq) {
+//                            maxFreq = eventsCount;
+//                        }
+//                        currentStartTimeIndex++;
+//                    }
+//                }
+                for (int currentEventPtr = 1, currentStartTimePtr = 0; currentEventPtr < fireList.size(); currentEventPtr++) {
+                    if (fireList.get(currentEventPtr)[0] - fireList.get(currentStartTimePtr)[0] < timePeriod * 1000) {
+                        eventsCount++;
+                        if (eventsCount > (proportion * neuronList.size() / 100)) {
+                            currentStartTimePtr = currentEventPtr + 1;
+                            currentEventPtr++;
+                            eventsCount = 1;
+                            grpFireCount++;
+                        }
+                    } else {
+                        currentStartTimePtr++;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        return grpFireCount / (simulateTime / (1000 * 1000));
+    }
+
     public int getProgress() {
         return currentTime * 100 / simulateTime;
     }
