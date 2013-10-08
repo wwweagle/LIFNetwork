@@ -55,9 +55,6 @@ public class ModelUI extends javax.swing.JFrame {
         rdoRand = new javax.swing.JRadioButton();
         rdoBiDir = new javax.swing.JRadioButton();
         rdoUniDir = new javax.swing.JRadioButton();
-        txtGenPairTIme = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
-        btnShow = new javax.swing.JButton();
         btnStart = new javax.swing.JButton();
         btnExit = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JSeparator();
@@ -67,7 +64,6 @@ public class ModelUI extends javax.swing.JFrame {
         txtWeightScale = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
-        chkWriteFile = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         btnCluster = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
@@ -98,6 +94,26 @@ public class ModelUI extends javax.swing.JFrame {
         txtPrg = new javax.swing.JTextArea();
         jPanel4 = new javax.swing.JPanel();
         prgBar = new javax.swing.JProgressBar();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        txtConnProbBatchTo = new javax.swing.JTextField();
+        jLabel14 = new javax.swing.JLabel();
+        txtConnProbBatchFrom = new javax.swing.JTextField();
+        txtConnProbBatchStep = new javax.swing.JTextField();
+        jLabel15 = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        txtWeightScaleBatchFrom = new javax.swing.JTextField();
+        txtWeightScaleBatchTo = new javax.swing.JTextField();
+        txtWeightScaleBatchStep = new javax.swing.JTextField();
+        btnInitModelBatch = new javax.swing.JButton();
+        btnStartBatch = new javax.swing.JButton();
+        btnExitBatch = new javax.swing.JButton();
+        btnStopModelBatch = new javax.swing.JButton();
+        btnShowBatch = new javax.swing.JButton();
+        btnShow = new javax.swing.JButton();
+        chkWriteFile = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Generate Model");
@@ -177,25 +193,6 @@ public class ModelUI extends javax.swing.JFrame {
             }
         });
 
-        txtGenPairTIme.setText("2");
-        txtGenPairTIme.setPreferredSize(new java.awt.Dimension(25, 20));
-        txtGenPairTIme.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtGenPairTImeActionPerformed(evt);
-            }
-        });
-
-        jLabel7.setText("s sampling");
-
-        btnShow.setText("Show");
-        btnShow.setEnabled(false);
-        btnShow.setPreferredSize(new java.awt.Dimension(85, 25));
-        btnShow.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnShowActionPerformed(evt);
-            }
-        });
-
         btnStart.setText("Start");
         btnStart.setEnabled(false);
         btnStart.setPreferredSize(new java.awt.Dimension(85, 25));
@@ -230,9 +227,6 @@ public class ModelUI extends javax.swing.JFrame {
         jLabel10.setText("Connection Prob Scale");
 
         jLabel11.setText("Syn Weight Scale");
-
-        chkWriteFile.setSelected(true);
-        chkWriteFile.setText("Write");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -280,14 +274,6 @@ public class ModelUI extends javax.swing.JFrame {
                             .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btnStopModel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(btnShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(chkWriteFile))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(txtGenPairTIme, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel7))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel10)
                             .addComponent(jLabel11))
@@ -299,14 +285,10 @@ public class ModelUI extends javax.swing.JFrame {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtGenPairTIme, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel10)
                             .addComponent(txtConnProb, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -314,7 +296,7 @@ public class ModelUI extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel11)
                             .addComponent(txtWeightScale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnInitModel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btnStopModel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -322,36 +304,33 @@ public class ModelUI extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btnShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(chkWriteFile))
-                        .addGap(12, 12, 12))
+                        .addGap(0, 11, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(txtNeuronNum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel9))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(rdoRand)
-                            .addComponent(rdoBiDir)
-                            .addComponent(rdoUniDir))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(jLabel1)
-                            .addComponent(txtGluFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel3)
-                                .addComponent(txtGABAFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(chkDepolarGABA)
-                            .addComponent(txtIterFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5))
-                        .addGap(62, 62, 62))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel2)
+                                    .addComponent(txtNeuronNum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel9))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(rdoRand)
+                                    .addComponent(rdoBiDir)
+                                    .addComponent(rdoUniDir))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                                    .addComponent(jLabel1)
+                                    .addComponent(txtGluFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jLabel3)
+                                        .addComponent(txtGABAFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                                    .addComponent(chkDepolarGABA)
+                                    .addComponent(txtIterFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel5))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())))
         );
 
@@ -550,7 +529,7 @@ public class ModelUI extends javax.swing.JFrame {
                                     .addComponent(rdoOutput))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(btnIODegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 10, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -590,6 +569,174 @@ public class ModelUI extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jPanel5.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        jLabel12.setText("Connection Prob Scale");
+
+        jLabel8.setText("From");
+
+        jLabel13.setText("Batch");
+
+        txtConnProbBatchTo.setText("1.5");
+        txtConnProbBatchTo.setPreferredSize(new java.awt.Dimension(40, 20));
+
+        jLabel14.setText("To");
+
+        txtConnProbBatchFrom.setText("0.5");
+        txtConnProbBatchFrom.setPreferredSize(new java.awt.Dimension(40, 20));
+
+        txtConnProbBatchStep.setText("0.25");
+        txtConnProbBatchStep.setPreferredSize(new java.awt.Dimension(40, 20));
+
+        jLabel15.setText("Step");
+
+        jLabel16.setText("Syn Weight Scale");
+
+        txtWeightScaleBatchFrom.setText("0.5");
+        txtWeightScaleBatchFrom.setPreferredSize(new java.awt.Dimension(40, 20));
+
+        txtWeightScaleBatchTo.setText("1.5");
+        txtWeightScaleBatchTo.setPreferredSize(new java.awt.Dimension(40, 20));
+
+        txtWeightScaleBatchStep.setText("0.25");
+        txtWeightScaleBatchStep.setPreferredSize(new java.awt.Dimension(40, 20));
+
+        btnInitModelBatch.setText("Init");
+        btnInitModelBatch.setPreferredSize(new java.awt.Dimension(85, 25));
+        btnInitModelBatch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInitModelBatchActionPerformed(evt);
+            }
+        });
+
+        btnStartBatch.setText("Start");
+        btnStartBatch.setEnabled(false);
+        btnStartBatch.setPreferredSize(new java.awt.Dimension(85, 25));
+        btnStartBatch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStartBatchActionPerformed(evt);
+            }
+        });
+
+        btnExitBatch.setText("Exit");
+        btnExitBatch.setPreferredSize(new java.awt.Dimension(85, 25));
+        btnExitBatch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitBatchActionPerformed(evt);
+            }
+        });
+
+        btnStopModelBatch.setText("Stop");
+        btnStopModelBatch.setPreferredSize(new java.awt.Dimension(85, 25));
+        btnStopModelBatch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStopModelBatchActionPerformed(evt);
+            }
+        });
+
+        btnShowBatch.setText("Show");
+        btnShowBatch.setEnabled(false);
+        btnShowBatch.setPreferredSize(new java.awt.Dimension(85, 25));
+        btnShowBatch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowBatchActionPerformed(evt);
+            }
+        });
+
+        btnShow.setText("Show");
+        btnShow.setEnabled(false);
+        btnShow.setPreferredSize(new java.awt.Dimension(85, 25));
+        btnShow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowActionPerformed(evt);
+            }
+        });
+
+        chkWriteFile.setSelected(true);
+        chkWriteFile.setText("Write");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel12)
+                            .addComponent(jLabel13)
+                            .addComponent(jLabel16))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel8)
+                                    .addComponent(txtConnProbBatchFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtConnProbBatchTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel14))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel5Layout.createSequentialGroup()
+                                        .addComponent(jLabel15)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(btnShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(chkWriteFile))
+                                    .addComponent(txtConnProbBatchStep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addComponent(txtWeightScaleBatchFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(txtWeightScaleBatchTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(txtWeightScaleBatchStep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(btnInitModelBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnStartBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnShowBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnStopModelBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnExitBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel14)
+                    .addComponent(jLabel15)
+                    .addComponent(btnShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(chkWriteFile))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(txtConnProbBatchTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtConnProbBatchFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtConnProbBatchStep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel16)
+                    .addComponent(txtWeightScaleBatchTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtWeightScaleBatchFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtWeightScaleBatchStep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnInitModelBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnStartBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnShowBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnExitBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnStopModelBatch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -597,6 +744,7 @@ public class ModelUI extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -608,7 +756,9 @@ public class ModelUI extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(6, 6, 6)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -662,10 +812,6 @@ public class ModelUI extends javax.swing.JFrame {
         displayModel();
     }//GEN-LAST:event_btnShowActionPerformed
 
-    private void txtGenPairTImeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtGenPairTImeActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtGenPairTImeActionPerformed
-
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
         (new SwingWorker<Void, Void>() {
             @Override
@@ -698,6 +844,53 @@ public class ModelUI extends javax.swing.JFrame {
     private void txtIterFacActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIterFacActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtIterFacActionPerformed
+
+    private void btnInitModelBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInitModelBatchActionPerformed
+        btnShowBatch.setEnabled(false);
+        btnStartBatch.setEnabled(false);
+        pathToFile = FilesCommons.getDefaultFile();
+        modelInitWorker().execute();
+        btnInitModelBatch.setEnabled(false);
+    }//GEN-LAST:event_btnInitModelBatchActionPerformed
+
+    private void btnStopModelBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopModelBatchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnStopModelBatchActionPerformed
+
+    private void btnStartBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartBatchActionPerformed
+        (new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                for (float connProb = Float.parseFloat(txtConnProbBatchFrom.getText());
+                        connProb <= Float.parseFloat(txtConnProbBatchTo.getText());
+                        connProb += Float.parseFloat(txtConnProbBatchStep.getText())) {
+                    for (float weightScale = Float.parseFloat(txtWeightScaleBatchFrom.getText());
+                            weightScale <= Float.parseFloat(txtWeightScaleBatchTo.getText());
+                            weightScale += Float.parseFloat(txtWeightScaleBatchStep.getText())) {
+                        for (int i = 0; i < 2; i++) {
+                            m0.setType(i == 0 ? ModelType.Network : ModelType.Ctrl);
+                            m0.setConnProbScale(connProb);
+                            m0.setWeightScale(weightScale);
+                            m0.setWriteFile(chkWriteFile.isSelected());
+                            m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
+                            updateProgress();
+                            m0.genModelNetwork(pathToFile);
+                        }
+                    }
+                }
+                return null;
+            }
+        }).execute();
+        btnShow.setEnabled(true);
+    }//GEN-LAST:event_btnStartBatchActionPerformed
+
+    private void btnExitBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitBatchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnExitBatchActionPerformed
+
+    private void btnShowBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowBatchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnShowBatchActionPerformed
 
     /**
      * @param args the command line arguments
@@ -732,12 +925,17 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JButton btnCluster;
     private javax.swing.JButton btnCommNeiTest;
     private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnExitBatch;
     private javax.swing.JButton btnGlobalDegree;
     private javax.swing.JButton btnIODegree;
     private javax.swing.JButton btnInitModel;
+    private javax.swing.JButton btnInitModelBatch;
     private javax.swing.JButton btnShow;
+    private javax.swing.JButton btnShowBatch;
     private javax.swing.JButton btnStart;
+    private javax.swing.JButton btnStartBatch;
     private javax.swing.JButton btnStopModel;
+    private javax.swing.JButton btnStopModelBatch;
     private javax.swing.JCheckBox chkDepolarGABA;
     private javax.swing.JCheckBox chkFreq;
     private javax.swing.JCheckBox chkFwdGlu;
@@ -750,17 +948,23 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
@@ -784,14 +988,19 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JRadioButton rdoUniDir;
     private javax.swing.ButtonGroup triQuadGrp;
     private javax.swing.JTextField txtConnProb;
+    private javax.swing.JTextField txtConnProbBatchFrom;
+    private javax.swing.JTextField txtConnProbBatchStep;
+    private javax.swing.JTextField txtConnProbBatchTo;
     private javax.swing.JTextField txtGABAFac;
     private javax.swing.JTextField txtGenGrpTime;
-    private javax.swing.JTextField txtGenPairTIme;
     private javax.swing.JTextField txtGluFac;
     private javax.swing.JTextField txtIterFac;
     private javax.swing.JTextField txtNeuronNum;
     private javax.swing.JTextArea txtPrg;
     private javax.swing.JTextField txtWeightScale;
+    private javax.swing.JTextField txtWeightScaleBatchFrom;
+    private javax.swing.JTextField txtWeightScaleBatchStep;
+    private javax.swing.JTextField txtWeightScaleBatchTo;
     // End of variables declaration//GEN-END:variables
 
     private SwingWorker modelInitWorker() {
@@ -807,6 +1016,7 @@ public class ModelUI extends javax.swing.JFrame {
                 m0 = new Model(gluFac, gabaFac, iterFac, neuronNum, 8429, 0.76708864f);
                 updateProgress();
                 btnStart.setEnabled(true);
+                btnStartBatch.setEnabled(true);
                 return null;
             }
         };
