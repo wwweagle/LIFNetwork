@@ -62,6 +62,7 @@ public class Model {
     private boolean writeFile;
     private float weightScale;
     final private Monitor allPair;
+    private String rndSuffix="";
 
     /**
      * Build a new iterate model
@@ -560,62 +561,6 @@ public class Model {
         }
     }
 
-    public void writeMatrix(float weightScale) {
-        String suffix = "_C_" + Float.toString(connProbScale) + "_W_" + Float.toString(weightScale);
-//        String suff = suffix.length == 0 ? "" : suffix[0];
-        /*
-         * prepare for calc weight according to GABA conns
-         */
-        int[] gabaIOCount = new int[cellList.size()];
-        int sum = 0;
-        for (int i = 0; i < gabaIOCount.length; i++) {
-            gabaIOCount[i] = gabaIn.get(i) + gabaOut.get(i);
-            sum += gabaIOCount[i];
-        }
-        float avg = (float) sum / cellList.size();
-//        D.tp(avg);
-
-        /*
-         * seperate glu cells and gaba cells
-         */
-
-        ArrayList<Integer> gluCells = new ArrayList<>();
-        ArrayList<Integer> gabaCells = new ArrayList<>();
-        for (int i = 0; i < cellList.size(); i++) {
-            if (cellList.get(i).isGlu()) {
-                gluCells.add(i);
-            } else {
-                gabaCells.add(i);
-            }
-        }
-
-        Object[][] cellNum = new Object[2][1];
-        cellNum[0][0] = gabaCells.size();
-        cellNum[1][0] = gluCells.size();
-        FilesCommons.writeMatrix("cellNum" + suffix + ".csv", cellNum);
-
-
-        int totalCount = cellList.size();
-//        int gluCount = gluCells.size();
-        int gabaCount = gabaCells.size();
-        float[][] weight = new float[totalCount][totalCount];
-        for (int pre = 0; pre < totalCount; pre++) {
-            weight[pre][pre] = 0;
-            for (int post = pre + 1; post < totalCount; post++) {
-                int actPre = pre < gabaCount ? gabaCells.get(pre) : gluCells.get(pre - gabaCount);
-                int actPost = post < gabaCount ? gabaCells.get(post) : gluCells.get(post - gabaCount);
-                int setKey = Com.getSetKey(actPre, actPost);
-                weight[pre][post] = connected.contains(setKey) ? calcWeight(gabaIOCount[actPre] + gabaIOCount[actPost], avg, weightScale) : 0;
-                setKey = Com.getSetKey(actPost, actPre);
-                weight[post][pre] = connected.contains(setKey) ? calcWeight(gabaIOCount[actPre] + gabaIOCount[actPost], avg, weightScale) : 0;
-            }
-        }
-        String fileName = TYPE == ModelType.Network ? "actOrg" + suffix + ".csv" : "distOrg" + suffix + ".csv";
-        FilesCommons.writeMatrix(fileName, weight);
-
-
-    }
-
     public void writeSave(float weightScale) {
         /*
          * prepare for calc weight according to GABA conns
@@ -636,24 +581,26 @@ public class Model {
             synapticWeights.put(key, calcWeight(gabaIOCount[pre] + gabaIOCount[post], avg, weightScale));
         }
 
-
-
         /*
          * actually writing serialized saves
          */
         HashSet<HashSet<Integer>> clusters = (new Cluster()).getClusteredSets(cellList, connected);
-        NetworkParameters save = new NetworkParameters(cellList, synapticWeights, clusters);
+        NetworkParameters save = new NetworkParameters(cellList, synapticWeights, clusters, TYPE, connProbScale, weightScale);
         String type = TYPE == ModelType.Network ? "Net" : "Ctl";
-        String suffix = "_C_" + Float.toString(connProbScale) + "_W_" + Float.toString(weightScale);
+        String suffix = "_C" + Float.toString(connProbScale) + "_W" + Float.toString(weightScale) + "_" + rndSuffix;
 
         try (ObjectOutputStream o = new ObjectOutputStream(
-                new FileOutputStream("conn_" + type + suffix + ".ser"))) {
+                new FileOutputStream(type + suffix + ".ser"))) {
             o.writeObject(save);
         } catch (IOException e) {
             System.out.println("ser io error");
         }
     }
 
+    public void setRndSuffix(String rndSuffix) {
+        this.rndSuffix = rndSuffix;
+    }
+    
     private float calcWeight(int sum, float avg, float scale) {
         float ceiling = 4.0f * avg;
         float p = (sum > ceiling ? 1.5f : (sum / ceiling + 0.5f)) * scale;

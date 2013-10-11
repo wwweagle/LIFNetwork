@@ -6,6 +6,7 @@ package modelNetGen;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Random;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
@@ -17,7 +18,8 @@ import org.apache.commons.math3.random.Well44497b;
 public class Com {
 
 //    static final private int[] bins = {50, 100, 150, 200, 250, 350};
-    static private RandomGenerator r = new SynchronizedRandomGenerator(new Well44497b());
+    final static private RandomGenerator r = new SynchronizedRandomGenerator(new Well44497b());
+    final static private char[] chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
 
     static private int getBin(int n) {
 //        for (int i = 0; i < bins.length; i++) {
@@ -106,6 +108,16 @@ public class Com {
             System.out.print(str);
             System.out.print("\t");
         }
+    }
+
+    static public String genRandomString(int length) {
+        StringBuilder randomString = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            char c = chars[r.nextInt(chars.length)];
+            randomString.append(c);
+        }
+        return randomString.toString();
+
     }
 //
 //    static public int sGet(ConcurrentHashMap<Integer, Integer> map, Integer id) {
