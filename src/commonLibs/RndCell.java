@@ -2,9 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package modelNetGen;
+package commonLibs;
 
 import java.io.Serializable;
+import modelNetGen.Com;
 
 /**
  *
@@ -17,7 +18,7 @@ public class RndCell implements Serializable {
     private final Boolean isGlu;
     private final Integer veryNearDist = 200;
 
-    RndCell(int dim, float gluRate) {
+    public RndCell(int dim, float gluRate) {
         x = Com.getR().nextInt(dim);
         y = Com.getR().nextInt(dim);
         isGlu = Com.getR().nextFloat() < gluRate ? true : false;

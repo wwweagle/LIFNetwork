@@ -1,4 +1,4 @@
-package savedNetworkParameter;
+package commonLibs;
 
 /*
  * To change this template, choose Tools | Templates
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import modelNetGen.ModelType;
-import modelNetGen.RndCell;
 
 /**
  *

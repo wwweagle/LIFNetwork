@@ -4,6 +4,7 @@
  */
 package modelNetGen;
 
+import commonLibs.RndCell;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,7 +34,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 import javax.swing.Timer;
 import jungClustering.Cluster;
 import org.apache.commons.math3.random.RandomGenerator;
-import savedNetworkParameter.NetworkParameters;
+import commonLibs.NetworkParameters;
 
 /**
  *
