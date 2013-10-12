@@ -63,7 +63,7 @@ public class Model {
     private boolean writeFile;
     private float weightScale;
     final private Monitor allPair;
-    private String rndSuffix="";
+    private String rndSuffix = "";
 
     /**
      * Build a new iterate model
@@ -591,7 +591,7 @@ public class Model {
         String suffix = "_C" + Float.toString(connProbScale) + "_W" + Float.toString(weightScale) + "_" + rndSuffix;
 
         try (ObjectOutputStream o = new ObjectOutputStream(
-                new FileOutputStream(type + suffix + ".ser"))) {
+                new FileOutputStream(FilesCommons.getJarFolder("") + "\\" + type + suffix + ".ser"))) {
             o.writeObject(save);
         } catch (IOException e) {
             System.out.println("ser io error");
@@ -601,7 +601,7 @@ public class Model {
     public void setRndSuffix(String rndSuffix) {
         this.rndSuffix = rndSuffix;
     }
-    
+
     private float calcWeight(int sum, float avg, float scale) {
         float ceiling = 4.0f * avg;
         float p = (sum > ceiling ? 1.5f : (sum / ceiling + 0.5f)) * scale;

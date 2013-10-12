@@ -14,6 +14,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import modelNetGen.FilesCommons;
 import modelNetGen.ModelUI;
 
 /**
@@ -542,7 +543,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
     private void btnDefaultFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultFolderActionPerformed
         fileList = new ArrayList<>();
-        File dir = new File(".\\");
+        File dir = new File(FilesCommons.getJarFolder(""));
         log("Open folder " + dir.getAbsolutePath());
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override

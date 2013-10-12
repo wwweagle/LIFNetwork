@@ -758,7 +758,7 @@ public class ModelUI extends javax.swing.JFrame {
     private void btnInitModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInitModelActionPerformed
         btnShow.setEnabled(false);
         btnStart.setEnabled(false);
-        pathToFile = FilesCommons.getDefaultFile();
+        pathToFile = FilesCommons.getJarFolder("GAD0.accdb");
         modelInitWorker().execute();
         btnInitModel.setEnabled(false);
     }//GEN-LAST:event_btnInitModelActionPerformed
@@ -846,7 +846,8 @@ public class ModelUI extends javax.swing.JFrame {
     private void btnStartBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartBatchActionPerformed
         batchStop = false;
         batchCount = 0;
-        pathToFile = FilesCommons.getDefaultFile();
+        pathToFile = FilesCommons.getJarFolder("GAD0.accdb");
+        System.out.println(pathToFile);
 
         final int structures = Integer.parseInt(txtStructures.getText());
         final float connProbFrom = Float.parseFloat(txtConnProbBatchFrom.getText());
@@ -1012,7 +1013,6 @@ public class ModelUI extends javax.swing.JFrame {
         calcWorker = new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
-                System.out.println("init BG");
                 try {
                     batchSem.acquire();
 //                    System.out.println("init-acq");
@@ -1025,7 +1025,9 @@ public class ModelUI extends javax.swing.JFrame {
                 //TODO need to test pathToFile exist
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
                 m0 = new Model(gluFac, gabaFac, iterFac, neuronNum, 8429, 0.76708864f);
-                m0.setRndSuffix(Com.genRandomString(6));
+                String rndSuffix=Com.genRandomString(6);
+                System.out.println(rndSuffix);
+                m0.setRndSuffix(rndSuffix);
                 m0.setWriteFile(chkWriteFile.isSelected());
                 m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
                 updateProgress();

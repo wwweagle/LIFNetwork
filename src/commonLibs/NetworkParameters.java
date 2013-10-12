@@ -47,4 +47,18 @@ public class NetworkParameters implements Serializable {
     public HashSet<HashSet<Integer>> getClusters() {
         return clusters;
     }
+
+    public ModelType getType() {
+        return type;
+    }
+
+    public Float getConnProb() {
+        return connProb;
+    }
+
+    public Float getWeightScale() {
+        return weightScale;
+    }
+    
+    
 }
