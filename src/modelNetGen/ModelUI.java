@@ -847,7 +847,7 @@ public class ModelUI extends javax.swing.JFrame {
         batchStop = false;
         batchCount = 0;
         pathToFile = FilesCommons.getJarFolder("GAD0.accdb");
-        System.out.println(pathToFile);
+//        System.out.println(pathToFile);
 
         final int structures = Integer.parseInt(txtStructures.getText());
         final float connProbFrom = Float.parseFloat(txtConnProbBatchFrom.getText());
@@ -1015,7 +1015,6 @@ public class ModelUI extends javax.swing.JFrame {
             public Void doInBackground() {
                 try {
                     batchSem.acquire();
-//                    System.out.println("init-acq");
                 } catch (InterruptedException ex) {
                     System.out.println("Parallel exception");
                 }
@@ -1026,7 +1025,6 @@ public class ModelUI extends javax.swing.JFrame {
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
                 m0 = new Model(gluFac, gabaFac, iterFac, neuronNum, 8429, 0.76708864f);
                 String rndSuffix=Com.genRandomString(6);
-                System.out.println(rndSuffix);
                 m0.setRndSuffix(rndSuffix);
                 m0.setWriteFile(chkWriteFile.isSelected());
                 m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
@@ -1039,7 +1037,6 @@ public class ModelUI extends javax.swing.JFrame {
             @Override
             protected void done() {
                 batchSem.release();
-//                System.out.println("init-rel");
             }
         };
 
@@ -1050,14 +1047,12 @@ public class ModelUI extends javax.swing.JFrame {
         (new SwingWorker<Void, Void>() {
             @Override
             public Void doInBackground() {
-//                System.out.println("model inited");
                 circuitView = new CircuitViewUI();
                 circuitView.setNetworkType(modelType);
                 circuitView.setVisible(true);
 
                 circuitView.setDim(m0.getDimension());
                 circuitView.setCellList(m0.getCellList());
-//                circuitView.setMyWorker(this);
 
                 final ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
                 final Runnable displayUpdate = new Runnable() {
@@ -1075,7 +1070,6 @@ public class ModelUI extends javax.swing.JFrame {
                         if (m0.getRunState() == RunState.NetGenerated) {
                             circuitView.setConnected(new HashSet<>(m0.getConnected()));
                             circuitView.repaintCanvas();
-//                            ses.shutdown();
                         }
                     }
                 };
@@ -1105,9 +1099,6 @@ public class ModelUI extends javax.swing.JFrame {
                     }
                     ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
                     int[] histo = m0.probeGroupDensity(Integer.parseInt(txtGenGrpTime.getText()), type, size);
-//                D.tp("TYPE " + type + ", " + Arrays.toString(histo));
-//                    System.out.print(modelType + "\tTYPE_" + type + "\tGABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"));
-//                    System.out.print("\t");
                     ui.appendText(modelType.toString(),
                             type == 0 ? "Both" : type == 1 ? "Glu" : "GABA",
                             "GABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"), "\t");
@@ -1117,21 +1108,16 @@ public class ModelUI extends javax.swing.JFrame {
                             total += histo[i];
                         }
                         for (int i = 0; i < histo.length; i++) {
-//                            System.out.print((double) histo[i] / total);
-//                            System.out.print("\t");
                             ui.appendText((double) histo[i] / total + "\t");
                         }
                     } else {
                         for (int i = 0; i < histo.length; i++) {
-//                            System.out.print(histo[i]);
                             ui.appendText(histo[i] + "");
                         }
                     }
-//                    System.out.println();
                     ui.appendText("\n");
                     repeat--;
                 }
-//                split();
                 ui.setProgress(100);
                 return null;
             }
@@ -1249,17 +1235,12 @@ public class ModelUI extends javax.swing.JFrame {
                 for (int i = 0; i < map.size(); i++) {
                     ui.appendText(i + "\t" + map.get(i) + "\n");
                 }
-//                split();
                 return null;
             }
         };
         return globalDegreeWorker;
     }
 
-//    private void split() {
-//        System.out.println("===========================================");
-//        Toolkit.getDefaultToolkit().beep();
-//    }
     private void updateProgress() {
         if (updating) {
             return;
@@ -1275,7 +1256,6 @@ public class ModelUI extends javax.swing.JFrame {
                 for (int i = 0; i < updates.size(); i++) {
                     String s = updates.get(i) + "\r\n";
                     txtPrg.append(s);
-//                    System.out.println(m0.getProgress());
                     prgBar.setValue(m0.getProgress());
                 }
                 if (m0.getRunState() == RunState.StoppedByUser || m0.getRunState() == RunState.NetGenerated) {

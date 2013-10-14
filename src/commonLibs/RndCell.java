@@ -11,7 +11,7 @@ import modelNetGen.Com;
  *
  * @author Libra
  */
-public class RndCell implements Serializable {
+final public class RndCell implements Serializable {
 
     private final Integer x;
     private final Integer y;

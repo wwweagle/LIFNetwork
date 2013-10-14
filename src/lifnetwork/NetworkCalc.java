@@ -4,8 +4,6 @@
  */
 package lifnetwork;
 
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +17,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 import commonLibs.RndCell;
 import commonLibs.NetworkParameters;
+import modelNetGen.ModelType;
 
 /**
  *
@@ -41,7 +40,7 @@ public class NetworkCalc {
     final private ForkJoinPool fjpool = new ForkJoinPool();
     final private List<int[]> fireList = Collections.synchronizedList(new ArrayList<int[]>());
     private RunState runState = RunState.BeforeRun;
-    private final String pathToFile;
+    private final NetworkParameters save;
     private int currentTime;
     private int[] lookUpTable;
 
@@ -51,47 +50,26 @@ public class NetworkCalc {
      * @param gabaReverseP
      * @param randProb proportion of neurons with random current
      * @param randCurrent amplitude of random current
-     * @param pathToFile
+     * @param save
      */
-    public NetworkCalc(int simulateTime, int gabaReverseP, int randProb, int randCurrent, float gFactor, String pathToFile) {
+    public NetworkCalc(int simulateTime, int gabaReverseP, int randProb, int randCurrent, float gFactor, NetworkParameters save) {
         this.simulateTime = simulateTime;
         this.gabaReverseP = gabaReverseP;
         this.randFactor = randProb;
         this.randCurrent = randCurrent;
         this.gFactor = gFactor;
-        this.pathToFile = pathToFile;
+        this.save = save;
     }
 
     private void readParameters() {
-
-        /*
-         * read data from file
-         */
-
-
-        NetworkParameters save = null;
-        try (ObjectInputStream in = new ObjectInputStream(
-                new FileInputStream(pathToFile))) {
-            save = (NetworkParameters) in.readObject();
-
-            HashSet<HashSet<Integer>> clusters = save.getClusters();
-            lookUpTable = new int[save.getCellList().size()];
-            int idx = 0;
-            for (Set<Integer> s : clusters) {
-                for (Integer i : s) {
-                    lookUpTable[i] = idx;
-                    idx++;
-                }
-//                System.out.println(idx + " processed");
+        HashSet<HashSet<Integer>> clusters = save.getClusters();
+        lookUpTable = new int[save.getCellList().size()];
+        int idx = 0;
+        for (Set<Integer> s : clusters) {
+            for (Integer i : s) {
+                lookUpTable[i] = idx;
+                idx++;
             }
-
-        } catch (Throwable e) {
-            System.out.println(e.toString());
-            System.out.println("deserialize failed");
-        }
-        if (save == null) {
-            System.out.println("Null save file");
-            return;
         }
 
         /*
@@ -219,7 +197,9 @@ public class NetworkCalc {
 //            currentTime += dT;
         }
 
-        Commons.writeList(pathToFile.replaceAll(".+[\\\\/]", "").replaceAll("\\.ser", "") + "_fireHistory.csv", fireList);
+        Commons.writeList(save.getType() == ModelType.Network ? "Net" : "Ctl"
+                + "_C" + save.getConnProb() + "_W" + save.getWeightScale()
+                + save.getHashString() + "_fireHistory.csv", fireList);
 //        Commons.writeList("vHistory.csv", vSample);
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
@@ -233,9 +213,7 @@ public class NetworkCalc {
         return runState == RunState.Stop;
     }
 
-//    public int getMaxFirePopulation(ArrayList<int[]> fireList, int timePeriod) {
     public int getMaxFirePopulation(int timePeriod) {
-//        System.out.println("begin events count");
         if (fireList.size() < 1) {
             return 0;
         }
@@ -259,11 +237,9 @@ public class NetworkCalc {
         } catch (Exception e) {
             System.out.println(e.toString());
         }
-//        System.out.println((startTime / 1000) + ", " + maxFreq);
         return maxFreq;
     }
 
-    //    public int getPopulationFireFreq(ArrayList<int[]> fireList, int timePeriod) {
     public float getPopulationFireFreq(int timePeriod, int proportion) {
         if (fireList.size() < 1) {
             return 0;
@@ -273,16 +249,6 @@ public class NetworkCalc {
         int grpFireCount = 0;
         try {
             synchronized (fireList) {
-//                for (int currentEventIndex = 1, currentStartTimeIndex = 0; currentEventIndex < fireList.size(); currentEventIndex++) {
-//                    if (fireList.get(currentEventIndex)[0] - fireList.get(currentStartTimeIndex)[0] < timePeriod * 1000) { //microseconds, uS
-//                        eventsCount++;
-//                    } else {
-//                        if (eventsCount > maxFreq) {
-//                            maxFreq = eventsCount;
-//                        }
-//                        currentStartTimeIndex++;
-//                    }
-//                }
                 for (int currentEventPtr = 1, currentStartTimePtr = 0; currentEventPtr < fireList.size(); currentEventPtr++) {
                     if (fireList.get(currentEventPtr)[0] - fireList.get(currentStartTimePtr)[0] < timePeriod * 1000) {
                         eventsCount++;
@@ -300,7 +266,7 @@ public class NetworkCalc {
         } catch (Exception e) {
             System.out.println(e.toString());
         }
-        return grpFireCount / (simulateTime / (1000 * 1000));
+        return (float) grpFireCount / (simulateTime / (1000f * 1000f));
     }
 
     public int getProgress() {

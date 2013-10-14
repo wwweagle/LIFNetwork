@@ -23,7 +23,7 @@ public class FilesCommons {
             System.out.println(ex.toString());
         }
 
-        System.out.println(pathToFile);
+//        System.out.println(pathToFile);
 
         File f = new File(pathToFile);
         if (f.exists()) {
@@ -36,7 +36,7 @@ public class FilesCommons {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             pathToFile = DataFileChooser.getSelectedFile().getAbsolutePath();
         }
-        System.out.println(pathToFile);
+//        System.out.println(pathToFile);
         return pathToFile;
     }
 }

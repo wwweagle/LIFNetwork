@@ -586,7 +586,7 @@ public class Model {
          * actually writing serialized saves
          */
         HashSet<HashSet<Integer>> clusters = (new Cluster()).getClusteredSets(cellList, connected);
-        NetworkParameters save = new NetworkParameters(cellList, synapticWeights, clusters, TYPE, connProbScale, weightScale);
+        NetworkParameters save = new NetworkParameters(cellList, synapticWeights, clusters, TYPE, connProbScale, weightScale, rndSuffix);
         String type = TYPE == ModelType.Network ? "Net" : "Ctl";
         String suffix = "_C" + Float.toString(connProbScale) + "_W" + Float.toString(weightScale) + "_" + rndSuffix;
 

@@ -4,8 +4,13 @@
  */
 package lifnetwork;
 
+import commonLibs.GroupFireSaves;
+import commonLibs.NetworkParameters;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -599,25 +604,47 @@ public class NetCalcUI extends javax.swing.JFrame {
 
             @Override
             protected Void doInBackground() {
+
                 int fileCount = 0;
+
                 for (String pathToFile : fileList) {
                     publish(++fileCount);
                     log("Currently processing: " + pathToFile);
+                    /*
+                     * New code 
+                     */
+                    NetworkParameters save=null;
+                    try (ObjectInputStream in = new ObjectInputStream(
+                            new FileInputStream(pathToFile))) {
+                        save = (NetworkParameters) in.readObject();
+                        if (null == save) {
+                            System.out.println("Error deserializing!");
+                            return null;
+                        }
+                    } catch (ClassNotFoundException | IOException ex) {
+                        System.out.println(ex.toString());
+                    }
+
                     int timeNominal = Integer.parseInt(txtTime.getText());
                     timeNominal *= rdoSec.isSelected() ? 1000 * 1000 : 1000;
                     int GABARevP = Integer.parseInt(txtGABARevP.getText());
                     int randProb = Integer.parseInt(txtRandProb.getText());
                     int randAmp = Integer.parseInt(txtRandAmp.getText());
                     float gFactor = Float.parseFloat(txtGFactor.getText());
-                    network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, gFactor, pathToFile);
+                    network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, gFactor, save);
                     startUpdateProgBar();
-                    log("Total fires = " + network.cycle());
+                    log("Total fires = " + network.cycle());//Actual calculation
 //                    int n=network.getMaxFirePopulation(2);
 //                    log("Max Group Fire within 2ms"+ n);
-                    log("Max Group Fire within 20ms " + network.getMaxFirePopulation(20));
+//                    log("Max Group Fire within 20ms " + network.getMaxFirePopulation(20));
                     log("Frequence of >1% population fire " + network.getPopulationFireFreq(20, 1) + "Hz");
 //                    log("Max Group Fire within 100ms"+ network.getMaxFirePopulation(100));
                     stopUpdateProgBar();
+                /*
+                 * There is a cycle, save everything here.
+                 * proper synchronize firelist!!
+                 */
+                    GroupFireSaves fireSave=new GroupFireSaves(save.getConnProb(), save.getWeightScale(), save.getHashString(), network.getFireList());
                 }
                 return null;
             }

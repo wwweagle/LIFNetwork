@@ -14,7 +14,7 @@ import modelNetGen.ModelType;
  *
  * @author Libra
  */
-public class NetworkParameters implements Serializable {
+final public class NetworkParameters implements Serializable {
     /*
      * data structure for save
      */
@@ -25,15 +25,17 @@ public class NetworkParameters implements Serializable {
     final private ModelType type;
     final private Float connProb;
     final private Float weightScale;
+    final private String hashString;
 
     public NetworkParameters(ArrayList<RndCell> cellList, HashMap<Integer, Float> synapticWeights,
-            HashSet<HashSet<Integer>> clusters, ModelType type, Float connProb, Float weightScale) {
+            HashSet<HashSet<Integer>> clusters, ModelType type, Float connProb, Float weightScale, String hashString) {
         this.cellList = cellList;
         this.synapticWeights = synapticWeights;
         this.clusters = clusters;
         this.type = type;
         this.connProb = connProb;
         this.weightScale = weightScale;
+        this.hashString=hashString;
     }
 
     public ArrayList<RndCell> getCellList() {
@@ -58,6 +60,10 @@ public class NetworkParameters implements Serializable {
 
     public Float getWeightScale() {
         return weightScale;
+    }
+
+    public String getHashString() {
+        return hashString;
     }
     
     
