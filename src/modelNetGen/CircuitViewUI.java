@@ -4,6 +4,7 @@
  */
 package modelNetGen;
 
+import commonLibs.ModelType;
 import commonLibs.RndCell;
 import java.awt.Desktop;
 import java.awt.Dimension;

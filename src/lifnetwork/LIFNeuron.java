@@ -5,6 +5,7 @@
 package lifnetwork;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  *
@@ -27,17 +28,17 @@ public class LIFNeuron {
     private boolean firing = false;
     private float refractoryTime;
     private float synaticDynamics = 0;
-    private ArrayList<synapticEvent> eventList;
-    private ArrayList<IncomingSynapse> incomingList;
+    final private ArrayList<synapticEvent> eventList;
+    final private ArrayList<IncomingSynapse> incomingList;
 
     /**
      *
      * @param type
      * @param r
      * @param c
-     * @param restPotential
-     * @param refractoryPeriod
      * @param tau
+     * @param refractoryPeriod
+     * @param reversePotential
      */
     public LIFNeuron(NeuronType type, int r, int c, int tau, int refractoryPeriod, int reversePotential) {
         this.type = type;
@@ -113,17 +114,18 @@ public class LIFNeuron {
                 eventList.remove(i);
             }
         }
-
     }
 
     private final class synapticEvent {
 
+        final private float scale;
         final private int riseTime = 2000;
         final private int synaticDelay = 2000;
         final private int eventTime;
 
         public synapticEvent(int eventTime) {
             this.eventTime = eventTime;
+            scale = ThreadLocalRandom.current().nextFloat();
         }
 
         public float getEventDynamics(int currentTime) {
@@ -140,7 +142,7 @@ public class LIFNeuron {
             } else if ((postAPTime <= synaticDelay + riseTime)) {
                 return (float) (postAPTime - synaticDelay) / riseTime;
             } else {
-                float value = (float) Math.pow(Math.E, (double) (synaticDelay + riseTime - postAPTime) / tau);
+                float value = (float) Math.pow(Math.E, (double) (synaticDelay + riseTime - postAPTime) / tau) * scale;
                 return value > 0.001 ? value : -1;
             }
         }

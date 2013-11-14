@@ -5,6 +5,7 @@
 package modelNetGen;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URLDecoder;
 import javax.swing.JFileChooser;
 
@@ -19,7 +20,7 @@ public class FilesCommons {
         try {
             pathToFile = URLDecoder.decode(pathToFile, "UTF-8");
             pathToFile = (new File(pathToFile)).getParentFile().getCanonicalPath() + "\\" + s;
-        } catch (Throwable ex) {
+        } catch (IOException ex) {
             System.out.println(ex.toString());
         }
 

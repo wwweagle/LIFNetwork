@@ -8,9 +8,11 @@ import commonLibs.GroupFireSaves;
 import commonLibs.NetworkParameters;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -70,6 +72,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         jLabel8 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         chkFireHis = new javax.swing.JCheckBox();
+        btnViewResult = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         btnRun = new javax.swing.JButton();
         btnSkip = new javax.swing.JButton();
@@ -214,7 +217,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
         jLabel7.setText("pA");
 
-        txtGFactor.setText("0.3");
+        txtGFactor.setText("1.0");
         txtGFactor.setPreferredSize(new java.awt.Dimension(30, 20));
         txtGFactor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -293,6 +296,13 @@ public class NetCalcUI extends javax.swing.JFrame {
         chkFireHis.setSelected(true);
         chkFireHis.setText("Firing History");
 
+        btnViewResult.setText("View Result");
+        btnViewResult.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnViewResultActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -300,14 +310,18 @@ public class NetCalcUI extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(chkFireHis)
+                .addGap(18, 18, 18)
+                .addComponent(btnViewResult)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(chkFireHis)
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(chkFireHis)
+                    .addComponent(btnViewResult))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Control"));
@@ -506,7 +520,7 @@ public class NetCalcUI extends javax.swing.JFrame {
             File[] files = dir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.toLowerCase().endsWith(".ser");
+                    return name.toLowerCase().endsWith("_conn.ser");
                 }
             });
             for (File f : files) {
@@ -553,7 +567,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".ser");
+                return name.toLowerCase().endsWith("_conn.ser");
             }
         });
         for (File f : files) {
@@ -581,21 +595,30 @@ public class NetCalcUI extends javax.swing.JFrame {
         fui.setVisible(true);
         final Timer fuiRefreshTimer = new Timer();
         TimerTask fuiUpdate = new TimerTask() {
+            private boolean updating = true;
+
             @Override
             public void run() {
                 if (fui != null && fui.isVisible() && network != null) {
-                    fui.updateData(network.getFireList());
+                    if (updating) {
+                        fui.updateData(network.getFireList());
+                    }
                     if (network.isStopped()) {
-                        fuiRefreshTimer.cancel();
+                        updating = false;
+                    } else if (!updating) {
+                        updating = true;
                     }
                 } else {
                     fuiRefreshTimer.cancel();
                 }
             }
         };
-
         fuiRefreshTimer.scheduleAtFixedRate(fuiUpdate, 2000, 2000);
     }//GEN-LAST:event_btnViewActionPerformed
+
+    private void btnViewResultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewResultActionPerformed
+        (new genHeatMap.HeatMapUI()).setVisible(true);        // TODO add your handling code here:
+    }//GEN-LAST:event_btnViewResultActionPerformed
 
     private void runModel() {
         new SwingWorker<Void, Integer>() {
@@ -604,47 +627,34 @@ public class NetCalcUI extends javax.swing.JFrame {
 
             @Override
             protected Void doInBackground() {
-
                 int fileCount = 0;
+                int timeNominal = Integer.parseInt(txtTime.getText());
+                timeNominal *= rdoSec.isSelected() ? 1000 * 1000 : 1000;
+                int GABARevP = Integer.parseInt(txtGABARevP.getText());
+                int randProb = Integer.parseInt(txtRandProb.getText());
+                int randAmp = Integer.parseInt(txtRandAmp.getText());
+                float gFactor = Float.parseFloat(txtGFactor.getText());
 
                 for (String pathToFile : fileList) {
                     publish(++fileCount);
                     log("Currently processing: " + pathToFile);
-                    /*
-                     * New code 
-                     */
-                    NetworkParameters save=null;
-                    try (ObjectInputStream in = new ObjectInputStream(
-                            new FileInputStream(pathToFile))) {
-                        save = (NetworkParameters) in.readObject();
-                        if (null == save) {
-                            System.out.println("Error deserializing!");
-                            return null;
+                    try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(pathToFile))) {
+                        NetworkParameters save = (NetworkParameters) in.readObject();
+                        network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, gFactor, save);
+                        startUpdateProgBar();
+                        log("Total fires = " + network.cycle());//Actual calculation
+                        stopUpdateProgBar();
+                        GroupFireSaves fireSave = new GroupFireSaves(timeNominal, save.getCellList().size(), save.getType(), save.getConnProb(), save.getWeightScale(), save.getHashString(), network.getFireList());
+                        log("Frequence of >1% population fire " + fireSave.getPopulationFireFreq(20, 1) + "Hz");
+                        //SAVE
+                        try (ObjectOutputStream o = new ObjectOutputStream(
+                                new FileOutputStream(FilesCommons.getJarFolder("")
+                                        + "\\" + save.getCharacterString() + "_Fire.ser"))) {
+                            o.writeObject(fireSave);
                         }
                     } catch (ClassNotFoundException | IOException ex) {
                         System.out.println(ex.toString());
                     }
-
-                    int timeNominal = Integer.parseInt(txtTime.getText());
-                    timeNominal *= rdoSec.isSelected() ? 1000 * 1000 : 1000;
-                    int GABARevP = Integer.parseInt(txtGABARevP.getText());
-                    int randProb = Integer.parseInt(txtRandProb.getText());
-                    int randAmp = Integer.parseInt(txtRandAmp.getText());
-                    float gFactor = Float.parseFloat(txtGFactor.getText());
-                    network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, gFactor, save);
-                    startUpdateProgBar();
-                    log("Total fires = " + network.cycle());//Actual calculation
-//                    int n=network.getMaxFirePopulation(2);
-//                    log("Max Group Fire within 2ms"+ n);
-//                    log("Max Group Fire within 20ms " + network.getMaxFirePopulation(20));
-                    log("Frequence of >1% population fire " + network.getPopulationFireFreq(20, 1) + "Hz");
-//                    log("Max Group Fire within 100ms"+ network.getMaxFirePopulation(100));
-                    stopUpdateProgBar();
-                /*
-                 * There is a cycle, save everything here.
-                 * proper synchronize firelist!!
-                 */
-                    GroupFireSaves fireSave=new GroupFireSaves(save.getConnProb(), save.getWeightScale(), save.getHashString(), network.getFireList());
                 }
                 return null;
             }
@@ -728,6 +738,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     private javax.swing.JButton btnSkip;
     private javax.swing.JButton btnStop;
     private javax.swing.JButton btnView;
+    private javax.swing.JButton btnViewResult;
     private javax.swing.JCheckBox chkFireHis;
     private javax.swing.JFileChooser fc;
     private javax.swing.JLabel jLabel1;

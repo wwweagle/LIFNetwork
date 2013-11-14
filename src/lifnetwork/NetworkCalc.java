@@ -17,7 +17,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 import commonLibs.RndCell;
 import commonLibs.NetworkParameters;
-import modelNetGen.ModelType;
+import org.apache.commons.math3.distribution.NormalDistribution;
 
 /**
  *
@@ -50,6 +50,7 @@ public class NetworkCalc {
      * @param gabaReverseP
      * @param randProb proportion of neurons with random current
      * @param randCurrent amplitude of random current
+     * @param gFactor
      * @param save
      */
     public NetworkCalc(int simulateTime, int gabaReverseP, int randProb, int randCurrent, float gFactor, NetworkParameters save) {
@@ -76,13 +77,15 @@ public class NetworkCalc {
          * init cells
          */
         ArrayList<RndCell> cellList = save.getCellList();
+        NormalDistribution gluR = new NormalDistribution(790, 410);
+        NormalDistribution gabaR = new NormalDistribution(560, 230);
 
         for (int i = 0; i < cellList.size(); i++) {
             if (cellList.get(i).isGlu()) {
                 //init a new glu neuron
                 NeuronType type = NeuronType.GLU;
-                int rm = 790;
-                int cm = 36;
+                int rm = getReasonableR(gluR);
+                int cm = 28440 / rm;
                 int refractoryPeriod = refractTime * 1000;
                 int tau = 4 * 1000;
                 int reversePotential = gluReverseP;
@@ -92,8 +95,8 @@ public class NetworkCalc {
             } else {
                 //init a new gaba neuron
                 NeuronType type = NeuronType.GABA;
-                int rm = 560;
-                int cm = 36;
+                int rm = getReasonableR(gabaR);
+                int cm = 20160 / rm;
                 int refractoryPeriod = refractTime * 1000;
                 int tau = 25 * 1000;
                 int reversePotential = gabaReverseP;
@@ -117,6 +120,14 @@ public class NetworkCalc {
                     getG(cellList.get(pre).isGlu(), cellList.get(post).isGlu()));
             neuronList.get(post).addInput(incoming);
         }
+    }
+
+    private int getReasonableR(NormalDistribution d) {
+        int r;
+        do {
+            r = (int) Math.round(d.sample());
+        } while (r > 1200 || r < 250);
+        return r;
     }
 
     private float getG(boolean preIsGlu, boolean postIsGlu) {
@@ -190,20 +201,17 @@ public class NetworkCalc {
              * status report
              */
 //            statusReport(currentTime);
-
 //            int newTime = currentTime + dT;
 //            currentTime = newTime;
-
 //            currentTime += dT;
         }
 
-        Commons.writeList(save.getType() == ModelType.Network ? "Net" : "Ctl"
-                + "_C" + save.getConnProb() + "_W" + save.getWeightScale()
-                + save.getHashString() + "_fireHistory.csv", fireList);
+//        Commons.writeList(save.getType() == ModelType.Network ? "Net" : "Ctl"
+//                + "_C" + save.getConnProb() + "_W" + save.getWeightScale()
+//                + save.getHashString() + "_fireHistory.csv", fireList);
 //        Commons.writeList("vHistory.csv", vSample);
 //        Commons.writeList("iHistory.csv", iSample);
 //        Commons.writeList("sHistory.csv", sSample);
-
 //        getMaxFirePopulation(fireList);
         runState = RunState.Stop;
         return fireList.size();
@@ -211,62 +219,6 @@ public class NetworkCalc {
 
     public boolean isStopped() {
         return runState == RunState.Stop;
-    }
-
-    public int getMaxFirePopulation(int timePeriod) {
-        if (fireList.size() < 1) {
-            return 0;
-        }
-        int eventsCount = 1;
-
-        int maxFreq = 0;
-        try {
-            synchronized (fireList) {
-                for (int currentEventIndex = 1, currentStartTimeIndex = 0; currentEventIndex < fireList.size(); currentEventIndex++) {
-                    if (fireList.get(currentEventIndex)[0] - fireList.get(currentStartTimeIndex)[0] < timePeriod * 1000) { //microseconds, uS
-                        //less than 1ms
-                        eventsCount++;
-                    } else {
-                        if (eventsCount > maxFreq) {
-                            maxFreq = eventsCount;
-                        }
-                        currentStartTimeIndex++;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-        return maxFreq;
-    }
-
-    public float getPopulationFireFreq(int timePeriod, int proportion) {
-        if (fireList.size() < 1) {
-            return 0;
-        }
-        int eventsCount = 1;
-
-        int grpFireCount = 0;
-        try {
-            synchronized (fireList) {
-                for (int currentEventPtr = 1, currentStartTimePtr = 0; currentEventPtr < fireList.size(); currentEventPtr++) {
-                    if (fireList.get(currentEventPtr)[0] - fireList.get(currentStartTimePtr)[0] < timePeriod * 1000) {
-                        eventsCount++;
-                        if (eventsCount > (proportion * neuronList.size() / 100)) {
-                            currentStartTimePtr = currentEventPtr + 1;
-                            currentEventPtr++;
-                            eventsCount = 1;
-                            grpFireCount++;
-                        }
-                    } else {
-                        currentStartTimePtr++;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-        return (float) grpFireCount / (simulateTime / (1000f * 1000f));
     }
 
     public int getProgress() {

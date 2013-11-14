@@ -361,7 +361,7 @@
         </Component>
         <Component class="javax.swing.JTextField" name="txtGFactor">
           <Properties>
-            <Property name="text" type="java.lang.String" value="0.3"/>
+            <Property name="text" type="java.lang.String" value="1.0"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[30, 20]"/>
             </Property>
@@ -396,6 +396,8 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="chkFireHis" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="btnViewResult" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -404,8 +406,11 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="chkFireHis" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="10" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="chkFireHis" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnViewResult" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -416,6 +421,14 @@
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Firing History"/>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnViewResult">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="View Result"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewResultActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

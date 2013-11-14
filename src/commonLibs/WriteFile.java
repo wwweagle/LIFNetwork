@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package lifnetwork;
+package commonLibs;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -13,26 +13,37 @@ import java.util.List;
  *
  * @author Libra
  */
-public class Commons {
+public class WriteFile {
 
-    static public void writeMatrix(String pathToFile, double[][] mat) {
-        try (BufferedWriter w = new BufferedWriter(new FileWriter(pathToFile))) {
-            for (int i = 0; i < mat.length; i++) {
-                for (int j = 0; j < mat[i].length - 1; j++) {
-                    w.write(mat[i][j] + ",");
+    static public <T> void writeMatrix(String pathToFile, T[][] mat) {
+        try (BufferedWriter w = new BufferedWriter(new FileWriter(pathToFile, true))) {
+            for (T[] row : mat) {
+                for (T column : row) {
+                    w.write(column + "\t");
                 }
-                w.write(mat[i][mat[i].length - 1] + "\n");
+                w.write("\n");
             }
             w.flush();
         } catch (IOException e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    static public void writeString(String pathToFile, String s) {
+        try (BufferedWriter w = new BufferedWriter(new FileWriter(pathToFile, true))) {
+            w.write(s + "\n");
+            w.flush();
+        } catch (IOException e) {
+            System.out.println(e.toString());
         }
     }
 
     static public <T> void writeList(String pathToFile, List<T> list) {
         if (list.isEmpty()) {
-            try (FileWriter f=new FileWriter(pathToFile)) {
-                }catch (IOException e) {
-            };
+            try (FileWriter f = new FileWriter(pathToFile)) {
+            } catch (IOException e) {
+                System.out.println(e.toString());
+            }
         }
 
         try (BufferedWriter w = new BufferedWriter(new FileWriter(pathToFile))) {
@@ -50,7 +61,6 @@ public class Commons {
                     w.write(value + "\n");
                 }
             }
-            w.flush();
         } catch (IOException e) {
             System.out.println("write csv Error:");
             System.out.println(e.toString());

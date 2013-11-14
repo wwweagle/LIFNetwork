@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import modelNetGen.ModelType;
 
 /**
  *
@@ -35,7 +34,7 @@ final public class NetworkParameters implements Serializable {
         this.type = type;
         this.connProb = connProb;
         this.weightScale = weightScale;
-        this.hashString=hashString;
+        this.hashString = hashString;
     }
 
     public ArrayList<RndCell> getCellList() {
@@ -65,6 +64,10 @@ final public class NetworkParameters implements Serializable {
     public String getHashString() {
         return hashString;
     }
-    
-    
+
+    public String getCharacterString() {
+        String typeString = type == ModelType.Network ? "Net" : "Ctl";
+        String parameter = "_C" + Float.toString(connProb) + "_W" + Float.toString(weightScale);
+        return hashString + typeString + parameter;
+    }
 }

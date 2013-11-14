@@ -4,6 +4,7 @@
  */
 package modelNetGen;
 
+import commonLibs.ModelType;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;

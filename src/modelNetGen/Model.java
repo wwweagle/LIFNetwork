@@ -4,6 +4,7 @@
  */
 package modelNetGen;
 
+import commonLibs.ModelType;
 import commonLibs.RndCell;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -591,7 +592,7 @@ public class Model {
         String suffix = "_C" + Float.toString(connProbScale) + "_W" + Float.toString(weightScale) + "_" + rndSuffix;
 
         try (ObjectOutputStream o = new ObjectOutputStream(
-                new FileOutputStream(FilesCommons.getJarFolder("") + "\\" + type + suffix + ".ser"))) {
+                new FileOutputStream(FilesCommons.getJarFolder("") + "\\" + type + suffix + "_Conn.ser"))) {
             o.writeObject(save);
         } catch (IOException e) {
             System.out.println("ser io error");
