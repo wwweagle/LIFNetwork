@@ -101,7 +101,9 @@ public class LIFNeuron {
         float max = 0;
         boolean[] toRemove = new boolean[eventList.size()];
         for (int i = 0; i < eventList.size(); i++) {
+//            System.out.print("-1,");
             float eventDynamics = eventList.get(i).getEventDynamics(currentTime);
+//            System.out.print("1,");
             if (eventDynamics < 0) {
                 toRemove[i] = true;
             } else if (eventDynamics > max) {
@@ -130,13 +132,6 @@ public class LIFNeuron {
 
         public float getEventDynamics(int currentTime) {
             int postAPTime = currentTime - eventTime;
-//            float eventDynamics = (postAPTime <= synaticDelay)
-//                    ? 0
-//                    : (postAPTime <= synaticDelay + riseTime)
-//                    ? (float) (postAPTime - synaticDelay) / riseTime
-//                    : (postAPTime <= 100 * 1000)
-//                    ? (float) Math.pow(Math.E, (double) (synaticDelay + riseTime - postAPTime) / tau)
-//                    : -1;
             if (postAPTime <= synaticDelay) {
                 return 0;
             } else if ((postAPTime <= synaticDelay + riseTime)) {

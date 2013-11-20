@@ -17,7 +17,8 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 import commonLibs.RndCell;
 import commonLibs.NetworkParameters;
-//import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 /**
@@ -36,16 +37,17 @@ public class NetworkCalc {
     private final int randFactor;//percentage
     private final int randCurrent;
     //Random generator
-    final private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
+    final private List<LIFNeuron> neuronList = Collections.synchronizedList(new ArrayList<LIFNeuron>()); //GABA first, then Glu
     //Runtime mechanisms
     final private ForkJoinPool fjpool = new ForkJoinPool();
-//    final private BlockingQueue<int[]> fireQueue;
-    final private List<int[]> fireList = new ArrayList<>();
+    final private BlockingQueue<int[]> fireQueue;
+    final private List<int[]> fireList = Collections.synchronizedList(new ArrayList<int[]>());
     private RunState runState = RunState.BeforeRun;
     private final NetworkParameters save;
     private int currentTime;
     private int[] lookUpTable;
-    private int debugCycle;
+    private AtomicInteger forkMon=new AtomicInteger();
+//    private int debugCycle;
 
     /**
      *
@@ -55,15 +57,16 @@ public class NetworkCalc {
      * @param randCurrent amplitude of random current
      * @param gFactor
      * @param save
+     * @param fireQueue
      */
-    public NetworkCalc(int simulateTime, int gabaReverseP, int randProb, int randCurrent, float gFactor, NetworkParameters save) {
+    public NetworkCalc(int simulateTime, int gabaReverseP, int randProb, int randCurrent, float gFactor, NetworkParameters save, BlockingQueue fireQueue) {
         this.simulateTime = simulateTime;
         this.gabaReverseP = gabaReverseP;
         this.randFactor = randProb;
         this.randCurrent = randCurrent;
         this.gFactor = gFactor;
         this.save = save;
-//        this.fireQueue = fireQueue;
+        this.fireQueue = fireQueue;
     }
 
     private void readParameters() {
@@ -131,7 +134,6 @@ public class NetworkCalc {
         do {
             r = (int) Math.round(d.sample());
         } while (r > 1200 || r < 250);
-//        System.out.println(r);
         return r;
     }
 
@@ -171,8 +173,7 @@ public class NetworkCalc {
 //        ArrayList<Float> sSample = new ArrayList<>(10000);
 
         for (currentTime = 0; currentTime < simulateTime; currentTime += dT) {
-
-            debugCycle = currentTime;
+//            debugCycle = currentTime;
             if (runState == RunState.Stop) {
                 return fireList.size();
             }
@@ -182,10 +183,8 @@ public class NetworkCalc {
             /*
              * calc current here
              */
-            System.out.print("1");
             fjpool.invoke(new SynapticEventCalcFork(0, neuronList.size(), currentTime));
             fjpool.invoke(new CurrentCalcFork(0, neuronList.size()));
-
             /*
              * calc LIF state
              */
@@ -194,12 +193,12 @@ public class NetworkCalc {
             synchronized (fired) {
                 for (Integer cell : fired) {
                     int[] record = {currentTime, lookUpTable[cell]};
-//                    try {
-//                        fireQueue.put(record);
+                    try {
+                        fireQueue.put(record);
                         fireList.add(record);
-//                    } catch (InterruptedException ex) {
-//                        System.out.println(ex.toString());
-//                    }
+                    } catch (InterruptedException ex) {
+                        System.out.println(ex.toString());
+                    }
                 }
             }
             /*
@@ -258,9 +257,12 @@ public class NetworkCalc {
         }
 
         private void SynEvtCalc(int start, int end, int currentTime) {
+            forkMon.incrementAndGet();
             for (int i = start; i < end; i++) {
                 neuronList.get(i).updateSynapticDynamics(currentTime);
             }
+            forkMon.decrementAndGet();
+            //STOPPED SOMEWHRE NEAR HERE
         }
 
         @Override
@@ -356,12 +358,18 @@ public class NetworkCalc {
         return fireList;
     }
 
+    public int getForkMon() {
+        return forkMon.get();
+    }
+
+    
+    
     private enum RunState {
 
         BeforeRun, Running, Stop, Finished, Paused
     }
 
-    public int getCycle() {
-        return debugCycle;
-    }
+//    public int getCycle() {
+//        return debugCycle;
+//    }
 }

@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.SwingWorker;
@@ -74,6 +76,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         chkFireHis = new javax.swing.JCheckBox();
         btnViewResult = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         btnRun = new javax.swing.JButton();
         btnSkip = new javax.swing.JButton();
@@ -129,7 +132,7 @@ public class NetCalcUI extends javax.swing.JFrame {
             }
         });
 
-        jLabel9.setText("V100");
+        jLabel9.setText("V101");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -312,6 +315,13 @@ public class NetCalcUI extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("status");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -321,6 +331,8 @@ public class NetCalcUI extends javax.swing.JFrame {
                 .addComponent(chkFireHis)
                 .addGap(18, 18, 18)
                 .addComponent(btnViewResult)
+                .addGap(18, 18, 18)
+                .addComponent(jButton1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -329,7 +341,8 @@ public class NetCalcUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(chkFireHis)
-                    .addComponent(btnViewResult))
+                    .addComponent(btnViewResult)
+                    .addComponent(jButton1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -610,8 +623,8 @@ public class NetCalcUI extends javax.swing.JFrame {
             public void run() {
                 if (fui != null && fui.isVisible() && network != null) {
                     if (updating) {
-//                        fui.updateData(fireQueue);
-                        System.out.print(network.getCycle());
+                        fui.updateData(fireQueue);
+//                        System.out.print(network.getCycle());
                     }
                     if (network.isStopped()) {
                         updating = false;
@@ -629,6 +642,10 @@ public class NetCalcUI extends javax.swing.JFrame {
     private void btnViewResultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewResultActionPerformed
         (new genHeatMap.HeatMapUI()).setVisible(true);        // TODO add your handling code here:
     }//GEN-LAST:event_btnViewResultActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        System.out.println("Status "+Integer.toString(network.getForkMon()));
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void runModel() {
         new SwingWorker<Void, Integer>() {
@@ -650,7 +667,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                     log("Currently processing: " + pathToFile);
                     try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(pathToFile))) {
                         NetworkParameters save = (NetworkParameters) in.readObject();
-                        network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, gFactor, save);
+                        network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, gFactor, save, fireQueue);
                         startUpdateProgBar();
                         log("Total fires = " + network.cycle());//Actual calculation
                         stopUpdateProgBar();
@@ -751,6 +768,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     private javax.swing.JButton btnViewResult;
     private javax.swing.JCheckBox chkFireHis;
     private javax.swing.JFileChooser fc;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -780,6 +798,6 @@ public class NetCalcUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private NetworkCalc network;
     final private List<String> fileList=new ArrayList<>();
-//    final private BlockingQueue<int[]> fireQueue = new LinkedBlockingQueue<>();
+    final private BlockingQueue<int[]> fireQueue = new LinkedBlockingQueue<>();
 
 }
