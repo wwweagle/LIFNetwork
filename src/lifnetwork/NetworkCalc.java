@@ -17,6 +17,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 import commonLibs.RndCell;
 import commonLibs.NetworkParameters;
+//import java.util.concurrent.BlockingQueue;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 /**
@@ -38,11 +39,13 @@ public class NetworkCalc {
     final private List<LIFNeuron> neuronList = new ArrayList<>(1024); //GABA first, then Glu
     //Runtime mechanisms
     final private ForkJoinPool fjpool = new ForkJoinPool();
-    final private List<int[]> fireList = Collections.synchronizedList(new ArrayList<int[]>());
+//    final private BlockingQueue<int[]> fireQueue;
+    final private List<int[]> fireList = new ArrayList<>();
     private RunState runState = RunState.BeforeRun;
     private final NetworkParameters save;
     private int currentTime;
     private int[] lookUpTable;
+    private int debugCycle;
 
     /**
      *
@@ -60,6 +63,7 @@ public class NetworkCalc {
         this.randCurrent = randCurrent;
         this.gFactor = gFactor;
         this.save = save;
+//        this.fireQueue = fireQueue;
     }
 
     private void readParameters() {
@@ -127,6 +131,7 @@ public class NetworkCalc {
         do {
             r = (int) Math.round(d.sample());
         } while (r > 1200 || r < 250);
+//        System.out.println(r);
         return r;
     }
 
@@ -167,6 +172,7 @@ public class NetworkCalc {
 
         for (currentTime = 0; currentTime < simulateTime; currentTime += dT) {
 
+            debugCycle = currentTime;
             if (runState == RunState.Stop) {
                 return fireList.size();
             }
@@ -176,6 +182,7 @@ public class NetworkCalc {
             /*
              * calc current here
              */
+            System.out.print("1");
             fjpool.invoke(new SynapticEventCalcFork(0, neuronList.size(), currentTime));
             fjpool.invoke(new CurrentCalcFork(0, neuronList.size()));
 
@@ -187,7 +194,12 @@ public class NetworkCalc {
             synchronized (fired) {
                 for (Integer cell : fired) {
                     int[] record = {currentTime, lookUpTable[cell]};
-                    fireList.add(record);
+//                    try {
+//                        fireQueue.put(record);
+                        fireList.add(record);
+//                    } catch (InterruptedException ex) {
+//                        System.out.println(ex.toString());
+//                    }
                 }
             }
             /*
@@ -337,12 +349,19 @@ public class NetworkCalc {
         }
     }
 
+//    public BlockingQueue<int[]> getFireQueue() {
+//        return fireQueue;
+//    }
     public List<int[]> getFireList() {
         return fireList;
     }
 
     private enum RunState {
 
-        BeforeRun, Running, Stop, Finished
+        BeforeRun, Running, Stop, Finished, Paused
+    }
+
+    public int getCycle() {
+        return debugCycle;
     }
 }

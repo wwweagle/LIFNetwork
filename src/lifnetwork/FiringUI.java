@@ -4,8 +4,7 @@
  */
 package lifnetwork;
 
-import java.util.List;
-
+import java.util.concurrent.BlockingQueue;
 
 /**
  *
@@ -102,11 +101,11 @@ public class FiringUI extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     }//GEN-LAST:event_jButton1ActionPerformed
-    
-   public void updateData(List<int[]> fireList){
-       chartBean.updateChart(fireList);
-   }
-    
+
+    public void updateData(BlockingQueue<int[]> fireQueue) {
+        chartBean.updateChart(fireQueue);
+    }
+
     /**
      * @param args the command line arguments
      */

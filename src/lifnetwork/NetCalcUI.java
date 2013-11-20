@@ -54,6 +54,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         btnDefaultFile = new javax.swing.JButton();
         btnDefaultFolder = new javax.swing.JButton();
         btnGen = new javax.swing.JButton();
+        jLabel9 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         txtTime = new javax.swing.JTextField();
@@ -128,6 +129,8 @@ public class NetCalcUI extends javax.swing.JFrame {
             }
         });
 
+        jLabel9.setText("V100");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -140,21 +143,27 @@ public class NetCalcUI extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btnOpenFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(btnDefaultFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnDefaultFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel9))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btnOpenFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(btnDefaultFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnDefaultFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnOpenFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnDefaultFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnGen))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnOpenFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnDefaultFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnGen)))
+                    .addComponent(jLabel9))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnOpenFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -479,7 +488,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSkipActionPerformed
 
     private void btnOpenFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenFileActionPerformed
-        fileList = new ArrayList<>();
+        fileList.clear();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setFileFilter(new FileNameExtensionFilter("ser files", "ser"));
         int returnVal = fc.showOpenDialog(this);
@@ -501,7 +510,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     private void btnDefaultFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultFileActionPerformed
         File f = new File("conn_Net_C_1.0_W_1.0.ser");
         if (f.exists()) {
-            fileList = new ArrayList<>();
+            fileList.clear();
             fileList.add(f.getAbsolutePath());
             enableBtnGrpRun();
             log("Open file " + f.getAbsolutePath());
@@ -511,7 +520,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnDefaultFileActionPerformed
 
     private void btnOpenFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenFolderActionPerformed
-        fileList = new ArrayList<>();
+        fileList.clear();
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -544,7 +553,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                 public void run() {
                     progBar.setValue(0);
                     log("Canceled.");
-                    fileList = saveList;
+                    fileList.addAll(saveList);
                     lblFileCount.setText("0/" + fileList.size());
                 }
             }, 2000);
@@ -561,7 +570,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     }//GEN-LAST:event_txtRandAmpActionPerformed
 
     private void btnDefaultFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultFolderActionPerformed
-        fileList = new ArrayList<>();
+        fileList.clear();
         File dir = new File(FilesCommons.getJarFolder(""));
         log("Open folder " + dir.getAbsolutePath());
         File[] files = dir.listFiles(new FilenameFilter() {
@@ -601,7 +610,8 @@ public class NetCalcUI extends javax.swing.JFrame {
             public void run() {
                 if (fui != null && fui.isVisible() && network != null) {
                     if (updating) {
-                        fui.updateData(network.getFireList());
+//                        fui.updateData(fireQueue);
+                        System.out.print(network.getCycle());
                     }
                     if (network.isStopped()) {
                         updating = false;
@@ -749,6 +759,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -768,5 +779,7 @@ public class NetCalcUI extends javax.swing.JFrame {
     private javax.swing.JTextField txtTime;
     // End of variables declaration//GEN-END:variables
     private NetworkCalc network;
-    private List<String> fileList;
+    final private List<String> fileList=new ArrayList<>();
+//    final private BlockingQueue<int[]> fireQueue = new LinkedBlockingQueue<>();
+
 }
