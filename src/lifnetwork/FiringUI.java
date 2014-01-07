@@ -4,6 +4,7 @@
  */
 package lifnetwork;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -31,7 +32,7 @@ public class FiringUI extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
-        chartBean = new lifnetwork.chartBean();
+        chartBean = new lifnetwork.ChartBean();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -105,7 +106,10 @@ public class FiringUI extends javax.swing.JFrame {
     public void updateData(BlockingQueue<int[]> fireQueue) {
         chartBean.updateChart(fireQueue);
     }
-
+    
+    public void updateData(List<int[]> fireList, String pathToFile) {
+        chartBean.updateChart(fireList, pathToFile);
+    }
     /**
      * @param args the command line arguments
      */
@@ -136,7 +140,7 @@ public class FiringUI extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private lifnetwork.chartBean chartBean;
+    private lifnetwork.ChartBean chartBean;
     private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables

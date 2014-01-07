@@ -95,6 +95,7 @@ public class LIFNeuron {
     }
 
     public void updateSynapticDynamics(int currentTime) {
+
         if (eventList.isEmpty()) {
             return;
         }
@@ -104,16 +105,18 @@ public class LIFNeuron {
 //            System.out.print("-1,");
             float eventDynamics = eventList.get(i).getEventDynamics(currentTime);
 //            System.out.print("1,");
-            if (eventDynamics < 0) {
+            if (eventDynamics == -1) {
                 toRemove[i] = true;
             } else if (eventDynamics > max) {
                 max = eventDynamics;
             }
         }
         synaticDynamics = max;
+        int removed = 0;
         for (int i = 0; i < toRemove.length; i++) {
             if (toRemove[i]) {
-                eventList.remove(i);
+                eventList.remove(i - removed);
+                removed++;
             }
         }
     }
@@ -131,6 +134,7 @@ public class LIFNeuron {
         }
 
         public float getEventDynamics(int currentTime) {
+
             int postAPTime = currentTime - eventTime;
             if (postAPTime <= synaticDelay) {
                 return 0;
@@ -138,6 +142,7 @@ public class LIFNeuron {
                 return (float) (postAPTime - synaticDelay) / riseTime;
             } else {
                 float value = (float) Math.pow(Math.E, (double) (synaticDelay + riseTime - postAPTime) / tau) * scale;
+//                float value = (synaticDelay + riseTime - postAPTime) + (2 * tau);
                 return value > 0.001 ? value : -1;
             }
         }

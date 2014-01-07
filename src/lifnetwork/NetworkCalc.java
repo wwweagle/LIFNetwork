@@ -37,7 +37,7 @@ public class NetworkCalc {
     private final int randFactor;//percentage
     private final int randCurrent;
     //Random generator
-    final private List<LIFNeuron> neuronList = Collections.synchronizedList(new ArrayList<LIFNeuron>()); //GABA first, then Glu
+    private List<LIFNeuron> neuronList; //GABA first, then Glu
     //Runtime mechanisms
     final private ForkJoinPool fjpool = new ForkJoinPool();
     final private BlockingQueue<int[]> fireQueue;
@@ -46,7 +46,7 @@ public class NetworkCalc {
     private final NetworkParameters save;
     private int currentTime;
     private int[] lookUpTable;
-    private AtomicInteger forkMon=new AtomicInteger();
+    final private AtomicInteger forkMon = new AtomicInteger();
 //    private int debugCycle;
 
     /**
@@ -70,6 +70,8 @@ public class NetworkCalc {
     }
 
     private void readParameters() {
+        neuronList=new ArrayList<>();
+//        System.out.println("read in");
         HashSet<HashSet<Integer>> clusters = save.getClusters();
         lookUpTable = new int[save.getCellList().size()];
         int idx = 0;
@@ -113,6 +115,8 @@ public class NetworkCalc {
                 neuronList.add(gabaNeuron);
             }
         }
+        List<LIFNeuron> tempList = neuronList;
+        neuronList = Collections.unmodifiableList(tempList);
         /*
          * init synapses
          */
@@ -127,6 +131,7 @@ public class NetworkCalc {
                     getG(cellList.get(pre).isGlu(), cellList.get(post).isGlu()));
             neuronList.get(post).addInput(incoming);
         }
+//        System.out.println("read out");
     }
 
     private int getReasonableR(NormalDistribution d) {
@@ -184,6 +189,7 @@ public class NetworkCalc {
              * calc current here
              */
             fjpool.invoke(new SynapticEventCalcFork(0, neuronList.size(), currentTime));
+            //This is where error happens
             fjpool.invoke(new CurrentCalcFork(0, neuronList.size()));
             /*
              * calc LIF state
@@ -261,8 +267,8 @@ public class NetworkCalc {
             for (int i = start; i < end; i++) {
                 neuronList.get(i).updateSynapticDynamics(currentTime);
             }
-            forkMon.decrementAndGet();
             //STOPPED SOMEWHRE NEAR HERE
+            forkMon.decrementAndGet();
         }
 
         @Override
@@ -362,8 +368,6 @@ public class NetworkCalc {
         return forkMon.get();
     }
 
-    
-    
     private enum RunState {
 
         BeforeRun, Running, Stop, Finished, Paused

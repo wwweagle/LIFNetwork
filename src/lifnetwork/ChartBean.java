@@ -6,10 +6,14 @@ package lifnetwork;
 
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.event.ChartProgressEvent;
 import org.jfree.chart.plot.PlotOrientation;
@@ -22,7 +26,7 @@ import org.jfree.data.xy.XYSeriesCollection;
  *
  * @author Libra
  */
-public class chartBean extends ChartPanel implements Serializable {
+public class ChartBean extends ChartPanel implements Serializable {
 
     final private JFreeChart fireChart;
     final private XYSeriesCollection fireCollection;
@@ -33,7 +37,7 @@ public class chartBean extends ChartPanel implements Serializable {
 //    private boolean updating;
 //    private boolean waiting = false;
 
-    public chartBean() {
+    public ChartBean() {
         super(ChartFactory.createScatterPlot("Population Fire", "Time (s)", "Neuron #", (new XYSeriesCollection()), PlotOrientation.VERTICAL, false, false, false));
         fireChart = this.getChart();
         fireChart.addProgressListener(this);
@@ -53,6 +57,7 @@ public class chartBean extends ChartPanel implements Serializable {
     public void chartProgress(ChartProgressEvent event) {
         if (event.getType() == ChartProgressEvent.DRAWING_FINISHED) {
             if (needClear) {
+                saveFile("temp.png", 500, 500, "test");
                 fireSeries.clear();
                 needClear = false;
                 currentTime = 0;
@@ -72,6 +77,7 @@ public class chartBean extends ChartPanel implements Serializable {
                     needClear = true;
                     break;
                 } else {
+                    saveFile("temp.png", 500, 500, "test");
                     fireSeries.clear();
                 }
             }
@@ -79,5 +85,45 @@ public class chartBean extends ChartPanel implements Serializable {
             fireSeries.add(currentTime, fireQueue.remove()[1]);
         }
         fireChart.setNotify(true);
+    }
+
+    public void updateChart(List<int[]> fireList, String pathToFile) {
+        fireChart.setNotify(false);
+//        while (!fireList.isEmpty()) {
+//            double newTime = (double) fireList.peek()[0] / 1000000;
+//            if (newTime < currentTime) {
+//                if (drawing) {
+//                    needClear = true;
+//                    break;
+//                } else {
+//                    saveFile("temp.png", 500, 500, "test");
+//                    fireSeries.clear();
+//                }
+//            }
+//            currentTime = newTime;
+//            fireSeries.add(currentTime, fireList.remove()[1]);
+//        }
+        for (int i = 0; i < fireList.size(); i++) {
+            double time = (double) fireList.get(i)[0] / 1000000;
+            fireSeries.add(time, fireList.get(i)[1]);
+        }
+        fireChart.setNotify(true);
+        saveFile(pathToFile.replace("_Conn.ser", ".png"), 1600, 900, pathToFile.replace("_Conn.ser", ""));
+        
+
+    }
+
+    private void saveFile(String pathToFile, int width, int height, String title) {
+        try {
+            setTitle(title);
+            File f = new File(pathToFile);
+            ChartUtilities.saveChartAsPNG(f, fireChart, width, height);
+        } catch (IOException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    private void setTitle(String title) {
+        fireChart.setTitle(title);
     }
 }

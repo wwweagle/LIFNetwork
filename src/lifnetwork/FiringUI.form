@@ -90,7 +90,7 @@
         </Component>
       </SubComponents>
     </Container>
-    <Container class="lifnetwork.chartBean" name="chartBean">
+    <Container class="lifnetwork.ChartBean" name="chartBean">
 
       <Layout>
         <DimensionLayout dim="0">
