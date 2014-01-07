@@ -84,7 +84,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         progBar = new javax.swing.JProgressBar();
         lblFileCount = new javax.swing.JLabel();
         btnStop = new javax.swing.JButton();
-        btnView = new javax.swing.JButton();
+        chkUpdateFigure = new javax.swing.JCheckBox();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtLog = new javax.swing.JTextArea();
@@ -389,13 +389,7 @@ public class NetCalcUI extends javax.swing.JFrame {
             }
         });
 
-        btnView.setText("View");
-        btnView.setEnabled(false);
-        btnView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnViewActionPerformed(evt);
-            }
-        });
+        chkUpdateFigure.setText("Update Figure");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -411,7 +405,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                 .addGap(28, 28, 28)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(btnView)
+                        .addComponent(chkUpdateFigure)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(lblFileCount))
                     .addComponent(progBar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -421,7 +415,7 @@ public class NetCalcUI extends javax.swing.JFrame {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(btnStop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnSkip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -432,8 +426,8 @@ public class NetCalcUI extends javax.swing.JFrame {
                                 .addComponent(lblFileCount)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
-                                .addComponent(btnView)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(chkUpdateFigure)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)))
                         .addComponent(progBar, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -655,11 +649,6 @@ public class NetCalcUI extends javax.swing.JFrame {
         genUI.setVisible(true);
     }//GEN-LAST:event_btnGenActionPerformed
 
-    private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
-        btnView.setEnabled(false);
-        showPopulationFire();
-    }//GEN-LAST:event_btnViewActionPerformed
-
     private void btnViewResultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewResultActionPerformed
         (new genHeatMap.HeatMapUI()).setVisible(true);        // TODO add your handling code here:
     }//GEN-LAST:event_btnViewResultActionPerformed
@@ -707,11 +696,11 @@ public class NetCalcUI extends javax.swing.JFrame {
                         stopUpdateProgBar();
                         if (!stoppedByUser) {
                             GroupFireSaves fireSave = new GroupFireSaves(timeNominal, save.getCellList().size(), save.getType(), save.getConnProb(), save.getWeightScale(), save.getHashString(), network.getFireList());
-//                        System.out.println(pathToFile);
-//                        fui.updateData(network.getFireList(), pathToFile);
-                            //TODO Save & display png
-                            pngPanel.updateChart(network.getFireList(), pathToFile);
-                            log("Frequence of >1% population fire " + fireSave.getPopulationFireFreq(20, 1) + "Hz");
+                            if (chkUpdateFigure.isSelected()) {
+                                //TODO Save & display png
+                                pngPanel.updateChart(network.getFireList(), pathToFile);
+                                log("Frequence of >1% population fire " + fireSave.getPopulationFireFreq(20, 1) + "Hz");
+                            }
                             //SAVE
                             try (ObjectOutputStream o = new ObjectOutputStream(
                                     new FileOutputStream(FilesCommons.getJarFolder("")
@@ -833,10 +822,10 @@ public class NetCalcUI extends javax.swing.JFrame {
     private javax.swing.JButton btnRun;
     private javax.swing.JButton btnSkip;
     private javax.swing.JButton btnStop;
-    private javax.swing.JButton btnView;
     private javax.swing.JButton btnViewResult;
     private javax.swing.JCheckBox chkContinue;
     private javax.swing.JCheckBox chkFireHis;
+    private javax.swing.JCheckBox chkUpdateFigure;
     private javax.swing.JFileChooser fc;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

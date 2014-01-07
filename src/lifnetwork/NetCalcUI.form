@@ -498,7 +498,7 @@
                   <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="btnView" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkUpdateFigure" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="lblFileCount" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -512,7 +512,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="103" alignment="1" groupAlignment="3" attributes="0">
                           <Component id="btnStop" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnSkip" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -525,8 +525,8 @@
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="btnView" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Component id="chkUpdateFigure" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace pref="27" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="progBar" min="-2" pref="14" max="-2" attributes="0"/>
@@ -584,14 +584,10 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnStopActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="btnView">
+        <Component class="javax.swing.JCheckBox" name="chkUpdateFigure">
           <Properties>
-            <Property name="text" type="java.lang.String" value="View"/>
-            <Property name="enabled" type="boolean" value="false"/>
+            <Property name="text" type="java.lang.String" value="Update Figure"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewActionPerformed"/>
-          </Events>
         </Component>
       </SubComponents>
     </Container>

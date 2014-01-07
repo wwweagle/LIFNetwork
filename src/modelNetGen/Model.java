@@ -36,6 +36,7 @@ import javax.swing.Timer;
 import jungClustering.Cluster;
 import org.apache.commons.math3.random.RandomGenerator;
 import commonLibs.NetworkParameters;
+import java.text.DecimalFormat;
 
 /**
  *
@@ -54,7 +55,7 @@ public class Model {
     final private float ITERATE_FACTOR;
     final private float GLU_IO_COE;
     final private float GABA_IO_COE;
-    private int dim;
+    private final int dim;
     private RunState runState;
     final private List<String> updates;
     private int progress;
@@ -65,6 +66,7 @@ public class Model {
     private float weightScale;
     final private Monitor allPair;
     private String rndSuffix = "";
+    final DecimalFormat dformat=new DecimalFormat("0.00");
 
     /**
      * Build a new iterate model
@@ -427,7 +429,6 @@ public class Model {
                 int count = 0;
                 for (int j = 0; j < grp.length; j++) {
                     if (i == j) {
-                        continue;
                     } else {
                         int setKey = input ? Com.getSetKey(grp[j], grp[i]) : Com.getSetKey(grp[i], grp[j]);
                         count += (connected.contains(setKey) && (cellList.get(i).isGlu() == glu)) ? 1 : 0;
@@ -589,7 +590,8 @@ public class Model {
         HashSet<HashSet<Integer>> clusters = (new Cluster()).getClusteredSets(cellList, connected);
         NetworkParameters save = new NetworkParameters(cellList, synapticWeights, clusters, TYPE, connProbScale, weightScale, rndSuffix);
         String type = TYPE == ModelType.Network ? "Net" : "Ctl";
-        String suffix = "_C" + Float.toString(connProbScale) + "_W" + Float.toString(weightScale) + "_" + rndSuffix;
+//        String suffix = "_C" + Float.toString(connProbScale) + "_W" + Float.toString(weightScale) + "_" + rndSuffix;
+        String suffix = "_C" + dformat.format(connProbScale) + "_W" + dformat.format(weightScale) + "_" + rndSuffix;
 
         try (ObjectOutputStream o = new ObjectOutputStream(
                 new FileOutputStream(FilesCommons.getJarFolder("") + "\\" + type + suffix + "_Conn.ser"))) {
@@ -778,7 +780,7 @@ public class Model {
                     /*
                      * Active or not
                      */
-                    return p > r.nextFloat() ? true : false;
+                    return p > r.nextFloat();
                 }
             }
             int threads = Runtime.getRuntime().availableProcessors();
