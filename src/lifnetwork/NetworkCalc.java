@@ -7,9 +7,8 @@ package lifnetwork;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+//import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import static java.util.concurrent.ForkJoinTask.invokeAll;
@@ -17,8 +16,9 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 import commonLibs.RndCell;
 import commonLibs.NetworkParameters;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+//import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 /**
@@ -28,7 +28,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 public class NetworkCalc {
 
     private final int simulateTime; //simulation time in micro seconds (us)
-    private final int refractTime = 100;
+    private final int refractTime = 50;
     private final int gabaReverseP;
     private final int gluReverseP = 0;
     private final float gFactor;
@@ -45,8 +45,10 @@ public class NetworkCalc {
     private RunState runState = RunState.BeforeRun;
     private final NetworkParameters save;
     private int currentTime;
-    private int[] lookUpTable;
-    final private AtomicInteger forkMon = new AtomicInteger();
+    private int injectionRatio = 0;
+    private int injectionCurrent = 0;
+//    private int[] lookUpTable;
+//    final private AtomicInteger forkMon = new AtomicInteger();
 //    private int debugCycle;
 
     /**
@@ -70,17 +72,17 @@ public class NetworkCalc {
     }
 
     private void readParameters() {
-        neuronList=new ArrayList<>();
+        neuronList = new ArrayList<>();
 //        System.out.println("read in");
-        HashSet<HashSet<Integer>> clusters = save.getClusters();
-        lookUpTable = new int[save.getCellList().size()];
-        int idx = 0;
-        for (Set<Integer> s : clusters) {
-            for (Integer i : s) {
-                lookUpTable[i] = idx;
-                idx++;
-            }
-        }
+//        HashSet<HashSet<Integer>> clusters = save.getClusters();
+//        lookUpTable = new int[save.getCellList().size()];
+//        int idx = 0;
+//        for (Set<Integer> s : clusters) {
+//            for (Integer i : s) {
+//                lookUpTable[i] = idx;
+//                idx++;
+//            }
+//        }
 
         /*
          * init cells
@@ -89,8 +91,8 @@ public class NetworkCalc {
         NormalDistribution gluR = new NormalDistribution(790, 410);
         NormalDistribution gabaR = new NormalDistribution(560, 230);
 
-        for (int i = 0; i < cellList.size(); i++) {
-            if (cellList.get(i).isGlu()) {
+        for (RndCell cell : cellList) {
+            if (cell.isGlu()) {
                 //init a new glu neuron
                 NeuronType type = NeuronType.GLU;
                 int rm = getReasonableR(gluR);
@@ -115,14 +117,15 @@ public class NetworkCalc {
                 neuronList.add(gabaNeuron);
             }
         }
-        List<LIFNeuron> tempList = neuronList;
-        neuronList = Collections.unmodifiableList(tempList);
+//        List<LIFNeuron> tempList = neuronList;
+        neuronList = Collections.unmodifiableList(neuronList);
         /*
          * init synapses
          */
         HashMap<Integer, Float> synapticWeights = save.getSynapticWeights();
-        Set<Map.Entry<Integer, Float>> synapses = synapticWeights.entrySet();
-        for (Map.Entry<Integer, Float> synapse : synapses) {
+        Set<Entry<Integer, Float>> synapses = synapticWeights.entrySet();
+
+        for (Entry<Integer, Float> synapse : synapses) {
             int pre = synapse.getKey() >>> 12;
             int post = synapse.getKey() & 4095;
             IncomingSynapse incoming = new IncomingSynapse(
@@ -132,6 +135,14 @@ public class NetworkCalc {
             neuronList.get(post).addInput(incoming);
         }
 //        System.out.println("read out");
+    }
+
+    public void setInjectionRatio(int injectionRatio) {
+        this.injectionRatio = injectionRatio;
+    }
+
+    public void setInjectionCurrent(int injectionCurrent) {
+        this.injectionCurrent = injectionCurrent;
     }
 
     private int getReasonableR(NormalDistribution d) {
@@ -148,20 +159,8 @@ public class NetworkCalc {
 //        float glu_gaba_g = 2 * gFactor;//conductence of connectivity from glu cell to gaba cell in same column
 //        float glu_glu_g = 0.5f * gFactor;//conductence of connectivity from glu cell to glu cell in same column
         int key = (preIsGlu ? 0 : 2) + (postIsGlu ? 0 : 1);
-        switch (key) {
-            case 0:
-                return 0.5f * gFactor;
-            case 1:
-                return 2 * gFactor;
-            case 2:
-                return 5 * gFactor;
-            case 3:
-                return 5 * gFactor;
-            default:
-                System.out.println("Unknown synapse combination during calculaing g");
-                return 1;
-        }
-
+        final float[] conductence = {0.5f, 2f, 5f, 5f};
+        return conductence[key] * gFactor;
     }
 
     public int cycle() {
@@ -176,21 +175,29 @@ public class NetworkCalc {
 //        ArrayList<Float> vSample = new ArrayList<>(10000);
 //        ArrayList<Float> iSample = new ArrayList<>(10000);
 //        ArrayList<Float> sSample = new ArrayList<>(10000);
-
+        int step = simulateTime / 10;
         for (currentTime = 0; currentTime < simulateTime; currentTime += dT) {
 //            debugCycle = currentTime;
             if (runState == RunState.Stop) {
                 return fireList.size();
             }
-            /*
-             * injection
-             */
+
+
             /*
              * calc current here
              */
             fjpool.invoke(new SynapticEventCalcFork(0, neuronList.size(), currentTime));
-            //This is where error happens
-            fjpool.invoke(new CurrentCalcFork(0, neuronList.size()));
+            fjpool.invoke(new CurrentCalcFork(0, neuronList.size(), false));
+
+            /*
+             * injection
+             */
+            if (currentTime % step < 2000 && injectionRatio > 0 && injectionCurrent > 0) {
+                for (int i = 0; i < neuronList.size() * injectionRatio / 100; i++) {
+                    neuronList.get(i).addCurrent(injectionCurrent);
+                }
+            }
+
             /*
              * calc LIF state
              */
@@ -198,7 +205,8 @@ public class NetworkCalc {
             fjpool.invoke(new VoltageCalcFork(fired, 0, neuronList.size(), dT, currentTime));
             synchronized (fired) {
                 for (Integer cell : fired) {
-                    int[] record = {currentTime, lookUpTable[cell]};
+//                    int[] record = {currentTime, lookUpTable[cell]};
+                    int[] record = {currentTime, cell};
                     try {
                         fireQueue.put(record);
                         fireList.add(record);
@@ -263,12 +271,12 @@ public class NetworkCalc {
         }
 
         private void SynEvtCalc(int start, int end, int currentTime) {
-            forkMon.incrementAndGet();
+//            forkMon.incrementAndGet();
             for (int i = start; i < end; i++) {
                 neuronList.get(i).updateSynapticDynamics(currentTime);
             }
             //STOPPED SOMEWHRE NEAR HERE
-            forkMon.decrementAndGet();
+//            forkMon.decrementAndGet();
         }
 
         @Override
@@ -288,10 +296,12 @@ public class NetworkCalc {
 
         final private int start;
         final private int end;
+        final private boolean rand;
 
-        public CurrentCalcFork(int start, int end) {
+        public CurrentCalcFork(int start, int end, boolean rand) {
             this.start = start;
             this.end = end;
+            this.rand = rand;
         }
 
         private void currentCalc(int start, int end) {
@@ -301,7 +311,7 @@ public class NetworkCalc {
                  * Random current
                  */
 
-                if (ThreadLocalRandom.current().nextInt(100) < randFactor) {
+                if (randFactor > 0 && randCurrent > 0 && ThreadLocalRandom.current().nextInt(100) < randFactor) {
                     neuronList.get(i).addCurrent(randCurrent);
                 }
             }
@@ -314,8 +324,8 @@ public class NetworkCalc {
                 return;
             }
             int middle = (end - start) / 2 + start;
-            invokeAll(new CurrentCalcFork(start, middle),
-                    new CurrentCalcFork(middle, end));
+            invokeAll(new CurrentCalcFork(start, middle, rand),
+                    new CurrentCalcFork(middle, end, rand));
 
         }
     }
@@ -364,10 +374,9 @@ public class NetworkCalc {
         return fireList;
     }
 
-    public int getForkMon() {
-        return forkMon.get();
-    }
-
+//    public int getForkMon() {
+//        return forkMon.get();
+//    }
     private enum RunState {
 
         BeforeRun, Running, Stop, Finished, Paused

@@ -4,16 +4,14 @@
  */
 package modelNetGen;
 
-import commonLibs.ModelType;
+//import commonLibs.ModelType;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import javax.swing.SwingWorker;
 
 /**
  *
@@ -42,21 +40,12 @@ public class ModelUI extends javax.swing.JFrame {
         triQuadGrp = new javax.swing.ButtonGroup();
         ioTypeGrp = new javax.swing.ButtonGroup();
         ioGrp = new javax.swing.ButtonGroup();
-        maxDistGrp = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
         btnInitModel = new javax.swing.JButton();
         btnStopModel = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        txtGluFac = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
-        txtGABAFac = new javax.swing.JTextField();
-        chkDepolarGABA = new javax.swing.JCheckBox();
         jLabel5 = new javax.swing.JLabel();
         txtIterFac = new javax.swing.JTextField();
-        rdoRand = new javax.swing.JRadioButton();
-        rdoBiDir = new javax.swing.JRadioButton();
-        rdoUniDir = new javax.swing.JRadioButton();
         btnStart = new javax.swing.JButton();
         btnExit = new javax.swing.JButton();
         jSeparator3 = new javax.swing.JSeparator();
@@ -68,6 +57,7 @@ public class ModelUI extends javax.swing.JFrame {
         jLabel11 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         txtNetFactor = new javax.swing.JTextField();
+        chkClusterWeight = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         btnCluster = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
@@ -93,6 +83,7 @@ public class ModelUI extends javax.swing.JFrame {
         jSeparator4 = new javax.swing.JSeparator();
         btnGlobalDegree = new javax.swing.JButton();
         jSeparator5 = new javax.swing.JSeparator();
+        btnClusterCoef = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtPrg = new javax.swing.JTextArea();
@@ -147,53 +138,13 @@ public class ModelUI extends javax.swing.JFrame {
 
         jLabel2.setText("Model Construct:");
 
-        jLabel1.setText("Glu Factor ");
-
-        txtGluFac.setEditable(false);
-        txtGluFac.setText("1.0");
-        txtGluFac.setPreferredSize(new java.awt.Dimension(40, 20));
-
-        jLabel3.setText("GABA Factor");
-
-        txtGABAFac.setEditable(false);
-        txtGABAFac.setText("1.0");
-        txtGABAFac.setPreferredSize(new java.awt.Dimension(40, 20));
-
-        chkDepolarGABA.setSelected(true);
-        chkDepolarGABA.setText("Depolar GABA");
-
         jLabel5.setText("Iteration Factor");
 
-        txtIterFac.setText("100");
-        txtIterFac.setPreferredSize(new java.awt.Dimension(40, 20));
+        txtIterFac.setText("1000");
+        txtIterFac.setPreferredSize(new java.awt.Dimension(50, 20));
         txtIterFac.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtIterFacActionPerformed(evt);
-            }
-        });
-
-        modelGrp.add(rdoRand);
-        rdoRand.setText("Random");
-        rdoRand.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rdoRandActionPerformed(evt);
-            }
-        });
-
-        modelGrp.add(rdoBiDir);
-        rdoBiDir.setText("ActiveBiDir");
-        rdoBiDir.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rdoBiDirActionPerformed(evt);
-            }
-        });
-
-        modelGrp.add(rdoUniDir);
-        rdoUniDir.setSelected(true);
-        rdoUniDir.setText("ActiveOutGoing");
-        rdoUniDir.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rdoUniDirActionPerformed(evt);
             }
         });
 
@@ -218,7 +169,7 @@ public class ModelUI extends javax.swing.JFrame {
         jSeparator3.setPreferredSize(new java.awt.Dimension(10, 100));
 
         txtNeuronNum.setText("1000");
-        txtNeuronNum.setPreferredSize(new java.awt.Dimension(40, 20));
+        txtNeuronNum.setPreferredSize(new java.awt.Dimension(50, 20));
 
         jLabel9.setText("Neurons");
 
@@ -235,12 +186,15 @@ public class ModelUI extends javax.swing.JFrame {
         jLabel17.setText("Network Factors");
 
         txtNetFactor.setText("0");
-        txtNetFactor.setPreferredSize(new java.awt.Dimension(40, 20));
+        txtNetFactor.setPreferredSize(new java.awt.Dimension(50, 20));
         txtNetFactor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtNetFactorActionPerformed(evt);
             }
         });
+
+        chkClusterWeight.setSelected(true);
+        chkClusterWeight.setText("Clustered Weight");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -251,25 +205,21 @@ public class ModelUI extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtGluFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel3)
-                                .addGap(26, 26, 26)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtGABAFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtIterFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(chkDepolarGABA)
-                                    .addComponent(jLabel17))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel5)
-                                    .addComponent(txtNetFactor, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addGap(18, 18, 18)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel17)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel2)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtNeuronNum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtIterFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtNetFactor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(chkClusterWeight)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -290,20 +240,9 @@ public class ModelUI extends javax.swing.JFrame {
                                     .addComponent(txtWeightScale, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(txtConnProb, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(rdoRand)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rdoBiDir)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rdoUniDir))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(jLabel2)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtNeuronNum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel9)))
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -326,35 +265,23 @@ public class ModelUI extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 8, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                            .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel2)
                                     .addComponent(txtNeuronNum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel9))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(rdoRand)
-                                    .addComponent(rdoBiDir)
-                                    .addComponent(rdoUniDir))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                                    .addComponent(jLabel1)
-                                    .addComponent(txtGluFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel3)
-                                        .addComponent(txtGABAFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                                    .addComponent(chkDepolarGABA)
                                     .addComponent(txtIterFac, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel5))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(txtNetFactor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel17))
+                                    .addComponent(jLabel17)
+                                    .addComponent(chkClusterWeight))
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())))
@@ -444,6 +371,13 @@ public class ModelUI extends javax.swing.JFrame {
             }
         });
 
+        btnClusterCoef.setText("ClusterCoef");
+        btnClusterCoef.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClusterCoefActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -496,15 +430,17 @@ public class ModelUI extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(btnGlobalDegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jSeparator5)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(chkRepeat)
                                 .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())))
+                        .addContainerGap())
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnGlobalDegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnClusterCoef))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -519,7 +455,9 @@ public class ModelUI extends javax.swing.JFrame {
                                 .addGap(38, 38, 38)
                                 .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(btnGlobalDegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(btnGlobalDegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnClusterCoef))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(rdoBoth)
@@ -555,7 +493,7 @@ public class ModelUI extends javax.swing.JFrame {
                                     .addComponent(rdoOutput))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(btnIODegree, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 2, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -784,17 +722,17 @@ public class ModelUI extends javax.swing.JFrame {
         btnShow.setEnabled(false);
         btnStart.setEnabled(false);
         pathToFile = FilesCommons.getJarFolder("GAD0.accdb");
-        modelInitWorker().execute();
+        modelInit();
         btnInitModel.setEnabled(false);
     }//GEN-LAST:event_btnInitModelActionPerformed
 
     private void btnClusterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClusterActionPerformed
-        clusterWorker().execute();
+        cluster();
     }//GEN-LAST:event_btnClusterActionPerformed
 
     private void btnCommNeiTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCommNeiTestActionPerformed
 //        ModelProbe probe = new ModelProbe(m0);
-        commNeiborWoker().execute();
+        commNeighbour();
     }//GEN-LAST:event_btnCommNeiTestActionPerformed
 
     private void btnStopModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopModelActionPerformed
@@ -804,39 +742,29 @@ public class ModelUI extends javax.swing.JFrame {
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
     }//GEN-LAST:event_formWindowClosed
 
-    private void rdoRandActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoRandActionPerformed
-        modelType = ModelType.Ctrl;
-//        circuitView.setNetworkType(modelType);
-    }//GEN-LAST:event_rdoRandActionPerformed
-
-    private void rdoBiDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoBiDirActionPerformed
-        modelType = ModelType.NetworkBiDir;
-    }//GEN-LAST:event_rdoBiDirActionPerformed
-
-    private void rdoUniDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoUniDirActionPerformed
-        modelType = ModelType.Network;
-    }//GEN-LAST:event_rdoUniDirActionPerformed
-
     private void btnShowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowActionPerformed
         btnShow.setEnabled(false);
         displayModel();
     }//GEN-LAST:event_btnShowActionPerformed
 
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
-        (new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                m0.setType(modelType);
-                m0.setConnProbScale(Float.parseFloat(txtConnProb.getText()));
-                m0.setWeightScale(Float.parseFloat(txtWeightScale.getText()));
-                m0.setWriteFile(chkWriteFile.isSelected());
-                m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
-                updateProgress();
-                m0.genModelNetwork(pathToFile);
-                return null;
-            }
-        }).execute();
-        btnShow.setEnabled(true);
+        btnStart.setEnabled(false);
+        Runnable r = () -> {
+//            m0.setType(modelType);
+            m0.setClusteredWeight(chkClusterWeight.isSelected());
+            m0.setITERATE_FACTOR(Float.parseFloat(txtIterFac.getText()));
+            m0.setNetworkFactor(Float.parseFloat(txtNetFactor.getText()));
+            m0.setConnProbScale(Float.parseFloat(txtConnProb.getText()));
+            m0.setWeightScale(Float.parseFloat(txtWeightScale.getText()));
+            m0.setWriteFile(chkWriteFile.isSelected());
+//            m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
+            updateProgress();
+            m0.genModelNetwork(pathToFile);
+            btnStart.setEnabled(true);
+            btnShow.setEnabled(true);
+        };
+//        r.
+        (new Thread(r)).start();
     }//GEN-LAST:event_btnStartActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
@@ -844,11 +772,11 @@ public class ModelUI extends javax.swing.JFrame {
     }//GEN-LAST:event_btnExitActionPerformed
 
     private void btnIODegreeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIODegreeActionPerformed
-        ioDegreeWoker().execute();
+        ioDegree();
     }//GEN-LAST:event_btnIODegreeActionPerformed
 
     private void btnGlobalDegreeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGlobalDegreeActionPerformed
-        globalDegreeWorker().execute();
+        globalDegree();
     }//GEN-LAST:event_btnGlobalDegreeActionPerformed
 
     private void txtIterFacActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIterFacActionPerformed
@@ -888,20 +816,16 @@ public class ModelUI extends javax.swing.JFrame {
                 * structures * 2;
 
         for (int struc = 0; struc < structures; struc++) {
-            modelInitWorker().execute();
-            (new SwingWorker<Void, Void>() {
+            modelInit();
+            Thread t = new Thread() {
                 @Override
-                protected Void doInBackground() throws Exception {
-                    batchSem.acquire();
+                public void run() {
                     for (float connProb = connProbFrom; connProb < connProbTo; connProb += connProbStep) {
                         for (float weightScale = weightScaleFrom; weightScale < weightScaleTo; weightScale += weightScaleStep) {
-                            for (int i = 0; i < 2; i++) {
-                                if (batchStop) {
-                                    return null;
-                                }
+                            for (int i = 0; i < 2 && !batchStop; i++) {
                                 batchAdd();
                                 lblBatchProgress.setText(Integer.toString(getBatch()) + "/" + Integer.toString(totalCycle));
-                                m0.setType(i == 0 ? ModelType.Network : ModelType.Ctrl);
+//                                m0.setType(i == 0 ? ModelType.Network : ModelType.Ctrl);
                                 m0.setConnProbScale(connProb);
                                 m0.setWeightScale(weightScale);
                                 updateProgress();
@@ -909,15 +833,14 @@ public class ModelUI extends javax.swing.JFrame {
                             }
                         }
                     }
-
-                    return null;
                 }
-
-                @Override
-                protected void done() {
-                    batchSem.release();
-                }
-            }).execute();
+            };
+            t.start();
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                System.out.println("Thread error");
+            }
             btnShow.setEnabled(true);
         }
     }//GEN-LAST:event_btnStartBatchActionPerformed
@@ -925,6 +848,11 @@ public class ModelUI extends javax.swing.JFrame {
     private void txtNetFactorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNetFactorActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNetFactorActionPerformed
+
+    private void btnClusterCoefActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClusterCoefActionPerformed
+        ModelDB db = new ModelDB(pathToFile);
+        db.clusterCoef();
+    }//GEN-LAST:event_btnClusterCoefActionPerformed
 
     /**
      * @param args the command line arguments
@@ -948,15 +876,13 @@ public class ModelUI extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ModelUI().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new ModelUI().setVisible(true);
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCluster;
+    private javax.swing.JButton btnClusterCoef;
     private javax.swing.JButton btnCommNeiTest;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnGlobalDegree;
@@ -967,7 +893,7 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JButton btnStartBatch;
     private javax.swing.JButton btnStopModel;
     private javax.swing.JButton btnStopModelBatch;
-    private javax.swing.JCheckBox chkDepolarGABA;
+    private javax.swing.JCheckBox chkClusterWeight;
     private javax.swing.JCheckBox chkFreq;
     private javax.swing.JCheckBox chkFwdGlu;
     private javax.swing.JCheckBox chkRepeat;
@@ -976,7 +902,6 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup clusterGrp;
     private javax.swing.ButtonGroup ioGrp;
     private javax.swing.ButtonGroup ioTypeGrp;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -986,7 +911,6 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -1005,10 +929,8 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JLabel lblBatchProgress;
-    private javax.swing.ButtonGroup maxDistGrp;
     private javax.swing.ButtonGroup modelGrp;
     private javax.swing.JProgressBar prgBar;
-    private javax.swing.JRadioButton rdoBiDir;
     private javax.swing.JRadioButton rdoBoth;
     private javax.swing.JRadioButton rdoGABA;
     private javax.swing.JRadioButton rdoGABAIO;
@@ -1017,17 +939,13 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JRadioButton rdoInput;
     private javax.swing.JRadioButton rdoOutput;
     private javax.swing.JRadioButton rdoQuad;
-    private javax.swing.JRadioButton rdoRand;
     private javax.swing.JRadioButton rdoTri;
-    private javax.swing.JRadioButton rdoUniDir;
     private javax.swing.ButtonGroup triQuadGrp;
     private javax.swing.JTextField txtConnProb;
     private javax.swing.JTextField txtConnProbBatchFrom;
     private javax.swing.JTextField txtConnProbBatchStep;
     private javax.swing.JTextField txtConnProbBatchTo;
-    private javax.swing.JTextField txtGABAFac;
     private javax.swing.JTextField txtGenGrpTime;
-    private javax.swing.JTextField txtGluFac;
     private javax.swing.JTextField txtIterFac;
     private javax.swing.JTextField txtNetFactor;
     private javax.swing.JTextField txtNeuronNum;
@@ -1039,237 +957,192 @@ public class ModelUI extends javax.swing.JFrame {
     private javax.swing.JTextField txtWeightScaleBatchTo;
     // End of variables declaration//GEN-END:variables
 
-    private SwingWorker modelInitWorker() {
-        SwingWorker calcWorker;
-        calcWorker = new SwingWorker<Void, Void>() {
-            @Override
-            public Void doInBackground() {
-                try {
-                    batchSem.acquire();
-                } catch (InterruptedException ex) {
-                    System.out.println("Parallel exception");
-                }
-                float gluFac = Float.parseFloat(txtGluFac.getText());
-                float gabaFac = Float.parseFloat(txtGABAFac.getText());
-                float iterFac = Float.parseFloat(txtIterFac.getText());
-                //TODO need to test pathToFile exist
-                int neuronNum = Integer.parseInt(txtNeuronNum.getText());
-                m0 = new Model(gluFac, gabaFac, iterFac, neuronNum, 8429, 0.76708864f);
-                String rndSuffix=Com.genRandomString(6);
-                m0.setRndSuffix(rndSuffix);
-                m0.setWriteFile(chkWriteFile.isSelected());
-                m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
-                updateProgress();
-                btnStart.setEnabled(true);
-                btnStartBatch.setEnabled(true);
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                batchSem.release();
-            }
+    private void modelInit() {
+        Runnable r = () -> {
+            //TODO need to test pathToFile exist
+            int neuronNum = Integer.parseInt(txtNeuronNum.getText());
+            m0 = new Model(neuronNum, 8429, 0.76708864f);
+            String rndSuffix = Com.genRandomString(6);
+            m0.setRndSuffix(rndSuffix);
+            m0.setWriteFile(chkWriteFile.isSelected());
+//            m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
+            updateProgress();
+            btnStart.setEnabled(true);
+            btnStartBatch.setEnabled(true);
         };
-
-        return calcWorker;
+        (new Thread(r)).start();
     }
 
     private void displayModel() {
-        (new SwingWorker<Void, Void>() {
-            @Override
-            public Void doInBackground() {
-                circuitView = new CircuitViewUI();
-                circuitView.setNetworkType(modelType);
-                circuitView.setVisible(true);
+        circuitView = new CircuitViewUI();
+//        circuitView.setNetworkType(modelType);
+        circuitView.setVisible(true);
 
-                circuitView.setDim(m0.getDimension());
-                circuitView.setCellList(m0.getCellList());
+        circuitView.setDim(m0.getDimension());
+        circuitView.setCellList(m0.getCellList());
 
-                final ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-                final Runnable displayUpdate = new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!circuitView.isVisible()) {
-                            btnShow.setEnabled(true);
-                            ses.shutdown();
-                        }
-                        if (m0.getRunState() == RunState.GeneratingNet) {
-                            circuitView.setConnected(new HashSet<>(m0.getConnected()));
-                            circuitView.repaintCanvas();
-                        }
-
-                        if (m0.getRunState() == RunState.NetGenerated) {
-                            circuitView.setConnected(new HashSet<>(m0.getConnected()));
-                            circuitView.repaintCanvas();
-                        }
-                    }
-                };
-                ses.scheduleWithFixedDelay(displayUpdate, 1, 1, TimeUnit.SECONDS);
-                return null;
+        final ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+        final Runnable displayUpdate = () -> {
+            if (!circuitView.isVisible()) {
+                btnShow.setEnabled(true);
+                ses.shutdown();
             }
-        }).execute();
-    }
+            if (m0.getRunState() == RunState.GeneratingNet) {
+                circuitView.setConnected(new HashSet<>(m0.getConnected()));
+                circuitView.repaintCanvas();
+            }
 
-    private SwingWorker clusterWorker() {
-        SwingWorker clusterWorker = new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() {
-                final int type = rdoBoth.isSelected() ? 0 : rdoGlu.isSelected() ? 1 : 2;
-                final int size = rdoTri.isSelected() ? 3 : 4;
-                final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
-                final ResultUI ui = new ResultUI();
-                ui.setVisible(true);
-                ui.setResultTitle("Clusting "
-                        + modelType.toString() + " Model "
-                        + (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar"));
-
-                int repeat = totalProgress;
-                while (repeat > 0) {
-                    if (!ui.isVisible()) {
-                        break;
-                    }
-                    ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
-                    int[] histo = m0.probeGroupDensity(Integer.parseInt(txtGenGrpTime.getText()), type, size);
-                    ui.appendText(modelType.toString(),
-                            type == 0 ? "Both" : type == 1 ? "Glu" : "GABA",
-                            "GABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"), "\t");
-                    if (chkFreq.isSelected()) {
-                        int total = 0;
-                        for (int i = 0; i < histo.length; i++) {
-                            total += histo[i];
-                        }
-                        for (int i = 0; i < histo.length; i++) {
-                            ui.appendText((double) histo[i] / total + "\t");
-                        }
-                    } else {
-                        for (int i = 0; i < histo.length; i++) {
-                            ui.appendText(histo[i] + "");
-                        }
-                    }
-                    ui.appendText("\n");
-                    repeat--;
-                }
-                ui.setProgress(100);
-                return null;
+            if (m0.getRunState() == RunState.NetGenerated) {
+                circuitView.setConnected(new HashSet<>(m0.getConnected()));
+                circuitView.repaintCanvas();
             }
         };
-        return clusterWorker;
+        ses.scheduleWithFixedDelay(displayUpdate, 1, 1, TimeUnit.SECONDS);
     }
 
-    private SwingWorker commNeiborWoker() {
-        SwingWorker commNeiborWorker = new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() {
-                final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
-                final ResultUI ui = new ResultUI();
-                ui.setVisible(true);
-                ui.setResultTitle("Common Neighbor "
-                        + modelType.toString() + " Model "
-                        + (chkFwdGlu.isSelected() ? "Glu To " : "GABA To ")
-                        + (chkRevGlu.isSelected() ? "Glu" : "GABA"));
+    private void cluster() {
+        Runnable r = () -> {
+            final int type = rdoBoth.isSelected() ? 0 : rdoGlu.isSelected() ? 1 : 2;
+            final int size = rdoTri.isSelected() ? 3 : 4;
+            final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
+            final ResultUI ui = new ResultUI();
+            ui.setVisible(true);
+            ui.setResultTitle("Clusting ");
+//                    + /*modelType.toString() +*/ " Model "
+//                    + (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar"));
 
-                int repeat = totalProgress;
-                ui.appendText("w/GluNeibor", "w/oGluNeibor", "w/GABANeibor", "w/oGABANeibor", "\n");
-                while (repeat > 0) {
-                    if (!ui.isVisible()) {
-                        break;
-                    }
-                    ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
-                    float[] ratio = m0.probeCommNeib(
-                            Integer.parseInt(txtGenGrpTime.getText()),
-                            chkFwdGlu.isSelected(), chkRevGlu.isSelected());
-                    ui.appendText(ratio[0] + "\t" + ratio[1] + "\t" + ratio[2] + "\t" + ratio[3] + "\n");
-                    repeat--;
+            int repeat = totalProgress;
+            while (repeat > 0) {
+                if (!ui.isVisible()) {
+                    break;
                 }
-                ui.setProgress(100);
-                return null;
+                ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
+                int[] histo = m0.probeGroupDensity(Integer.parseInt(txtGenGrpTime.getText()), type, size);
+                ui.appendText(/*modelType.toString(),*/
+                        type == 0 ? "Both" : type == 1 ? "Glu" : "GABA",
+                        /*"GABA_" + (chkDepolarGABA.isSelected() ? "Depolar" : "HyperPolar"),*/ "\t");
+                if (chkFreq.isSelected()) {
+                    int total = 0;
+                    for (int i = 0; i < histo.length; i++) {
+                        total += histo[i];
+                    }
+                    for (int i = 0; i < histo.length; i++) {
+                        ui.appendText((double) histo[i] / total + "\t");
+                    }
+                } else {
+                    for (int i = 0; i < histo.length; i++) {
+                        ui.appendText(histo[i] + "");
+                    }
+                }
+                ui.appendText("\n");
+                repeat--;
             }
+            ui.setProgress(100);
         };
-        return commNeiborWorker;
+        (new Thread(r)).start();
     }
 
-    private SwingWorker ioDegreeWoker() {
-        SwingWorker ioWorker;
-        ioWorker = new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() {
-                final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
-                final ResultUI ui = new ResultUI();
-                ui.setVisible(true);
-                ui.setResultTitle("Degrees "
-                        + modelType.toString() + " Model "
-                        + (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar"));
+    private void commNeighbour() {
+        Runnable r = () -> {
+            final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
+            final ResultUI ui = new ResultUI();
+            ui.setVisible(true);
+            ui.setResultTitle("Common Neighbor "
+                    + /*modelType.toString() +*/ " Model "
+                    + (chkFwdGlu.isSelected() ? "Glu To " : "GABA To ")
+                    + (chkRevGlu.isSelected() ? "Glu" : "GABA"));
 
-                int repeat = totalProgress;
-                while (repeat > 0) {
-                    if (!ui.isVisible()) {
-                        break;
-                    }
-                    ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
-                    int[] degrees = m0.probeIO(
-                            Integer.parseInt(txtGenGrpTime.getText()),
-                            rdoIOGlu.isSelected(), rdoInput.isSelected());
-
-                    ui.appendText((rdoInput.isSelected() ? "Input" : "output"),
-                            (rdoIOGlu.isSelected() ? "Glu" : "GABA") + "\t");
-                    if (chkFreq.isSelected()) {
-                        int total = 0;
-                        for (int i = 0; i < degrees.length; i++) {
-                            total += degrees[i];
-                        }
-                        for (int i = 0; i < degrees.length; i++) {
-                            ui.appendText((double) degrees[i] / total + "\t");
-                        }
-                    } else {
-                        for (int i = 0; i < degrees.length; i++) {
-                            ui.appendText(degrees[i] + "\t");
-                        }
-                    }
-                    ui.appendText("\n");
-                    repeat--;
+            int repeat = totalProgress;
+            ui.appendText("w/GluNeibor", "w/oGluNeibor", "w/GABANeibor", "w/oGABANeibor", "\n");
+            while (repeat > 0) {
+                if (!ui.isVisible()) {
+                    break;
                 }
+                ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
+                float[] ratio = m0.probeCommNeib(
+                        Integer.parseInt(txtGenGrpTime.getText()),
+                        chkFwdGlu.isSelected(), chkRevGlu.isSelected());
+                ui.appendText(ratio[0] + "\t" + ratio[1] + "\t" + ratio[2] + "\t" + ratio[3] + "\n");
+                repeat--;
+            }
+            ui.setProgress(100);
+        };
+        (new Thread(r)).start();
+    }
+
+    private void ioDegree() {
+        Runnable r = () -> {
+            final int totalProgress = chkRepeat.isSelected() ? 5 : 1;
+            final ResultUI ui = new ResultUI();
+            ui.setVisible(true);
+            ui.setResultTitle("Degrees "
+                    + /*modelType.toString() + */ " Model "
+            /*+ (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar")*/);
+
+            int repeat = totalProgress;
+            while (repeat > 0) {
+                if (!ui.isVisible()) {
+                    break;
+                }
+                ui.setProgress((totalProgress - repeat) * 100 / totalProgress);
+                int[] degrees = m0.probeIO(
+                        Integer.parseInt(txtGenGrpTime.getText()),
+                        rdoIOGlu.isSelected(), rdoInput.isSelected());
+
+                ui.appendText((rdoInput.isSelected() ? "Input" : "output"),
+                        (rdoIOGlu.isSelected() ? "Glu" : "GABA") + "\t");
+                if (chkFreq.isSelected()) {
+                    int total = 0;
+                    for (int i = 0; i < degrees.length; i++) {
+                        total += degrees[i];
+                    }
+                    for (int i = 0; i < degrees.length; i++) {
+                        ui.appendText((double) degrees[i] / total + "\t");
+                    }
+                } else {
+                    for (int i = 0; i < degrees.length; i++) {
+                        ui.appendText(degrees[i] + "\t");
+                    }
+                }
+                ui.appendText("\n");
+                repeat--;
+            }
 //                split();
-                ui.setProgress(100);
-                return null;
-            }
+            ui.setProgress(100);
         };
-        return ioWorker;
+        (new Thread(r)).start();
     }
 
-    private SwingWorker globalDegreeWorker() {
-        SwingWorker globalDegreeWorker = new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() {
-                final ResultUI ui = new ResultUI();
-                ui.setVisible(true);
-                ui.setResultTitle("Degrees "
-                        + modelType.toString() + " Model "
-                        + (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar"));
-                Queue<TreeMap<Integer, Integer>> q = m0.probeGlobalDegrees();
-                ui.appendText("Glu In=====================================\n");
-                TreeMap<Integer, Integer> map = q.poll();
-                for (int i = 0; i < map.size(); i++) {
-                    ui.appendText(i + "\t" + map.get(i) + "\n");
-                }
-                ui.appendText("Glu Out====================================\n");
-                map = q.poll();
-                for (int i = 0; i < map.size(); i++) {
-                    ui.appendText(i + "\t" + map.get(i) + "\n");
-                }
-                ui.appendText("GABA In====================================\n");
-                map = q.poll();
-                for (int i = 0; i < map.size(); i++) {
-                    ui.appendText(i + "\t" + map.get(i) + "\n");
-                }
-                ui.appendText("GABA out====================================\n");
-                map = q.poll();
-                for (int i = 0; i < map.size(); i++) {
-                    ui.appendText(i + "\t" + map.get(i) + "\n");
-                }
-                return null;
+    private void globalDegree() {
+        Runnable r = () -> {
+            final ResultUI ui = new ResultUI();
+            ui.setVisible(true);
+            ui.setResultTitle("Degrees "
+            //                    + modelType.toString() + " Model "
+            /*+ (chkDepolarGABA.isSelected() ? "GABA_Depolar" : "GABA_Hyperpolar")*/);
+            Queue<TreeMap<Integer, Integer>> q = m0.probeGlobalDegrees();
+            ui.appendText("Glu In=====================================\n");
+            TreeMap<Integer, Integer> map = q.poll();
+            for (int i = 0; i < map.size(); i++) {
+                ui.appendText(i + "\t" + map.get(i) + "\n");
+            }
+            ui.appendText("Glu Out====================================\n");
+            map = q.poll();
+            for (int i = 0; i < map.size(); i++) {
+                ui.appendText(i + "\t" + map.get(i) + "\n");
+            }
+            ui.appendText("GABA In====================================\n");
+            map = q.poll();
+            for (int i = 0; i < map.size(); i++) {
+                ui.appendText(i + "\t" + map.get(i) + "\n");
+            }
+            ui.appendText("GABA out====================================\n");
+            map = q.poll();
+            for (int i = 0; i < map.size(); i++) {
+                ui.appendText(i + "\t" + map.get(i) + "\n");
             }
         };
-        return globalDegreeWorker;
+        (new Thread(r)).start();
     }
 
     private void updateProgress() {
@@ -1278,22 +1151,18 @@ public class ModelUI extends javax.swing.JFrame {
         }
         updating = true;
         final ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
-        Runnable progressUpdater = new Runnable() {
-            @Override
-            public void run() {
-
-                List<String> updates = m0.getUpdates();
-                txtPrg.setText("");
-                for (int i = 0; i < updates.size(); i++) {
-                    String s = updates.get(i) + "\r\n";
-                    txtPrg.append(s);
-                    prgBar.setValue(m0.getProgress());
-                }
-                if (m0.getRunState() == RunState.StoppedByUser || m0.getRunState() == RunState.NetGenerated) {
-                    ses.shutdown();
-                    prgBar.setValue(0);
-                    updating = false;
-                }
+        Runnable progressUpdater = () -> {
+            List<String> updates = m0.getUpdates();
+            txtPrg.setText("");
+            for (String update : updates) {
+                String s = update + "\r\n";
+                txtPrg.append(s);
+                prgBar.setValue(m0.getProgress());
+            }
+            if (m0.getRunState() == RunState.StoppedByUser || m0.getRunState() == RunState.NetGenerated) {
+                ses.shutdown();
+                prgBar.setValue(0);
+                updating = false;
             }
         };
         ses.scheduleWithFixedDelay(progressUpdater, 1, 1, TimeUnit.SECONDS);
@@ -1301,9 +1170,8 @@ public class ModelUI extends javax.swing.JFrame {
     private Model m0;
     private CircuitViewUI circuitView;
     private String pathToFile;
-    private ModelType modelType = ModelType.Network;
+//    private ModelType modelType = ModelType.Network;
     private boolean updating = false;
     private boolean batchStop;
-    final private Semaphore batchSem = new Semaphore(1);
     private int batchCount;
 }

@@ -7,7 +7,7 @@ package commonLibs;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+//import java.util.HashSet;
 
 /**
  *
@@ -20,18 +20,18 @@ final public class NetworkParameters implements Serializable {
 
     final private ArrayList<RndCell> cellList;
     final private HashMap<Integer, Float> synapticWeights;
-    final private HashSet<HashSet<Integer>> clusters;
-    final private ModelType type;
+//    final private HashSet<HashSet<Integer>> clusters;
+//    final private ModelType type;
     final private Float connProb;
     final private Float weightScale;
     final private String hashString;
 
     public NetworkParameters(ArrayList<RndCell> cellList, HashMap<Integer, Float> synapticWeights,
-            HashSet<HashSet<Integer>> clusters, ModelType type, Float connProb, Float weightScale, String hashString) {
+            /*HashSet<HashSet<Integer>> clusters, ModelType type,*/ Float connProb, Float weightScale, String hashString) {
         this.cellList = cellList;
         this.synapticWeights = synapticWeights;
-        this.clusters = clusters;
-        this.type = type;
+//        this.clusters = clusters;
+//        this.type = type;
         this.connProb = connProb;
         this.weightScale = weightScale;
         this.hashString = hashString;
@@ -45,14 +45,12 @@ final public class NetworkParameters implements Serializable {
         return synapticWeights;
     }
 
-    public HashSet<HashSet<Integer>> getClusters() {
-        return clusters;
-    }
-
-    public ModelType getType() {
-        return type;
-    }
-
+//    public HashSet<HashSet<Integer>> getClusters() {
+//        return clusters;
+//    }
+//    public ModelType getType() {
+//        return type;
+//    }
     public Float getConnProb() {
         return connProb;
     }
@@ -66,8 +64,8 @@ final public class NetworkParameters implements Serializable {
     }
 
     public String getCharacterString() {
-        String typeString = type == ModelType.Network ? "Net" : "Ctl";
+//        String typeString = type == ModelType.Network ? "Net" : "Ctl";
         String parameter = "_C" + Float.toString(connProb) + "_W" + Float.toString(weightScale);
-        return hashString + typeString + parameter;
+        return hashString +/* typeString +*/ parameter;
     }
 }

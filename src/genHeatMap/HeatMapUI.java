@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.TreeSet;
 import javax.swing.SwingWorker;
 import modelNetGen.FilesCommons;
-import commonLibs.ModelType;
+//import commonLibs.ModelType;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -251,7 +251,7 @@ public class HeatMapUI extends javax.swing.JFrame {
                         GroupFireSaves save = (GroupFireSaves) in.readObject();
                         String hashString = save.getHashString();
                         StructResult result = flexAdd(hashString, results);
-                        result.add(save.getType(), save.getConnProb(), save.getWeightScale(), save.getPopulationFireFreq(timeWindow, populationProportion));
+                        result.add(/*save.getType(),*/ save.getConnProb(), save.getWeightScale(), save.getPopulationFireFreq(timeWindow, populationProportion));
                     } catch (Throwable ex) {
                         System.out.println(ex.toString());
                     }
@@ -391,8 +391,8 @@ public class HeatMapUI extends javax.swing.JFrame {
             weightScaleMap = new HashMap<>();
         }
 
-        public void add(ModelType type, float connProb, float weightScale, float popFireFreq) {
-            (type == ModelType.Network ? expResultList : ctrlResultList).add(new popFireFreq(type, connProb, weightScale, popFireFreq));
+        public void add(/*ModelType type,*/ float connProb, float weightScale, float popFireFreq) {
+            (/*type == ModelType.Network ?*/ expResultList /*: ctrlResultList*/).add(new popFireFreq(/*type,*/ connProb, weightScale, popFireFreq));
             connProbs.add(connProb);
             weights.add(weightScale);
         }
@@ -445,10 +445,10 @@ public class HeatMapUI extends javax.swing.JFrame {
             final private float connProb;
             final private float weightScale;
             final private float popFireFreq;
-            final private ModelType type;
+//            final private ModelType type;
 
-            public popFireFreq(ModelType type, float connProb, float weightScale, float popFireFreq) {
-                this.type = type;
+            public popFireFreq(/*ModelType type,*/ float connProb, float weightScale, float popFireFreq) {
+//                this.type = type;
                 this.connProb = connProb;
                 this.weightScale = weightScale;
                 this.popFireFreq = popFireFreq;

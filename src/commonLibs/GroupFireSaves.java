@@ -16,16 +16,16 @@ final public class GroupFireSaves implements Serializable {
 
     final private Integer simulateTime;
     final private Integer cellNumber;
-    final private ModelType type;
+//    final private ModelType type;
     final private Float connProb;
     final private Float weightScale;
     final private String hashString;
     final private List<int[]> fireList;
 
-    public GroupFireSaves(Integer simulateTime, Integer cellNumber, ModelType type, Float connProb, Float weightScale, String hashString, List<int[]> fireList) {
+    public GroupFireSaves(Integer simulateTime, Integer cellNumber, /* ModelType type,*/ Float connProb, Float weightScale, String hashString, List<int[]> fireList) {
         this.simulateTime = simulateTime;
         this.cellNumber = cellNumber;
-        this.type = type;
+//        this.type = type;
         this.connProb = connProb;
         this.weightScale = weightScale;
         this.hashString = hashString;
@@ -88,9 +88,9 @@ final public class GroupFireSaves implements Serializable {
         return hashString;
     }
 
-    public ModelType getType() {
-        return type;
-    }
+//    public ModelType getType() {
+//        return type;
+//    }
     
     
 }

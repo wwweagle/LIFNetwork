@@ -7,7 +7,7 @@ package modelNetGen;
 import commonLibs.RndCell;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Random;
+//import java.util.Random;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;

@@ -21,7 +21,7 @@ final public class RndCell implements Serializable {
     public RndCell(int dim, float gluRate) {
         x = Com.getR().nextInt(dim);
         y = Com.getR().nextInt(dim);
-        isGlu = Com.getR().nextFloat() < gluRate ? true : false;
+        isGlu = Com.getR().nextFloat() < gluRate;
     }
 
     public int getX() {
@@ -37,7 +37,7 @@ final public class RndCell implements Serializable {
         int y2 = c.getY();
 
         double dist = Math.sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));
-        return (dist < 500);
+        return (dist < 300);
     }
 
     public boolean veryNear(RndCell c) {

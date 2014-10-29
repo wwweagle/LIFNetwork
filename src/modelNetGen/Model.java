@@ -4,9 +4,8 @@
  */
 package modelNetGen;
 
-import commonLibs.ModelType;
+//import commonLibs.ModelType;
 import commonLibs.RndCell;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
@@ -15,9 +14,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
+//import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
+//import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import javax.swing.Timer;
-import jungClustering.Cluster;
+//import jungClustering.Cluster;
 import org.apache.commons.math3.random.RandomGenerator;
 import commonLibs.NetworkParameters;
 import java.text.DecimalFormat;
@@ -51,22 +50,21 @@ public class Model {
     private AtomicIntegerArray gluOut;
     private AtomicIntegerArray gabaIn;
     private AtomicIntegerArray gabaOut;
-    private boolean DEPOLAR_GABA;
-    final private float ITERATE_FACTOR;
-    final private float GLU_IO_COE;
-    final private float GABA_IO_COE;
+//    private boolean DEPOLAR_GABA;
+    private float ITERATE_FACTOR;
     private final int dim;
     private RunState runState;
     final private List<String> updates;
     private int progress;
-    private ModelType TYPE;
+//    private ModelType TYPE;
 //    private int genMonitorTime = 20;
     private float connProbScale;
     private boolean writeFile;
     private float weightScale;
     final private Monitor allPair;
     private String rndSuffix = "";
-    final DecimalFormat dformat=new DecimalFormat("0.00");
+    private float networkFactor;
+    private boolean clusteredWeight = false;
 
     /**
      * Build a new iterate model
@@ -77,11 +75,8 @@ public class Model {
      * @param gabaE GABA IO coefficient
      * @param iterateFactor Expected average iterate cycle
      */
-    Model(float gluE, float gabaE, float iterateFactor, int nCell, int density, float gluRate) {
+    Model(int nCell, int density, float gluRate) {
         r = Com.getR();
-        this.GLU_IO_COE = gluE;
-        this.GABA_IO_COE = gabaE;
-        this.ITERATE_FACTOR = iterateFactor;
         runState = RunState.Instantiated;
         updates = new LinkedList<>();
         progress = 0;
@@ -100,14 +95,20 @@ public class Model {
         runState = RunState.ReadyGenCells;
     }
 
-    public void setType(ModelType type) {
-        this.TYPE = type;
+    public void setITERATE_FACTOR(float ITERATE_FACTOR) {
+        this.ITERATE_FACTOR = ITERATE_FACTOR;
     }
 
-    public void setDEPOLAR_GABA(boolean DEPOLAR_GABA) {
-        this.DEPOLAR_GABA = DEPOLAR_GABA;
+    public void setNetworkFactor(float networkFactor) {
+        this.networkFactor = networkFactor;
     }
 
+//    public void setType(ModelType type) {
+//        this.TYPE = type;
+//    }
+//    public void setDEPOLAR_GABA(boolean DEPOLAR_GABA) {
+//        this.DEPOLAR_GABA = DEPOLAR_GABA;
+//    }
     private int setDimension(int nCell, int density) {
         float area = (float) nCell / density;
         float d = (float) Math.sqrt(area);
@@ -135,6 +136,10 @@ public class Model {
 
     public void setWeightScale(float weightScale) {
         this.weightScale = weightScale;
+    }
+
+    public void setClusteredWeight(boolean clusteredWeight) {
+        this.clusteredWeight = clusteredWeight;
     }
 
     private int countGroupDensity(int type, int id1, int id2) {
@@ -255,12 +260,9 @@ public class Model {
         boolean run;
         Timer timer;
         CountDownLatch cdl;
-        ActionListener taskPerformer = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                timer.stop();
-                run = false;
-            }
+        ActionListener taskPerformer = (ActionEvent evt) -> {
+            timer.stop();
+            run = false;
         };
 
         genPairsClass(Set<int[]> monitorPairSet, Set<Integer> had, CountDownLatch cdl) {
@@ -395,7 +397,6 @@ public class Model {
         int conned_W_GNei = Com.sGet(commNeib, getCommonNeibKey(true, true, true, fwdGlu, revGlu));
         int noConn_W_GNei = Com.sGet(commNeib, getCommonNeibKey(true, true, false, fwdGlu, revGlu));
 
-
         int conned_Wo_ANei = Com.sGet(commNeib, getCommonNeibKey(true, false, true, fwdGlu, revGlu))
                 + Com.sGet(commNeib, getCommonNeibKey(true, true, true, fwdGlu, revGlu))
                 + Com.sGet(commNeib, getCommonNeibKey(false, false, true, fwdGlu, revGlu));
@@ -405,7 +406,6 @@ public class Model {
 
         int conned_W_ANei = Com.sGet(commNeib, getCommonNeibKey(false, true, true, fwdGlu, revGlu));
         int noConn_W_ANei = Com.sGet(commNeib, getCommonNeibKey(false, true, false, fwdGlu, revGlu));
-
 
         float r_Wo_GNei = (float) conned_Wo_GNei / (conned_Wo_GNei + noConn_Wo_GNei);
         float r_W_GNei = (float) conned_W_GNei / (conned_W_GNei + noConn_W_GNei);
@@ -475,7 +475,6 @@ public class Model {
         }
         return histo;
 
-
     }
 
     class genGrpsClass implements Runnable {
@@ -486,13 +485,9 @@ public class Model {
         Timer timer;
         int size;
         CountDownLatch cdl;
-        ActionListener taskPerformer = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-//                D.tp("time;s up");
-                timer.stop();
-                run = false;
-            }
+        ActionListener taskPerformer = (ActionEvent evt) -> {
+            timer.stop();
+            run = false;
         };
 
         genGrpsClass(int size, Set<int[]> monitor, Set<Long> had, CountDownLatch cdl) {
@@ -564,7 +559,7 @@ public class Model {
         }
     }
 
-    public void writeSave(float weightScale) {
+    public HashMap<Integer, Float> calcNetWeight(boolean clusteredWeight, float weightScale) {
         /*
          * prepare for calc weight according to GABA conns
          */
@@ -576,38 +571,56 @@ public class Model {
         }
         float avg = (float) sum / cellList.size();
 
+        float weightSum = 0;
+
         HashMap<Integer, Float> synapticWeights = new HashMap<>(15 * cellList.size());
         for (Integer key : connected) {
             int[] pair = Com.getIDsFromSetKey(key);
             int pre = pair[0];
             int post = pair[1];
-            synapticWeights.put(key, calcWeight(gabaIOCount[pre] + gabaIOCount[post], avg, weightScale));
+            float weight = calcWeight(clusteredWeight, gabaIOCount[pre] + gabaIOCount[post], avg, weightScale);
+            weightSum += weight;
+            //accumulate weight
+            synapticWeights.put(key, weight);
         }
+//        System.out.println("avg weight " + weightSum / connected.size());
+        //balance Weight
+        return synapticWeights;
+    }
+
+    public void writeSave(HashMap<Integer, Float> synapticWeights, double[] clusterCoef) {
+
 
         /*
          * actually writing serialized saves
          */
-        HashSet<HashSet<Integer>> clusters = (new Cluster()).getClusteredSets(cellList, connected);
-        NetworkParameters save = new NetworkParameters(cellList, synapticWeights, clusters, TYPE, connProbScale, weightScale, rndSuffix);
-        String type = TYPE == ModelType.Network ? "Net" : "Ctl";
-//        String suffix = "_C" + Float.toString(connProbScale) + "_W" + Float.toString(weightScale) + "_" + rndSuffix;
-        String suffix = "_C" + dformat.format(connProbScale) + "_W" + dformat.format(weightScale) + "_" + rndSuffix;
+//        HashSet<HashSet<Integer>> clusters = (new Cluster()).getClusteredSets(cellList, connected);
+        NetworkParameters save = new NetworkParameters(cellList, synapticWeights, /*clusters, TYPE,*/ connProbScale, weightScale, rndSuffix);
+//        String type = TYPE == ModelType.Network ? "Net" : "Ctl";
+//        String suffix = "_C" + dformat.format(connProbScale) + "_W" + dformat.format(weightScale) + "_" + rndSuffix;
+        final DecimalFormat dformat = new DecimalFormat("0.00");
+        String suffix = "net" + Float.toString(networkFactor) + "_Coef" + dformat.format(clusterCoef[0]) + "_cCoef" + dformat.format(clusterCoef[1]) + "_" + rndSuffix;
 
         try (ObjectOutputStream o = new ObjectOutputStream(
-                new FileOutputStream(FilesCommons.getJarFolder("") + "\\" + type + suffix + "_Conn.ser"))) {
-            o.writeObject(save);
-        } catch (IOException e) {
-            System.out.println("ser io error");
-        }
+                new FileOutputStream(FilesCommons.getJarFolder("") + "\\" + /*type +*/ suffix + "_Conn.ser"))) {
+                    o.writeObject(save);
+                } catch (IOException e) {
+                    System.out.println("ser io error");
+                }
     }
 
     public void setRndSuffix(String rndSuffix) {
         this.rndSuffix = rndSuffix;
     }
 
-    private float calcWeight(int sum, float avg, float scale) {
-        float ceiling = 4.0f * avg;
-        float p = (sum > ceiling ? 1.5f : (sum / ceiling + 0.5f)) * scale;
+    private float calcWeight(boolean clusteredWeight, int sum, float avg, float scale) {
+        float p;
+        if (clusteredWeight) {
+            float ceiling = 4.0f * avg;
+            p = (sum > ceiling ? 1.5f : (sum / ceiling + 0.5f)) * scale;
+        } else {
+            p = 1f;
+        }
         float f;
         do {
             f = (float) r.nextGaussian() * p;
@@ -620,8 +633,6 @@ public class Model {
         TreeMap<Integer, Integer> gluOutMap = new TreeMap<>();
         TreeMap<Integer, Integer> gabaInMap = new TreeMap<>();
         TreeMap<Integer, Integer> gabaOutMap = new TreeMap<>();
-
-
 
         for (int i = 0; i < cellList.size(); i++) {
             Com.sAdd(gluInMap, gluIn.get(i));
@@ -638,7 +649,7 @@ public class Model {
         return q;
     }
 
-    private void sumUp() {
+    private void sumUp(double[] coefs) {
         int sumGlu = 0;
         for (int i = 0; i < gluOut.length(); i++) {
             sumGlu += gluOut.get(i);
@@ -651,12 +662,12 @@ public class Model {
 
         progressUpdate(sumGlu + " glu connections, " + sumGABA + " GABA connections.");
 
-        Toolkit.getDefaultToolkit().beep();
+//        Toolkit.getDefaultToolkit().beep();
         if (writeFile) {
-            writeSave(weightScale);
+            writeSave(calcNetWeight(clusteredWeight, weightScale), coefs);
         }
         runState = RunState.NetGenerated;
-        progressUpdate(TYPE + (DEPOLAR_GABA ? ", GABA_Depolarize" : ", GABA_Hyperpolarize") + " Model Generated");
+        progressUpdate(/*TYPE +(DEPOLAR_GABA ? ", GABA_Depolarize" : ", GABA_Hyperpolarize") +*/" Model Generated");
 
     }
 
@@ -704,18 +715,17 @@ public class Model {
 
             unconnPair.addAll(allPair);
 
-            class genConn implements Callable<Queue<Queue<int[]>>> {
+            class genConn implements Callable<List<int[]>[]> {
 
-                final private Queue<int[]> conned;
-                final private Deque<int[]> unConned;
-                final private Queue<int[]> toConn;
+                final private List<int[]> conned;
+                final private List<int[]> unConned;
+                final private List<int[]> toConn;
                 final private int nConnNeeded;
                 final private float prob;
 
-                public genConn(Queue<int[]> toConn, int nNeeded, float prob) {
-                    if (toConn instanceof LinkedList<?>) {
-                    }
+                public genConn(List<int[]> toConn, int nNeeded, float prob) {
                     this.toConn = toConn;
+                    Collections.shuffle(this.toConn);
                     this.conned = new LinkedList<>();
                     this.unConned = new LinkedList<>();
                     this.nConnNeeded = nNeeded;
@@ -723,11 +733,10 @@ public class Model {
                 }
 
                 @Override
-                public Queue<Queue<int[]>> call() {
+                public List<int[]>[] call() {
 
-                    int newConn = 0;
                     for (int[] pair : toConn) {
-                        if (newConn >= nConnNeeded) {
+                        if (conned.size() >= nConnNeeded) {
                             break;
                         }
                         if (newConnection(prob, pair[0], pair[1])) {
@@ -739,20 +748,12 @@ public class Model {
                                 gabaIn.incrementAndGet(pair[1]);
                             }
                             conned.add(pair);
-                            newConn++;
                             //if fulfill break
                         } else {
-                            if (r.nextBoolean()) {
-                                unConned.addFirst(pair);
-                            } else {
-                                unConned.addLast(pair);
-                            }
+                            unConned.add(pair);
                         }
                     }
-                    Queue<Queue<int[]>> rtn = new LinkedList<>();
-                    rtn.offer(conned);
-                    rtn.offer(unConned);
-                    return rtn;
+                    return new List[]{conned, unConned};
                 }
 
                 boolean newConnection(float prob, int pre, int post) {//from 1 to 2
@@ -760,23 +761,25 @@ public class Model {
                     /*
                      * Activity dependent connection
                      */
-                    if (TYPE == ModelType.NetworkBiDir) {
-                        int gluIO = gluIn.get(pre) + gluIn.get(post) + gluOut.get(pre) + gluOut.get(post);
-                        int gabaIO = gabaIn.get(pre) + gabaIn.get(post) + gabaOut.get(pre) + gabaOut.get(post);
-                        float gluIOFactor = gluIO * GLU_IO_COE;
-                        float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
-                        float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
-                        p *= (IOFactor + 1f);
-                    } else if (TYPE == ModelType.Network) {
-                        int gluIO = gluOut.get(pre) + gluOut.get(post);
-                        int gabaIO = gabaOut.get(pre) + gabaOut.get(post);
-                        float gluIOFactor = gluIO * GLU_IO_COE;
-                        float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO * GABA_IO_COE;
-                        float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
-                        p *= (IOFactor + 1f);
-                    } else if (TYPE == ModelType.Ctrl) {
-                        p *= 10;
-                    }
+//                    if (TYPE == ModelType.NetworkBiDir) {
+//                        int gluIO = gluIn.get(pre) + gluIn.get(post) + gluOut.get(pre) + gluOut.get(post);
+//                        int gabaIO = gabaIn.get(pre) + gabaIn.get(post) + gabaOut.get(pre) + gabaOut.get(post);
+//                        float gluIOFactor = gluIO;
+//                        float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO;
+//                        float IOFactor = (gluIOFactor + gabaIOFactor) > 0 ? (gluIOFactor + gabaIOFactor) : 0;
+//                        p *= (IOFactor + 1f);
+//                    } else if (TYPE == ModelType.Network) {
+//                        int gluIO = gluOut.get(pre) + gluOut.get(post);
+//                        int gabaIO = gabaOut.get(pre) + gabaOut.get(post);
+//                        float gluIOFactor = gluIO;
+//                        float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO;
+                    float IOFactor = gluOut.get(pre) + gluOut.get(post) + gabaOut.get(pre) + gabaOut.get(post)
+                            +gluIn.get(pre) + gluIn.get(post) + gabaIn.get(pre) + gabaIn.get(post);
+//                    p *= IOFactor * networkFactor + 1;
+                    p*=Math.pow(networkFactor, IOFactor);
+//                    } else if (TYPE == ModelType.Ctrl) {
+//                        p *= ITERATE_FACTOR;
+//                    }
                     /*
                      * Active or not
                      */
@@ -792,10 +795,14 @@ public class Model {
                 Map<Integer, Float> probMap = obsConnProfile.get(div);
 
                 int totalProgress = connNeedPerDiv.size();
-                while (connNeedPerDiv.size() > 0 && runState != RunState.UserRequestStop) {
+                while (connNeedPerDiv.size() > 0) {
+                    if (runState == RunState.UserRequestStop) {
+                        break;
+                    }
+
                     setProgress(totalProgress - connNeedPerDiv.size(), totalProgress);
                     Queue<Integer> keyList = new LinkedList<>();
-                    Queue<Future<Queue<Queue<int[]>>>> handles = new LinkedList<>();
+                    Queue<Future<List<int[]>[]>> handles = new LinkedList<>();
                     Set<Integer> keysNeeded = connNeedPerDiv.keySet();
                     for (Integer key : keysNeeded) {
                         int toConn = connNeedPerDiv.get(key);
@@ -805,69 +812,148 @@ public class Model {
                     }
 
 //        runState = RunState.GeneratingNet;
-
                     while (handles.size() > 0) {
-                        try {
-                            Integer key = keyList.poll();
-                            Future<Queue<Queue<int[]>>> handle = handles.poll();
-                            Queue<Queue<int[]>> q = handle.get();
-                            Queue<int[]> conned = q.poll();
-                            int newConn = conned.size();
-                            for (int[] pair : conned) {
-                                connected.add((pair[0] << 12) + pair[1]);
-                            }
-                            int wasNeeded = connNeedPerDiv.get(key);
-                            if (wasNeeded <= newConn) {
-                                connNeedPerDiv.remove(key);
-                            } else {
-                                connNeedPerDiv.put(key, wasNeeded - newConn);
-                                Queue<int[]> stillNeedConn = q.poll();
-                                unconnPair.setList(key, stillNeedConn);
-                            }
-                        } catch (InterruptedException | ExecutionException ex) {
-//                            System.out.println("Net Model, Get Que");
-                            System.out.println(ex.toString());
+                        Integer key = keyList.poll();
+                        Future<List<int[]>[]> handle = handles.poll();
+                        List<int[]>[] q = handle.get();
+                        List<int[]> conned = q[0];
+                        int newConn = conned.size();
+                        for (int[] pair : conned) {
+                            connected.add((pair[0] << 12) + pair[1]);
+                        }
+                        int wasNeeded = connNeedPerDiv.get(key);
+                        if (wasNeeded <= newConn) {
+                            connNeedPerDiv.remove(key);
+                        } else {
+                            connNeedPerDiv.put(key, wasNeeded - newConn);
+                            unconnPair.setList(key, q[1]);
                         }
                     }
                 }
                 //while end
             }
             //for div 5-9 end
-
-            sumUp();
+            double[] coefs = calcClusteringCoefficient();
+            sumUp(coefs);
             runState = (runState == RunState.UserRequestStop) ? RunState.StoppedByUser : RunState.NetGenerated;
-        } catch (Throwable ex) {
+        } catch (InterruptedException | ExecutionException ex) {
             System.out.println(ex.toString());
         }
     }
 
+    private double[] calcClusteringCoefficient() {
+        class CoefCalc extends Thread {
+
+            int connCount;
+            int connedTriplets = 0;
+            int closeConnedTriplets = 0;
+            int triangle = 0;
+            int closeTriangle = 0;
+            int start;
+            int end;
+
+            public void setRange(int start, int end) {
+                this.start = start;
+                this.end = end;
+            }
+
+            public int[] getClusterCoef() {
+                return new int[]{triangle, connedTriplets};
+            }
+
+            public int[] getCloseClusterCoef() {
+                return new int[]{closeTriangle, closeConnedTriplets};
+            }
+
+            @Override
+            public void run() {
+                for (int i = start; i < end; i++) {
+                    for (int j = i + 1; j < cellList.size(); j++) {
+                        for (int k = j + 1; k < cellList.size(); k++) {
+                            connCount = 0;
+                            connCount += (connected.contains(Com.getSetKey(i, j)) || connected.contains(Com.getSetKey(j, i))) ? 1 : 0;
+                            connCount += (connected.contains(Com.getSetKey(j, k)) || connected.contains(Com.getSetKey(k, j))) ? 1 : 0;
+                            if (connCount == 0) {
+                                continue;
+                            }
+                            connCount += (connected.contains(Com.getSetKey(i, k)) || connected.contains(Com.getSetKey(k, i))) ? 1 : 0;
+
+                            boolean close = cellList.get(i).near(cellList.get(j))
+                                    && cellList.get(j).near(cellList.get(k))
+                                    && cellList.get(k).near(cellList.get(i));
+
+                            switch (connCount) {
+                                case 2:
+                                    connedTriplets++;
+                                    closeConnedTriplets += close ? 1 : 0;
+                                    break;
+                                case 3:
+                                    connedTriplets += 3;
+                                    closeConnedTriplets += close ? 3 : 0;
+                                    triangle += 3;
+                                    closeTriangle += close ? 3 : 0;
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        CoefCalc[] c = new CoefCalc[4];
+        int n = cellList.size();
+        int[] breakPoints = {0, n * 1 / 10, n * 2 / 10, n * 4 / 10, n};
+        for (int i = 0; i < 4; i++) {
+            c[i] = new CoefCalc();
+            c[i].setRange(breakPoints[i], breakPoints[i + 1]);
+            c[i].start();
+        }
+
+        int[] coef = new int[4];
+        int[] closeCoef = new int[4];
+        try {
+            for (int i = 0; i < 4; i++) {
+                c[i].join();
+
+                coef[0] += c[i].getClusterCoef()[0];
+                coef[1] += c[i].getClusterCoef()[1];
+                closeCoef[0] += c[i].getCloseClusterCoef()[0];
+                closeCoef[1] += c[i].getCloseClusterCoef()[1];
+            }
+
+//            System.out.print(networkFactor+"\topen Cluster Coef\t" + Double.toString((double) coef[0] / coef[1]));
+//            System.out.println("\tclose Cluster Coef\t" + Double.toString((double) closeCoef[0] / closeCoef[1]));
+            System.out.print(networkFactor+"\t" + Double.toString((double) coef[0] / coef[1]));
+            System.out.println("\t" + Double.toString((double) closeCoef[0] / closeCoef[1]));
+            return new double[]{(double) coef[0] / coef[1], (double) closeCoef[0] / closeCoef[1]};
+        } catch (InterruptedException ex) {
+            System.out.println(ex.toString());
+        }
+        return null;
+    }
+
     class Monitor {
 
-        final private Map<Integer, Queue<int[]>> toConn;
+        final private Map<Integer, List<int[]>> toConn;
         final private int distBinCount = 7;//Less Than 50 100 150 200 250 350 500
         final private Queue<Integer> keySet;
 
         public Monitor() {
             toConn = new HashMap<>();
             keySet = new LinkedList<>();
+            final int preGlu = 1 << 13;
+            final int postGlu = 1 << 12;
             for (int i = 0; i < distBinCount; i++) {
-                keySet.add(iterateKey(true, true, i));
-                keySet.add(iterateKey(true, false, i));
-                keySet.add(iterateKey(false, true, i));
-                keySet.add(iterateKey(false, false, i));
+                keySet.add(preGlu + postGlu + i);
+                keySet.add(preGlu + i);
+                keySet.add(postGlu + i);
+                keySet.add(i);
             }
             for (Integer key : keySet) {
-                toConn.put(key, new LinkedList<int[]>());
+                toConn.put(key, new LinkedList<>());
             }
 
-        }
-
-        private Integer iterateKey(boolean preGlu, boolean postGlu, int distBin) {
-            int key = 0;
-            key += ((preGlu ? 0 : 1) << 13);
-            key += ((postGlu ? 0 : 1) << 12);
-            key += distBin;
-            return key;
         }
 
         public void addPairToConn(int pre, int post, Integer mapKey) {
@@ -881,7 +967,7 @@ public class Model {
             }
         }
 
-        public Queue<int[]> getList(Integer key) {
+        public List<int[]> getList(Integer key) {
             return toConn.get(key);
         }
 
@@ -900,8 +986,10 @@ public class Model {
             progressUpdate("Total " + total + " possible pairs");
         }
 
-        public void setList(Integer key, Queue<int[]> value) {
+        public void setList(Integer key, List<int[]> value) {
             toConn.put(key, value);
         }
     }
+
+    //TODO clustering coefficient
 }

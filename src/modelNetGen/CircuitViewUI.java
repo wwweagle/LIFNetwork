@@ -4,7 +4,7 @@
  */
 package modelNetGen;
 
-import commonLibs.ModelType;
+//import commonLibs.ModelType;
 import commonLibs.RndCell;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -13,7 +13,6 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Set;
@@ -25,13 +24,13 @@ import javax.swing.JOptionPane;
  */
 public class CircuitViewUI extends javax.swing.JFrame {
 
-    private ModelType networkType;
+//    private ModelType networkType;
     String pathToFile;
 
-    public void setNetworkType(ModelType networkType) {
-        this.networkType = networkType;
-        lblDesc.setText(networkType.toString());
-    }
+//    public void setNetworkType(ModelType networkType) {
+//        this.networkType = networkType;
+//        lblDesc.setText(networkType.toString());
+//    }
 
     /**
      * Creates new form BirdEyeUI
@@ -177,20 +176,20 @@ public class CircuitViewUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        String suffix;
-        switch (networkType) {
-            case Ctrl:
-                suffix = "Ctrl";
-                break;
-            case Network:
-                suffix = "Net";
-                break;
-            default:
-                suffix = "Others";
-        }
+//        String suffix;
+//        switch (networkType) {
+//            case Ctrl:
+//                suffix = "Ctrl";
+//                break;
+//            case Network:
+//                suffix = "Net";
+//                break;
+//            default:
+//                suffix = "Others";
+//        }
         BufferedImage bi = ScreenImage.createImage(canvas);
         try {
-            pathToFile = Paths.get("").toAbsolutePath().getParent().toString() + "/img_out/CircuitImage_" + suffix + ".png";
+            pathToFile = Paths.get("").toAbsolutePath().getParent().toString() + "/img_out/CircuitImage_" + /*suffix +*/ ".png";
 //            System.out.println(pathToFile);
             ScreenImage.writeImage(bi, pathToFile);
             btnOpen.setEnabled(true);

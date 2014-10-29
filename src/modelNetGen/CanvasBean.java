@@ -5,7 +5,7 @@
 package modelNetGen;
 
 import commonLibs.RndCell;
-import java.awt.AlphaComposite;
+//import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -26,7 +26,7 @@ import javax.swing.JPanel;
  */
 public class CanvasBean extends JPanel implements Serializable {
 
-    private PropertyChangeSupport propertySupport;
+    final private PropertyChangeSupport propertySupport;
 
     public CanvasBean() {
         propertySupport = new PropertyChangeSupport(this);
@@ -112,7 +112,6 @@ public class CanvasBean extends JPanel implements Serializable {
 //        g2d.draw(body);
 //        g2d.fill(body);
 //    }
-
     private void drawACellBody(int x, int y, int outputs, boolean isGlu) {
         int relativeDD = outputs / 4 + 1;
         Point2D.Double cell = new Point2D.Double(sclDn(x), sclDn(y));
@@ -137,7 +136,7 @@ public class CanvasBean extends JPanel implements Serializable {
 //        drawArrowHead(transX, transY);
     }
 
-    private void drawCells() {   
+    private void drawCells() {
         //TODO unnecessary check
 //        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.85f));
         if (cellList.size() > 0) {
@@ -163,8 +162,7 @@ public class CanvasBean extends JPanel implements Serializable {
 //        System.out.println(lineWidth);
         BasicStroke connStroke = new BasicStroke(connLineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
         g2d.setStroke(connStroke);
-        if (connected.size()
-                > 0) {
+        if (connected.size() > 0) {
             for (Integer i : connected) {
                 int id1 = i >>> 12;
                 int id2 = i & 4095;
@@ -185,7 +183,6 @@ public class CanvasBean extends JPanel implements Serializable {
 
         ORIGIN, TARGET, MIDDLE;
     }
-
 
     private Point2D.Double[] biasPt(Point2D.Double fromPt, Point2D.Double toPt) {
         double crossD = 2;

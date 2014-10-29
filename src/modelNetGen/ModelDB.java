@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -20,8 +21,8 @@ import java.util.HashSet;
  */
 public class ModelDB {
 
-    private String pathToFile;
-    private HashSet<Integer> allSlot = new HashSet<>();
+    final private String pathToFile;
+    final private HashSet<Integer> allSlot = new HashSet<>();
 
     public ModelDB(String pathToFile) {
         this.pathToFile = pathToFile;
@@ -29,8 +30,7 @@ public class ModelDB {
 
     private ArrayList<PotentialSynapse> getSlots() {
         ArrayList<PotentialSynapse> slots = new ArrayList<>(500);
-        String jdbcPath = "jdbc:odbc:DRIVER="
-                + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
+        String jdbcPath = "jdbc:ucanaccess://" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
                     ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -67,8 +67,7 @@ public class ModelDB {
 
     private ArrayList<PotentialSynapse> getConns() {
         ArrayList<PotentialSynapse> conns = new ArrayList<>(500);
-        String jdbcPath = "jdbc:odbc:DRIVER="
-                + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
+        String jdbcPath = "jdbc:ucanaccess://" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
                     ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -99,11 +98,84 @@ public class ModelDB {
         return conns;
     }
 
+    protected void clusterCoef() {
+        String jdbcPath = "jdbc:ucanaccess://" + this.pathToFile;
+
+        HashMap<java.sql.Date, HashSet<Integer>> connected = new HashMap();
+        HashMap<java.sql.Date, HashSet<Integer>> cells = new HashMap<>();
+        try (Connection con = DriverManager.getConnection(jdbcPath)) {
+            try (Statement stmt = con.createStatement(
+                    ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY)) {
+                String qryStr = "SELECT tblConnection.PreCellID, tblConnection.PostCellID, tblGADCell.CultureDate \n"
+                        + "FROM tblConnection INNER JOIN tblGADCell ON tblConnection.PreCellID = tblGADCell.CellID;";
+                ResultSet rs = stmt.executeQuery(qryStr);
+                while (rs.next()) {
+                    int pre = rs.getInt(1);
+                    int post = rs.getInt(2);
+                    java.sql.Date date = rs.getDate(3);
+                    if (!cells.containsKey(date)) {
+                        cells.put(date, new HashSet<>());
+                        connected.put(date, new HashSet<>());
+                    }
+                    cells.get(date).add(pre);
+                    cells.get(date).add(post);
+                    connected.get(date).add(Com.getSetKey(pre, post));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.toString());
+        }
+
+        ////////////////////////////////////////////
+        int groupCount = 0;
+        int connedTriplets = 0;
+        int triangle = 0;
+        for (java.sql.Date date : cells.keySet()) {
+            if (groupCount % 3 == 0) {
+                connedTriplets = 0;
+                triangle = 0;
+            }
+            int connCount;
+            ArrayList<Integer> cellList = new ArrayList<>(cells.get(date));
+            Set<Integer> conns = connected.get(date);
+            for (int i = 0; i < cellList.size(); i++) {
+//                System.out.println(i + ",");
+                for (int j = i + 1; j < cellList.size(); j++) {
+                    for (int k = j + 1; k < cellList.size(); k++) {
+                        int ii = cellList.get(i);
+                        int jj = cellList.get(j);
+                        int kk = cellList.get(k);
+                        connCount = 0;
+                        connCount += (conns.contains(Com.getSetKey(ii, jj)) || conns.contains(Com.getSetKey(jj, ii))) ? 1 : 0;
+                        connCount += (conns.contains(Com.getSetKey(jj, kk)) || conns.contains(Com.getSetKey(kk, jj))) ? 1 : 0;
+                        connCount += (conns.contains(Com.getSetKey(ii, kk)) || conns.contains(Com.getSetKey(kk, ii))) ? 1 : 0;
+
+                        switch (connCount) {
+                            case 2:
+                                connedTriplets++;
+                                break;
+                            case 3:
+                                connedTriplets += 3;
+                                triangle += 3;
+                                break;
+                        }
+                    }
+                }
+            }
+            if (groupCount % 3 == 2) {
+                System.out.print(date.toString() + ",");
+                System.out.println((double) triangle / connedTriplets);
+            }
+            groupCount++;
+        }
+    }
+
     private ArrayList<HashMap<Integer, Integer>> getConnMap() {
         ArrayList<PotentialSynapse> conns = getConns();
         ArrayList<HashMap<Integer, Integer>> connMaps = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            connMaps.add(new HashMap<Integer, Integer>());
+            connMaps.add(new HashMap<>());
         }
         for (PotentialSynapse conn : conns) {
             int mapKey = Com.getMapKey(conn.getFwdGlu(), conn.getRevGlu(), conn.getDist());
@@ -117,7 +189,7 @@ public class ModelDB {
     private ArrayList<HashMap<Integer, Integer>> getSlotMap() {
         ArrayList<HashMap<Integer, Integer>> slotsMaps = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            slotsMaps.add(new HashMap<Integer, Integer>());
+            slotsMaps.add(new HashMap<>());
         }
         ArrayList<PotentialSynapse> slots = getSlots();
 
@@ -134,7 +206,7 @@ public class ModelDB {
     public ArrayList<HashMap<Integer, Float>> getPBase() {
         ArrayList<HashMap<Integer, Float>> pBases = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            pBases.add(new HashMap<Integer, Float>());
+            pBases.add(new HashMap<>());
         }
 
         ArrayList<HashMap<Integer, Integer>> slotsMaps = getSlotMap();
@@ -152,8 +224,7 @@ public class ModelDB {
 
     public int[] getGrps() {
         int[] grps = new int[2];
-        String jdbcPath = "jdbc:odbc:DRIVER="
-                + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
+        String jdbcPath = "jdbc:ucanaccess://" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
                     ResultSet.TYPE_FORWARD_ONLY,
