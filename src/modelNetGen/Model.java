@@ -36,6 +36,8 @@ import javax.swing.Timer;
 import org.apache.commons.math3.random.RandomGenerator;
 import commonLibs.NetworkParameters;
 import java.text.DecimalFormat;
+import java.util.TreeSet;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  *
@@ -260,9 +262,12 @@ public class Model {
         boolean run;
         Timer timer;
         CountDownLatch cdl;
-        ActionListener taskPerformer = (ActionEvent evt) -> {
-            timer.stop();
-            run = false;
+        ActionListener taskPerformer = new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                timer.stop();
+                run = false;
+            }
         };
 
         genPairsClass(Set<int[]> monitorPairSet, Set<Integer> had, CountDownLatch cdl) {
@@ -485,9 +490,12 @@ public class Model {
         Timer timer;
         int size;
         CountDownLatch cdl;
-        ActionListener taskPerformer = (ActionEvent evt) -> {
-            timer.stop();
-            run = false;
+        ActionListener taskPerformer = new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                timer.stop();
+                run = false;
+            }
         };
 
         genGrpsClass(int size, Set<int[]> monitor, Set<Long> had, CountDownLatch cdl) {
@@ -505,9 +513,6 @@ public class Model {
 
         @Override
         public void run() {
-//            monitor = new HashSet<>();
-//            HashSet<Integer> had = new HashSet<>();
-//            D.tp("gen Grp running");
             run = true;
             while (run) {
                 int[] grp = genRndGrp(size, had);
@@ -516,7 +521,6 @@ public class Model {
                 }
             }
             cdl.countDown();
-//            D.tp("gen Grp Stopped");
         }
 
         private int[] genRndGrp(int size, Set<Long> had) {
@@ -563,29 +567,30 @@ public class Model {
         /*
          * prepare for calc weight according to GABA conns
          */
-        int[] gabaIOCount = new int[cellList.size()];
-        int sum = 0;
-        for (int i = 0; i < gabaIOCount.length; i++) {
-            gabaIOCount[i] = gabaIn.get(i) + gabaOut.get(i);
-            sum += gabaIOCount[i];
-        }
-        float avg = (float) sum / cellList.size();
+        TreeSet<Integer> degreeSet = new TreeSet<>();
 
-        float weightSum = 0;
-
-        HashMap<Integer, Float> synapticWeights = new HashMap<>(15 * cellList.size());
         for (Integer key : connected) {
             int[] pair = Com.getIDsFromSetKey(key);
             int pre = pair[0];
             int post = pair[1];
-            float weight = calcWeight(clusteredWeight, gabaIOCount[pre] + gabaIOCount[post], avg, weightScale);
-            weightSum += weight;
-            //accumulate weight
-            synapticWeights.put(key, weight);
+            int clusterLevel = gabaIn.get(pre) + gabaOut.get(pre) + gluIn.get(pre) + gluOut.get(pre)
+                    + gabaIn.get(post) + gabaOut.get(post) + gluIn.get(post) + gluOut.get(post);
+            degreeSet.add(clusterLevel);
         }
-//        System.out.println("avg weight " + weightSum / connected.size());
-        //balance Weight
-        return synapticWeights;
+
+        HashMap<Integer, Float> drivingForces = new HashMap<>(connected.size());
+        for (Integer key : connected) {
+            int[] pair = Com.getIDsFromSetKey(key);
+            int pre = pair[0];
+            int post = pair[1];
+            int clusterLevel = gabaIn.get(pre) + gabaOut.get(pre) + gluIn.get(pre) + gluOut.get(pre)
+                    + gabaIn.get(post) + gabaOut.get(post) + gluIn.get(post) + gluOut.get(post);
+            float position = clusteredWeight ? (float) degreeSet.headSet(clusterLevel).size() / degreeSet.size() : ThreadLocalRandom.current().nextFloat();
+//            System.out.println(clusterLevel + ", " + position);
+            float drivingForce = ModelDB.getDrivingForce(cellList.get(pre).isGlu(), cellList.get(post).isGlu(), position);
+            drivingForces.put(key, drivingForce);
+        }
+        return drivingForces;
     }
 
     public void writeSave(HashMap<Integer, Float> synapticWeights, double[] clusterCoef) {
@@ -599,7 +604,7 @@ public class Model {
 //        String type = TYPE == ModelType.Network ? "Net" : "Ctl";
 //        String suffix = "_C" + dformat.format(connProbScale) + "_W" + dformat.format(weightScale) + "_" + rndSuffix;
         final DecimalFormat dformat = new DecimalFormat("0.00");
-        String suffix = "net" + Float.toString(networkFactor) + "_Coef" + dformat.format(clusterCoef[0]) + "_cCoef" + dformat.format(clusterCoef[1]) + "_" + rndSuffix;
+        String suffix = "net" + dformat.format(networkFactor) + "_Coef" + dformat.format(clusterCoef[0]) + "_cCoef" + dformat.format(clusterCoef[1]) + "_" + rndSuffix;
 
         try (ObjectOutputStream o = new ObjectOutputStream(
                 new FileOutputStream(FilesCommons.getJarFolder("") + "\\" + /*type +*/ suffix + "_Conn.ser"))) {
@@ -611,21 +616,6 @@ public class Model {
 
     public void setRndSuffix(String rndSuffix) {
         this.rndSuffix = rndSuffix;
-    }
-
-    private float calcWeight(boolean clusteredWeight, int sum, float avg, float scale) {
-        float p;
-        if (clusteredWeight) {
-            float ceiling = 4.0f * avg;
-            p = (sum > ceiling ? 1.5f : (sum / ceiling + 0.5f)) * scale;
-        } else {
-            p = 1f;
-        }
-        float f;
-        do {
-            f = (float) r.nextGaussian() * p;
-        } while (f <= -p);
-        return f + p;
     }
 
     public Queue<TreeMap<Integer, Integer>> probeGlobalDegrees() {
@@ -774,9 +764,9 @@ public class Model {
 //                        float gluIOFactor = gluIO;
 //                        float gabaIOFactor = (DEPOLAR_GABA ? 1f : -1f) * gabaIO;
                     float IOFactor = gluOut.get(pre) + gluOut.get(post) + gabaOut.get(pre) + gabaOut.get(post)
-                            +gluIn.get(pre) + gluIn.get(post) + gabaIn.get(pre) + gabaIn.get(post);
+                            + gluIn.get(pre) + gluIn.get(post) + gabaIn.get(pre) + gabaIn.get(post);
 //                    p *= IOFactor * networkFactor + 1;
-                    p*=Math.pow(networkFactor, IOFactor);
+                    p *= Math.pow(networkFactor, IOFactor);
 //                    } else if (TYPE == ModelType.Ctrl) {
 //                        p *= ITERATE_FACTOR;
 //                    }
@@ -924,7 +914,7 @@ public class Model {
 
 //            System.out.print(networkFactor+"\topen Cluster Coef\t" + Double.toString((double) coef[0] / coef[1]));
 //            System.out.println("\tclose Cluster Coef\t" + Double.toString((double) closeCoef[0] / closeCoef[1]));
-            System.out.print(networkFactor+"\t" + Double.toString((double) coef[0] / coef[1]));
+            System.out.print(String.format("%.2f", networkFactor) + "\t" + Double.toString((double) coef[0] / coef[1]));
             System.out.println("\t" + Double.toString((double) closeCoef[0] / closeCoef[1]));
             return new double[]{(double) coef[0] / coef[1], (double) closeCoef[0] / closeCoef[1]};
         } catch (InterruptedException ex) {
@@ -951,7 +941,7 @@ public class Model {
                 keySet.add(i);
             }
             for (Integer key : keySet) {
-                toConn.put(key, new LinkedList<>());
+                toConn.put(key, new LinkedList<int[]>());
             }
 
         }

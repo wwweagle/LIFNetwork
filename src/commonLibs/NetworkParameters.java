@@ -19,17 +19,17 @@ final public class NetworkParameters implements Serializable {
      */
 
     final private ArrayList<RndCell> cellList;
-    final private HashMap<Integer, Float> synapticWeights;
+    final private HashMap<Integer, Float> drivingForces;
 //    final private HashSet<HashSet<Integer>> clusters;
 //    final private ModelType type;
     final private Float connProb;
     final private Float weightScale;
     final private String hashString;
 
-    public NetworkParameters(ArrayList<RndCell> cellList, HashMap<Integer, Float> synapticWeights,
+    public NetworkParameters(ArrayList<RndCell> cellList, HashMap<Integer, Float> drivingForces,
             /*HashSet<HashSet<Integer>> clusters, ModelType type,*/ Float connProb, Float weightScale, String hashString) {
         this.cellList = cellList;
-        this.synapticWeights = synapticWeights;
+        this.drivingForces = drivingForces;
 //        this.clusters = clusters;
 //        this.type = type;
         this.connProb = connProb;
@@ -41,8 +41,8 @@ final public class NetworkParameters implements Serializable {
         return cellList;
     }
 
-    public HashMap<Integer, Float> getSynapticWeights() {
-        return synapticWeights;
+    public HashMap<Integer, Float> getDrivingForces() {
+        return drivingForces;
     }
 
 //    public HashSet<HashSet<Integer>> getClusters() {
@@ -68,4 +68,6 @@ final public class NetworkParameters implements Serializable {
         String parameter = "_C" + Float.toString(connProb) + "_W" + Float.toString(weightScale);
         return hashString +/* typeString +*/ parameter;
     }
+
+
 }

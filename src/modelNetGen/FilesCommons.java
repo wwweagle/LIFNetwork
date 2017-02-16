@@ -7,6 +7,8 @@ package modelNetGen;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 
 /**
@@ -16,19 +18,22 @@ import javax.swing.JFileChooser;
 public class FilesCommons {
 
     static public String getJarFolder(String s) {
-        String pathToFile = FilesCommons.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        String pathToFile="";
+        File f = null;
         try {
-            pathToFile = URLDecoder.decode(pathToFile, "UTF-8");
-            pathToFile = (new File(pathToFile)).getParentFile().getCanonicalPath() + "\\" + s;
+            pathToFile = FilesCommons.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            pathToFile = java.net.URLDecoder.decode((new File(pathToFile)).getCanonicalPath(),"UTF8");
+            if (pathToFile.endsWith(".jar")) {
+                f = new File(new File(pathToFile).getParentFile().getParent() + File.separator + s);
+//                System.out.println(new File(pathToFile).getParentFile().getParent() + File.separator + s);
+            } else if (pathToFile.endsWith("\\build\\classes")) {
+                f = new File(pathToFile.replaceAll("build\\\\classes", s));
+            }
+            if (f != null && f.exists()) {
+                return f.getAbsolutePath();
+            }
         } catch (IOException ex) {
-            System.out.println(ex.toString());
-        }
-
-//        System.out.println(pathToFile);
-
-        File f = new File(pathToFile);
-        if (f.exists()) {
-            return f.getAbsolutePath();
+            Logger.getLogger(FilesCommons.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         javax.swing.JFileChooser DataFileChooser = new javax.swing.JFileChooser();

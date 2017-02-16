@@ -16,11 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import modelNetGen.FilesCommons;
@@ -37,6 +34,7 @@ public class NetCalcUI extends javax.swing.JFrame {
      */
     public NetCalcUI() {
         initComponents();
+        log(FilesCommons.class.getProtectionDomain().getCodeSource().getLocation().getPath());
     }
 
     /**
@@ -202,7 +200,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         rdoSec.setSelected(true);
         rdoSec.setText("s");
 
-        txtGABARevP.setText("-50");
+        txtGABARevP.setText("-45");
         txtGABARevP.setPreferredSize(new java.awt.Dimension(30, 20));
         txtGABARevP.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -212,7 +210,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
         jLabel3.setText("GABA Reverse mV");
 
-        txtRandProb.setText("1");
+        txtRandProb.setText("10");
         txtRandProb.setPreferredSize(new java.awt.Dimension(30, 20));
         txtRandProb.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -224,7 +222,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
         jLabel6.setText("Random pA");
 
-        txtRandAmp.setText("500");
+        txtRandAmp.setText("80");
         txtRandAmp.setPreferredSize(new java.awt.Dimension(30, 20));
         txtRandAmp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -234,7 +232,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
         jLabel10.setText("Injection %");
 
-        txtInjectProb.setText("10");
+        txtInjectProb.setText("0");
         txtInjectProb.setPreferredSize(new java.awt.Dimension(30, 20));
         txtInjectProb.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -244,7 +242,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
         jLabel11.setText("Injection pA");
 
-        txtInjectAmp.setText("500");
+        txtInjectAmp.setText("0");
         txtInjectAmp.setPreferredSize(new java.awt.Dimension(30, 20));
         txtInjectAmp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -526,6 +524,7 @@ public class NetCalcUI extends javax.swing.JFrame {
         fileList.clear();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setFileFilter(new FileNameExtensionFilter("ser files", "ser"));
+        fc.setCurrentDirectory(new File(FilesCommons.getJarFolder("")));
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             String pathToFile = fc.getSelectedFile().getAbsolutePath();
@@ -681,7 +680,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                 int timeNominal = Integer.parseInt(txtTime.getText());
                 timeNominal *= rdoSec.isSelected() ? 1000 * 1000 : 1000;
                 int GABARevP = Integer.parseInt(txtGABARevP.getText());
-                int randProb = Integer.parseInt(txtRandProb.getText());
+                float randProb = Float.parseFloat(txtRandProb.getText());
                 int randAmp = Integer.parseInt(txtRandAmp.getText());
 //                float gFactor = Float.parseFloat(txtGFactor.getText());
 
@@ -690,7 +689,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                     log("Currently processing: " + pathToFile);
                     try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(pathToFile))) {
                         NetworkParameters save = (NetworkParameters) in.readObject();
-                        network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, 1, save, fireQueue);
+                        network = new NetworkCalc(timeNominal, GABARevP, randProb, randAmp, save);
                         network.setInjectionRatio(Integer.parseInt(txtInjectProb.getText()));
                         network.setInjectionCurrent(Integer.parseInt(txtInjectAmp.getText()));
                         startUpdateProgBar();
@@ -858,7 +857,5 @@ public class NetCalcUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private NetworkCalc network;
     final private List<String> fileList = new ArrayList<>();
-    final private BlockingQueue<int[]> fireQueue = new LinkedBlockingQueue<>();
     private boolean stoppedByUser;
-//    private FiringUI fui;
 }
