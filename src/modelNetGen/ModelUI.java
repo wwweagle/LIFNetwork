@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 /**
@@ -759,9 +760,9 @@ public class ModelUI extends javax.swing.JFrame {
     private void btnInitModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInitModelActionPerformed
         btnShow.setEnabled(false);
         btnStart.setEnabled(false);
-        pathToFile = FilesCommons.getJarFolder("GAD0.accdb");
-        modelInitWorker().execute();
+        pathToFile = FilesCommons.searchFor("GAD0.accdb");
         btnInitModel.setEnabled(false);
+        modelInitWorker().execute();
     }//GEN-LAST:event_btnInitModelActionPerformed
 
     private void btnClusterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClusterActionPerformed
@@ -807,7 +808,7 @@ public class ModelUI extends javax.swing.JFrame {
                 m0.setWeightScale(Float.parseFloat(txtWeightScale.getText()));
                 m0.setWriteFile(chkWriteFile.isSelected());
                 m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
-                updateProgress();
+                startUpdateProgress();
                 m0.genModelNetwork(pathToFile);
                 return null;
             }
@@ -847,7 +848,7 @@ public class ModelUI extends javax.swing.JFrame {
     private void btnStartBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartBatchActionPerformed
         batchStop = false;
         batchCount = 0;
-        pathToFile = FilesCommons.getJarFolder("GAD0.accdb");
+        pathToFile = FilesCommons.searchFor("GAD0.accdb");
 //        System.out.println(pathToFile);
 
         final int structures = Integer.parseInt(txtStructures.getText());
@@ -868,7 +869,7 @@ public class ModelUI extends javax.swing.JFrame {
             (new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() throws Exception {
-                    batchSem.acquire();
+                    batchSemaphore.acquire();
                     for (float connProb = connProbFrom; connProb < connProbTo; connProb += connProbStep) {
                         for (float weightScale = weightScaleFrom; weightScale < weightScaleTo; weightScale += weightScaleStep) {
                             for (int i = 0; i < 2; i++) {
@@ -880,7 +881,7 @@ public class ModelUI extends javax.swing.JFrame {
                                 m0.setType(i == 0 ? ModelType.Network : ModelType.Ctrl);
                                 m0.setConnProbScale(connProb);
                                 m0.setWeightScale(weightScale);
-                                updateProgress();
+                                startUpdateProgress();
                                 m0.genModelNetwork(pathToFile);
                             }
                         }
@@ -891,7 +892,7 @@ public class ModelUI extends javax.swing.JFrame {
 
                 @Override
                 protected void done() {
-                    batchSem.release();
+                    batchSemaphore.release();
                 }
             }).execute();
             btnShow.setEnabled(true);
@@ -1015,7 +1016,7 @@ public class ModelUI extends javax.swing.JFrame {
             @Override
             public Void doInBackground() {
                 try {
-                    batchSem.acquire();
+                    batchSemaphore.acquire();
                 } catch (InterruptedException ex) {
                     System.out.println("Parallel exception");
                 }
@@ -1025,19 +1026,20 @@ public class ModelUI extends javax.swing.JFrame {
                 //TODO need to test pathToFile exist
                 int neuronNum = Integer.parseInt(txtNeuronNum.getText());
                 m0 = new Model(gluFac, gabaFac, iterFac, neuronNum, 8429, 0.76708864f);
-                String rndSuffix=Com.genRandomString(6);
+                String rndSuffix = Com.genRandomString(6);
                 m0.setRndSuffix(rndSuffix);
                 m0.setWriteFile(chkWriteFile.isSelected());
                 m0.setDEPOLAR_GABA(chkDepolarGABA.isSelected());
-                updateProgress();
-                btnStart.setEnabled(true);
-                btnStartBatch.setEnabled(true);
+                startUpdateProgress();
+
                 return null;
             }
 
             @Override
             protected void done() {
-                batchSem.release();
+                btnStart.setEnabled(true);
+                btnStartBatch.setEnabled(true);
+                batchSemaphore.release();
             }
         };
 
@@ -1242,31 +1244,27 @@ public class ModelUI extends javax.swing.JFrame {
         return globalDegreeWorker;
     }
 
-    private void updateProgress() {
+    private void startUpdateProgress() {
         if (updating) {
             return;
         }
         updating = true;
         final ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
-        Runnable progressUpdater = new Runnable() {
-            @Override
-            public void run() {
-
-                List<String> updates = m0.getUpdates();
-                txtPrg.setText("");
-                for (int i = 0; i < updates.size(); i++) {
-                    String s = updates.get(i) + "\r\n";
-                    txtPrg.append(s);
-                    prgBar.setValue(m0.getProgress());
-                }
-                if (m0.getRunState() == RunState.StoppedByUser || m0.getRunState() == RunState.NetGenerated) {
-                    ses.shutdown();
-                    prgBar.setValue(0);
-                    updating = false;
-                }
+        Runnable progressUpdater = () -> {
+            List<String> updates = m0.getUpdates();
+            SwingUtilities.invokeLater(() -> txtPrg.setText(""));
+            for (int i = 0; i < updates.size(); i++) {
+                String s = updates.get(i) + "\r\n";
+                SwingUtilities.invokeLater(() -> txtPrg.append(s));
+                SwingUtilities.invokeLater(() -> prgBar.setValue(m0.getProgress()));
+            }
+            if (m0.getRunState() == RunState.StoppedByUser || m0.getRunState() == RunState.NetGenerated) {
+                ses.shutdown();
+                SwingUtilities.invokeLater(() -> prgBar.setValue(0));
+                updating = false;
             }
         };
-        ses.scheduleWithFixedDelay(progressUpdater, 1, 1, TimeUnit.SECONDS);
+        ses.scheduleWithFixedDelay(progressUpdater, 5, 5, TimeUnit.SECONDS);
     }
     private Model m0;
     private CircuitViewUI circuitView;
@@ -1274,6 +1272,6 @@ public class ModelUI extends javax.swing.JFrame {
     private ModelType modelType = ModelType.Network;
     private boolean updating = false;
     private boolean batchStop;
-    final private Semaphore batchSem = new Semaphore(1);
+    final private Semaphore batchSemaphore = new Semaphore(1);
     private int batchCount;
 }

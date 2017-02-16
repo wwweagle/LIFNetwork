@@ -594,7 +594,7 @@ public class Model {
         String suffix = "_C" + dformat.format(connProbScale) + "_W" + dformat.format(weightScale) + "_" + rndSuffix;
 
         try (ObjectOutputStream o = new ObjectOutputStream(
-                new FileOutputStream(FilesCommons.getJarFolder("") + "\\" + type + suffix + "_Conn.ser"))) {
+                new FileOutputStream(FilesCommons.searchFor("") + "\\" + type + suffix + "_Conn.ser"))) {
             o.writeObject(save);
         } catch (IOException e) {
             System.out.println("ser io error");

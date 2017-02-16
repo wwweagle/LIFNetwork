@@ -29,8 +29,7 @@ public class ModelDB {
 
     private ArrayList<PotentialSynapse> getSlots() {
         ArrayList<PotentialSynapse> slots = new ArrayList<>(500);
-        String jdbcPath = "jdbc:odbc:DRIVER="
-                + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
+        String jdbcPath = "jdbc:ucanaccess://" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
                     ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -67,8 +66,7 @@ public class ModelDB {
 
     private ArrayList<PotentialSynapse> getConns() {
         ArrayList<PotentialSynapse> conns = new ArrayList<>(500);
-        String jdbcPath = "jdbc:odbc:DRIVER="
-                + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
+        String jdbcPath = "jdbc:ucanaccess://" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
                     ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -103,7 +101,7 @@ public class ModelDB {
         ArrayList<PotentialSynapse> conns = getConns();
         ArrayList<HashMap<Integer, Integer>> connMaps = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            connMaps.add(new HashMap<Integer, Integer>());
+            connMaps.add(new HashMap<>());
         }
         for (PotentialSynapse conn : conns) {
             int mapKey = Com.getMapKey(conn.getFwdGlu(), conn.getRevGlu(), conn.getDist());
@@ -117,7 +115,7 @@ public class ModelDB {
     private ArrayList<HashMap<Integer, Integer>> getSlotMap() {
         ArrayList<HashMap<Integer, Integer>> slotsMaps = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            slotsMaps.add(new HashMap<Integer, Integer>());
+            slotsMaps.add(new HashMap<>());
         }
         ArrayList<PotentialSynapse> slots = getSlots();
 
@@ -134,7 +132,7 @@ public class ModelDB {
     public ArrayList<HashMap<Integer, Float>> getPBase() {
         ArrayList<HashMap<Integer, Float>> pBases = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            pBases.add(new HashMap<Integer, Float>());
+            pBases.add(new HashMap<>());
         }
 
         ArrayList<HashMap<Integer, Integer>> slotsMaps = getSlotMap();
@@ -152,8 +150,7 @@ public class ModelDB {
 
     public int[] getGrps() {
         int[] grps = new int[2];
-        String jdbcPath = "jdbc:odbc:DRIVER="
-                + "Microsoft Access Driver (*.mdb, *.accdb);DBQ=" + this.pathToFile;
+        String jdbcPath = "jdbc:ucanaccess://" + this.pathToFile;
         try (Connection con = DriverManager.getConnection(jdbcPath)) {
             try (Statement stmt = con.createStatement(
                     ResultSet.TYPE_FORWARD_ONLY,

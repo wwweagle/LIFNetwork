@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="28">
+        <file>
+            <url>src/modelNetGen/ModelUI.java</url>
+            <bookmark id="15">
+                <name/>
+                <line>803</line>
+                <key/>
+            </bookmark>
+            <bookmark id="17">
+                <name/>
+                <line>914</line>
+                <key/>
+            </bookmark>
+            <bookmark id="16">
+                <name/>
+                <line>1009</line>
+                <key/>
+            </bookmark>
+            <bookmark id="18">
+                <name/>
+                <line>1009</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/modelNetGen/ModelNewN.java</url>
+            <bookmark id="10">
+                <name/>
+                <line>72</line>
+                <key/>
+            </bookmark>
+            <bookmark id="12">
+                <name/>
+                <line>103</line>
+                <key/>
+            </bookmark>
+            <bookmark id="11">
+                <name/>
+                <line>120</line>
+                <key/>
+            </bookmark>
+            <bookmark id="6">
+                <name/>
+                <line>244</line>
+                <key/>
+            </bookmark>
+            <bookmark id="4">
+                <name/>
+                <line>244</line>
+                <key/>
+            </bookmark>
+            <bookmark id="8">
+                <name/>
+                <line>244</line>
+                <key/>
+            </bookmark>
+            <bookmark id="19">
+                <name/>
+                <line>786</line>
+                <key/>
+            </bookmark>
+            <bookmark id="5">
+                <name/>
+                <line>789</line>
+                <key/>
+            </bookmark>
+            <bookmark id="9">
+                <name/>
+                <line>804</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/lifnetwork/NetCalcUI.java</url>
+            <bookmark id="23">
+                <name/>
+                <line>617</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/genHeatMap/HeatMapUI.java</url>
+            <bookmark id="24">
+                <name/>
+                <line>247</line>
+                <key/>
+            </bookmark>
+            <bookmark id="25">
+                <name/>
+                <line>424</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/lifnetwork/NetworkCalc.java</url>
+            <bookmark id="1">
+                <name/>
+                <line>193</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/savedNetworkParameter/NetworkParameters1.java</url>
+            <bookmark id="21">
+                <name/>
+                <line>29</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/modelNetGen/Model.java</url>
+            <bookmark id="22">
+                <name/>
+                <line>589</line>
+                <key/>
+            </bookmark>
+            <bookmark id="28">
+                <name/>
+                <line>593</line>
+                <key/>
+            </bookmark>
+            <bookmark id="20">
+                <name/>
+                <line>835</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>src/lifnetwork/LIFNeuron.java</url>
+            <bookmark id="26">
+                <name/>
+                <line>135</line>
+                <key/>
+            </bookmark>
+        </file>
+    </editor-bookmarks>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/I:/java/lifNetwork/src/modelNetGen/ModelUI.java</file>
+            <file>file:/I:/java/lifNetwork/src/lifnetwork/NetCalcUI.java</file>
+            <file>file:/I:/java/lifNetwork/src/modelNetGen/Model.java</file>
+            <file>file:/I:/java/lifNetwork/src/modelNetGen/FilesCommons.java</file>
+            <file>file:/I:/java/lifNetwork/src/lifnetwork/ChartSave.java</file>
+            <file>file:/I:/java/lifNetwork/src/modelNetGen/ModelDB.java</file>
+            <file>file:/I:/java/lifNetwork/src/lifnetwork/PngBean.java</file>
+        </group>
+    </open-files>
+</project-private>

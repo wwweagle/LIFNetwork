@@ -222,7 +222,7 @@ public class HeatMapUI extends javax.swing.JFrame {
 
     private void btnDefaultFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultFolderActionPerformed
         fileList = new ArrayList<>();
-        File dir = new File(FilesCommons.getJarFolder(""));
+        File dir = new File(FilesCommons.searchFor(""));
         txtLog.append("Open folder " + dir.getAbsolutePath() + "\n");
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override
@@ -265,7 +265,7 @@ public class HeatMapUI extends javax.swing.JFrame {
             }
 
             private void record(StructResult r) {
-                String saveFile = modelNetGen.FilesCommons.getJarFolder("") + "\\" + txtSaveFile.getText() + ".txt";
+                String saveFile = modelNetGen.FilesCommons.searchFor("") + "\\" + txtSaveFile.getText() + ".txt";
                 try (BufferedWriter w = new BufferedWriter(new FileWriter(saveFile, true))) {
 
                     log("Batch\t" + r.getHashString(), w);

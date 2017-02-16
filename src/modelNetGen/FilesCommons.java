@@ -15,22 +15,23 @@ import javax.swing.JFileChooser;
  */
 public class FilesCommons {
 
-    static public String getJarFolder(String s) {
+    static public String searchFor(String s) {
         String pathToFile = FilesCommons.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         try {
             pathToFile = URLDecoder.decode(pathToFile, "UTF-8");
-            pathToFile = (new File(pathToFile)).getParentFile().getCanonicalPath() + "\\" + s;
+            pathToFile = (new File(pathToFile)).getParentFile().getCanonicalPath();
         } catch (IOException ex) {
             System.out.println(ex.toString());
         }
+        String[] usualDirs = {pathToFile, "I:\\My  Paper"};
 
 //        System.out.println(pathToFile);
-
-        File f = new File(pathToFile);
-        if (f.exists()) {
-            return f.getAbsolutePath();
+        for (String path : usualDirs) {
+            File f = new File(path + "\\" + s);
+            if (f.exists()) {
+                return f.getAbsolutePath();
+            }
         }
-
         javax.swing.JFileChooser DataFileChooser = new javax.swing.JFileChooser();
 
         int returnVal = DataFileChooser.showOpenDialog(null);

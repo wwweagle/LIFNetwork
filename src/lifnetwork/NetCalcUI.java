@@ -616,7 +616,7 @@ public class NetCalcUI extends javax.swing.JFrame {
 
     private void btnDefaultFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultFolderActionPerformed
         fileList.clear();
-        File dir = new File(FilesCommons.getJarFolder(""));
+        File dir = new File(FilesCommons.searchFor(""));
         log("Open folder " + dir.getAbsolutePath());
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override
@@ -703,7 +703,7 @@ public class NetCalcUI extends javax.swing.JFrame {
                             }
                             //SAVE
                             try (ObjectOutputStream o = new ObjectOutputStream(
-                                    new FileOutputStream(FilesCommons.getJarFolder("")
+                                    new FileOutputStream(FilesCommons.searchFor("")
                                             + "\\" + save.getCharacterString() + "_Fire.ser"))) {
                                 o.writeObject(fireSave);
                             }
